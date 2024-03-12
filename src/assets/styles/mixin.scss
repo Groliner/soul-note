@@ -1,0 +1,12 @@
+@mixin atom-size {
+  width: 20rem;
+  height: 20rem;
+}
+
+@mixin clearfix {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}

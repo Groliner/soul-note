@@ -4,6 +4,12 @@
  * @LastEditors: Gro lin
  * @LastEditTime: 2024-03-11 22:09:45
 -->
-<script setup></script>
+<script setup>
+import { RouterView } from 'vue-router'
+</script>
 
-<template>app</template>
+<template>
+  <RouterView />
+</template>
+
+<style lang="scss" scoped></style>

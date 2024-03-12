@@ -35,11 +35,12 @@ export default defineConfig({
   },
   css: {
     preprocessorOptions: {
+      // 这里配置 mixin.scss 混合文件的全局引入
       scss: {
-        // 自动导入定制化样式文件进行样式覆盖
         additionalData: `
-          @use "@/styles/element/index.scss" as *;
-          @use "@/styles/var.scss" as *;
+        @use "@/assets/styles/elementPlugin.scss" as *;
+        @use "@/assets/styles/var.scss" as *;
+        @use "@/assets/styles/mixin.scss" as *;
         `
       }
     }
