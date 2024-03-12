@@ -1,5 +1,5 @@
-# SoulNote
-
+# tmplate-vue
+一个vue3，pinia，scss，gsap的基本配置
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
