@@ -7,10 +7,14 @@
 }
 html {
   font-size: 62.5%;
+  background: var(--greyLight-1);
+  @media screen and (min-width: 900px) {
+    font-size: 75%;
+  }
 }
 
 body {
-  color: aliceblue;
+
   padding: 3rem;
   box-sizing: border-box;
 }

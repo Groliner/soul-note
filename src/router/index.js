@@ -13,6 +13,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('@/views/layout/index.vue')
+    },
+    {
+      path: '/test/clock',
+      name: 'clock',
+      component: () => import('@/components/Clock.vue')
     }
     // {
     //   path: '/about',

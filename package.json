@@ -1,6 +1,6 @@
 {
   "name": "soul_notes",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
+    "@phosphor-icons/vue": "^2.1.6",
     "@vueup/vue-quill": "^1.2.0",
     "axios": "^1.6.7",
     "crypto-js": "^4.2.0",
