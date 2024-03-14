@@ -7,7 +7,7 @@
 <script setup>
 import { gsap } from 'gsap'
 import { ref, onMounted, watch, reactive } from 'vue'
-
+const sliderPercent = ref(0)
 const atom = ref(null)
 const tl = gsap.timeline()
 const atomTl = gsap.timeline({
@@ -64,14 +64,13 @@ onMounted(() => {
   atomAnimation()
 })
 
-const electronSpeed = ref(1)
 const electron = reactive({
   number: 1
 })
 
-watch(electronSpeed, (n) => {
+watch(sliderPercent, (n) => {
   gsap.to(electron, { duration: 0.5, number: Number(n) || 0 })
-  tl.timeScale(electronSpeed.value)
+  tl.timeScale(sliderPercent.value)
 })
 const nucleusSpeed = ref(1)
 const nucleus = reactive({
@@ -82,8 +81,18 @@ watch(nucleusSpeed, (n) => {
   gsap.to(nucleus, { duration: 0.5, number: Number(n) || 0 })
   atomTl.timeScale(nucleusSpeed.value)
 })
+sliderPercent.value = 1
+import img from 'C:\\Users\\Surface\\Pictures\\重庆大学徽章.gif'
 </script>
 <template>
+  <div>
+    <img
+      style="width: 10rem; height: auto; background-size: cover"
+      v-img-lazy="img"
+      alt=""
+    />
+  </div>
+  <ClockComponent :showtime="false" />
   <div class="container">
     <div class="atom-edge">
       <div
@@ -126,10 +135,7 @@ watch(nucleusSpeed, (n) => {
       </div>
     </div>
     <div class="atomControl">
-      <div class="slider-demo-block">
-        <el-slider v-model="electronSpeed" size="small" :show-tooltip="false" />
-        <p class="speed">Electron speed:{{ electron.number.toFixed(0) }}</p>
-      </div>
+      <SliderComponent v-model:sliderPercent="sliderPercent"></SliderComponent>
       <div class="slider-demo-block">
         <el-slider v-model="nucleusSpeed" size="large" :show-tooltip="false" />
         <p class="speed">Nucleus speed:{{ nucleus.number.toFixed(0) }}</p>

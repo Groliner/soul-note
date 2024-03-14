@@ -15,10 +15,37 @@ const router = createRouter({
       component: () => import('@/views/layout/index.vue')
     },
     {
-      path: '/test/clock',
-      name: 'clock',
-      component: () => import('@/components/Clock.vue')
+      path: '/test',
+      component: () => import('@/views/testView.vue'),
+      children: [
+        {
+          path: 'slider',
+          name: 'slider',
+          component: () => import('@/components/Slider.vue')
+        },
+        {
+          path: 'clock',
+          name: 'clock',
+          component: () => import('@/components/Clock.vue')
+        },
+        {
+          path: 'radioPlayer',
+          name: 'radioPlayer',
+          component: () => import('@/components/RadioPlayer.vue')
+        },
+        {
+          path: 'chip',
+          name: 'chip',
+          component: () => import('@/components/Chip.vue')
+        },
+        {
+          path: 'segmentedControl',
+          name: 'segmentedControl',
+          component: () => import('@/components/SegmentedControl.vue')
+        }
+      ]
     }
+
     // {
     //   path: '/about',
     //   name: 'about',

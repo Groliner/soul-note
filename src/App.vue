@@ -10,6 +10,5 @@ import { RouterView } from 'vue-router'
 
 <template>
   <RouterView />
+  <!-- <button class="private-btn private-btn__secondary"><p>button</p></button> -->
 </template>
-
-<style lang="scss" scoped></style>

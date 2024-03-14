@@ -11,8 +11,8 @@ import App from './App.vue'
 import router from './router'
 
 //导入插件
-// import { lazyLoad } from '@/directives'
-// import { componentPlugin } from '@/components'
+import { lazyLoad } from '@/directives'
+import { componentPlugin } from '@/components'
 
 import '@/assets/index.scss'
 
@@ -20,7 +20,7 @@ const app = createApp(App)
 
 app.use(createPinia().use(persist))
 app.use(router)
-// app.use(lazyLoad)
-// app.use(componentPlugin)
+app.use(lazyLoad)
+app.use(componentPlugin)
 
 app.mount('#app')
