@@ -42,8 +42,23 @@ const router = createRouter({
           path: 'segmentedControl',
           name: 'segmentedControl',
           component: () => import('@/components/SegmentedControl.vue')
+        },
+        {
+          path: 'nucleus',
+          name: 'nucleus',
+          component: () => import('@/components/modules/Nucleus.vue')
+        },
+        {
+          path: 'refs',
+          name: 'refs',
+          component: () => import('@/views/layout/index.vue')
         }
       ]
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/loginView/index.vue')
     }
 
     // {

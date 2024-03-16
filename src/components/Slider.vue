@@ -18,8 +18,7 @@ onMounted(() => {
   console.log('props.width', props.width)
   btn.value.style.left = (props.width * sliderPercent.value) / 100 - 10 + 'px'
   color.value.style.width = sliderPercent.value + '%'
-  tooltip.value.style.left =
-    (props.width * sliderPercent.value) / 100 - 15 + 'px'
+  tooltip.value.style.left = (props.width * sliderPercent.value) / 100 - 15 + 'px'
 })
 onUnmounted(() => {
   document.removeEventListener('mouseup', mouseup)

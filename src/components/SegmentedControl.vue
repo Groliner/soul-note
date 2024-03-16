@@ -27,13 +27,7 @@ const props = defineProps({
 <template>
   <div class="segmented-control">
     <div v-for="i in props.n" :key="i" :class="`segmented-control__${i}`">
-      <input
-        type="radio"
-        name="radio2"
-        :value="i"
-        :id="`tab-${i}`"
-        v-model="picked"
-      />
+      <input type="radio" name="radio2" :value="i" :id="`tab-${i}`" v-model="picked" />
       <label :for="`tab-${i}`">
         <p>Tab {{ i }}</p></label
       >

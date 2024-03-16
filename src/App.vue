@@ -5,10 +5,13 @@
  * @LastEditTime: 2024-03-11 22:09:45
 -->
 <script setup>
-import { RouterView } from 'vue-router'
+import zh from 'element-plus/es/locale/lang/zh-cn.mjs'
 </script>
-
 <template>
-  <RouterView />
-  <!-- <button class="private-btn private-btn__secondary"><p>button</p></button> -->
+  <div>
+    <el-config-provider :locale="zh">
+      <!-- 路由出口 -->
+      <router-view></router-view>
+    </el-config-provider>
+  </div>
 </template>

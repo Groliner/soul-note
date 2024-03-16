@@ -8,8 +8,8 @@
 import axios from 'axios'
 
 const instance = axios.create({
-  baseURL: 'http://pcapi-xiaotuxian-front-devtest.itheima.net',
-  timeout: 1000000
+  baseURL: 'http://192.168.160.208:8080',
+  timeout: 5000
 })
 
 import { useUserStore } from '@/stores'
@@ -38,8 +38,8 @@ instance.interceptors.response.use(
     return response
   },
   (error) => {
-    ElMessage.error(error.response?.data?.message || '未知错误')
-    if (error.response.status === 401) {
+    ElMessage.error(error.message || '未知错误')
+    if (error.response?.status === 401) {
       const userStore = useUserStore()
       userStore.logout()
       router.push('/login')
