@@ -4,9 +4,10 @@
 独特的UI设计
 signUP 注册设置数组(props)
 logIn 登录设置数组(props)
+TODO:
+添加邮箱验证功能
 */
 import { toRef, ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import {
   PhArrowCircleRight,
   PhArrowCircleLeft,
@@ -14,7 +15,6 @@ import {
   PhArrowsClockwise
 } from '@phosphor-icons/vue'
 import { gsap } from 'gsap'
-const router = useRouter()
 const props = defineProps({
   sigUp: {
     type: Array,
@@ -33,7 +33,7 @@ const props = defineProps({
         placeholder: 'Your username',
         spellcheck: 'false',
         autocomplete: 'off',
-        regex: '^[a-zA-Z0-9._-]{3,}$'
+        regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
       },
       {
         id: 'password',
@@ -53,7 +53,7 @@ const props = defineProps({
         placeholder: 'Your username',
         spellcheck: 'false',
         autocomplete: 'off',
-        regex: '^[a-zA-Z0-9._-]{3,}$'
+        regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
       },
       {
         id: 'password',
@@ -61,31 +61,38 @@ const props = defineProps({
         placeholder: 'Password ',
         autocomplete: 'off',
         regex: '^\\S{6,}$'
+      },
+      {
+        id: 'verifyCode',
+        type: 'text',
+        placeholder: 'verifyCode (Only 4 characters)',
+        autocomplete: 'off',
+        regex: '^\\S{4}$'
       }
     ]
   }
 })
 
 const inputArray = ref(props.logIn)
+const isSignUp = ref(false)
 const totalSteps = computed(() => inputArray.value.length)
 let refArray = []
 const setRefArray = (el, index) => {
-  console.log('重组')
+  //执行时机在inputArray变化,且dom更新(每次输入或者触发事件)之后,
+  // console.log('重组', el?.name, el?.value, index)
   if (el) {
     refArray[index] = toRef(el)
   }
 }
-watch(totalSteps, () => {
-  refArray = refArray.filter((item) =>
-    inputArray.value.some((item2) => item2.id === item.value.name)
-  )
-  refArray.forEach((inner) => {
-    if (responseData.value?.data) {
-      inner.value.value = responseData.value.data[inner.value.name]
-      nextStep.value = true
-    } else {
-      inner.value.value = ''
-    }
+watch(inputArray, () => {
+  // 由于refArray绑定的input取决于位置,并且setRefArray执行时机比较晚,所以此处更新input.value根据最新的inputArray
+  // console.log('侦测到模式转换,开始规则refArray', totalSteps.value)
+  refArray.forEach((inner, index) => {
+    const key = inputArray.value[index].id
+    inner.value.value =
+      responseData.value?.data && key in responseData.value.data
+        ? responseData.value.data[key]
+        : ''
   })
 })
 const finishedStep = ref(0)
@@ -96,13 +103,20 @@ const nextStep = ref(false)
 const isHover = ref(false)
 const handleHover = (el) => {
   if (isHover.value) return
-  if (el.target.classList.contains('up')) inputArray.value = props.sigUp
-  if (el.target.classList.contains('down')) inputArray.value = props.logIn
+  if (el.target.classList.contains('up')) {
+    inputArray.value = props.sigUp
+    isSignUp.value = true
+  }
+  if (el.target.classList.contains('down')) {
+    inputArray.value = props.logIn
+    isSignUp.value = false
+  }
   isHover.value = true
   if (finishedStep.value < totalSteps.value)
     setTimeout(function () {
-      refArray[stepNumber.value - 1].value.focus()
-    }, 600)
+      refArray[0].value.focus()
+      // refArray[stepNumber.value - 1].value.focus()
+    }, 410)
 }
 const handleOut = () => {
   isHover.value =
@@ -112,6 +126,8 @@ const handleOut = () => {
   }
 }
 const checkInput = (el) => {
+  // 用户每次输入自动执行
+  // console.log('检查输入', el.value.name, el.value.value, stepNumber.value)
   inputArray.value.forEach((inner, index) => {
     if (inner.id === el.value.name && index + 1 === stepNumber.value) {
       if (el.value.value.match(inner.regex)) {
@@ -126,7 +142,6 @@ const checkInput = (el) => {
   })
 }
 const moveToNextStep = () => {
-  if (isFinished.value) return console.log('Account Created')
   stepNumber.value =
     finishedStep.value >= stepNumber.value
       ? stepNumber.value + 1
@@ -143,86 +158,34 @@ const moveToNextStep = () => {
 const moveToPreviousStep = () => {
   if (stepNumber.value > 1) stepNumber.value--
   progress.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
-  nextStep.value = true
-}
-
-const load = ref(true)
-const responseData = ref({})
-const emit = defineEmits(['login', 'signup'])
-const reset = () => {
-  isHover.value = false
-  load.value = true
-  progress.value.parentElement.classList.remove('hide-form')
-  stepNumber.value = 1
-  inputArray.value = props.logIn
-  progress.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
-  isFinished.value = false
-  nextStep.value = false
   checkInput(refArray[stepNumber.value - 1])
 }
-const handleFinished = async () => {
+
+// 定义结束以及异步动画
+const load = ref(true)
+const responseData = ref({})
+const reset = (change = true, toStep = 1) => {
+  load.value = true
+  progress.value.parentElement.classList.remove('hide-form')
+  stepNumber.value = toStep
+  if (change) {
+    inputArray.value = props.logIn
+    isSignUp.value = false
+  }
+  progress.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
+  isFinished.value = false
+  // nextStep.value = false
+  // 由于setRefArray执行时机比较晚,所以当change=true时下面check由于refArray更新较慢
+  // 也就是在注册后转入登录input时的第一次checkInput不会影响nextStep.value,保持为true,除非上面设置为false
+  checkInput(refArray[stepNumber.value - 1])
+}
+const handleFinished = () => {
   load.value = true
   progress.value.parentElement.classList.add('hide-form')
-  const { tl, tween } = handleAnimation()
-  if (totalSteps.value > 2) await handleSignUp(tl, tween)
-  else await handleLogIn(tl, tween)
+  const resetTween = handleAnimation()
+  if (isSignUp.value) handleSignUp(resetTween)
+  else handleLogIn(resetTween)
 }
-const handleSignUp = async (tl, tweenFinish) => {
-  const data = {
-    email: refArray[0].value.value,
-    username: refArray[1].value.value,
-    password: refArray[2].value.value
-  }
-  //发送数据等待返回
-  const res = await emit('signup', data)
-  console.log('handleSignUp', res)
-  if (true) {
-    responseData.value.data = data
-    setTimeout(() => {
-      tweenFinish.play()
-      gsap.to(
-        '#acc-success',
-        {
-          yPercent: 0,
-          opacity: 1,
-          duration: 0.5,
-          ease: 'power1.in'
-        },
-        '>-0.3'
-      )
-    }, 1000)
-  } else {
-    setTimeout(() => {
-      tweenFinish.play()
-      gsap.set('.loading', {
-        rotation: 0
-      })
-      tl.kill()
-      reset()
-    }, 2000)
-  }
-}
-const handleLogIn = async (tl, tweenFinish) => {
-  const data = {
-    email: refArray[0].value.value,
-    password: refArray[1].value.value
-  }
-  const res = await emit('login', data)
-  console.log('handleLogIn', res)
-  if (res) {
-    router.push('/home')
-  } else {
-    setTimeout(() => {
-      tweenFinish.play()
-      gsap.set('.loading', {
-        rotation: 0
-      })
-      tl.kill()
-      reset()
-    }, 2000)
-  }
-}
-
 const handleAnimation = () => {
   const tl = gsap.timeline()
   gsap.set('#working', {
@@ -242,7 +205,7 @@ const handleAnimation = () => {
     paused: true,
     onStart: () => {
       gsap.set('#acc-success', {
-        yPercent: 200,
+        yPercent: 300,
         opacity: 0
       })
     },
@@ -254,7 +217,77 @@ const handleAnimation = () => {
       tl.kill()
     }
   })
-  return { tl, tween }
+
+  return function (result = false, latency = 2) {
+    // console.log('是否注册', isSignup, '是否成功', result, '延迟', latency)
+    setTimeout(() => {
+      tween.play()
+      if (!result) reset(result)
+      else {
+        if (isSignUp.value)
+          gsap.to(
+            '#acc-success',
+            {
+              yPercent: 0,
+              opacity: 1,
+              duration: 0.5,
+              ease: 'power1.in'
+            },
+            '>-0.3'
+          )
+        else router.push('/home')
+      }
+    }, latency * 1000)
+  }
+}
+const handleSignUp = async (resetTween) => {
+  const data = {
+    email: refArray[0].value.value,
+    username: refArray[1].value.value,
+    password: refArray[2].value.value
+  }
+  //发送数据等待返回
+  const res = await signup(data)
+  // console.log('handleSignUp:res', res)
+  responseData.value.data = data
+  resetTween(res, 0.5)
+}
+const handleLogIn = async (resetTween) => {
+  const data = {
+    email: refArray[0].value.value,
+    password: refArray[1].value.value
+  }
+  const res = await login(data)
+  // console.log('handleLogIn:res', res)
+  resetTween(res, 0.5)
+}
+
+// 异步请求
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores'
+import { loginAPI, signUpAPI } from '@/api/user'
+const router = useRouter()
+const userStore = useUserStore()
+const login = async (data) => {
+  return await loginAPI(data)
+    .then((res) => {
+      if (res.token) {
+        userStore.setToken(res.token)
+      }
+    })
+    .catch((err) => {
+      console.log(err)
+      return false
+    })
+}
+const signup = async (data) => {
+  return await signUpAPI(data)
+    .then((res) => res)
+    .catch((err) => {
+      console.log(err)
+      // return false
+      return Math.random() > 0.5
+    })
 }
 </script>
 <template>
@@ -265,11 +298,7 @@ const handleAnimation = () => {
     @mouseover="handleHover"
     @mouseleave="handleOut"
   >
-    <h1
-      id="heading"
-      class="up"
-      :class="{ inactive: totalSteps !== 3 && isHover }"
-    >
+    <h1 id="heading" class="up" :class="{ inactive: !isSignUp && isHover }">
       Sign Up
     </h1>
 
@@ -331,11 +360,7 @@ const handleAnimation = () => {
       </div>
     </form>
 
-    <h1
-      id="heading"
-      class="down"
-      :class="{ inactive: totalSteps !== 2 && isHover }"
-    >
+    <h1 id="heading" class="down" :class="{ inactive: isHover && isSignUp }">
       Log In
     </h1>
   </div>
@@ -538,6 +563,7 @@ input {
   align-items: center;
 
   p {
+    user-select: none;
     padding-left: 10%;
     font-size: 1.6rem;
     @include flexCenter;

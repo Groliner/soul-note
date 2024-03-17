@@ -35,7 +35,7 @@ const isShow = ref(true)
 <style lang="scss" scoped>
 /*  CHIP  */
 .chip {
-  width: min-content;
+  width: fit-content;
   min-height: 4rem;
   border-radius: 1rem;
   box-shadow: $shadow;
