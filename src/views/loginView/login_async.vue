@@ -282,11 +282,11 @@ const login = async (data) => {
 }
 const signup = async (data) => {
   return await signUpAPI(data)
-    .then((res) => res)
+    .then((res) => res.data.code)
     .catch((err) => {
       console.log(err)
       // return false
-      return Math.random() > 0.5
+      return false
     })
 }
 </script>

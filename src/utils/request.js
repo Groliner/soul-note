@@ -8,8 +8,8 @@
 import axios from 'axios'
 
 const instance = axios.create({
-  baseURL: 'http://192.168.160.208:8080',
-  timeout: 5000
+  baseURL: 'http://192.168.29.208:12345',
+  timeout: 100000
 })
 
 import { useUserStore } from '@/stores'
@@ -19,12 +19,12 @@ import { ElMessage } from 'element-plus'
 // 请求拦截器
 instance.interceptors.request.use(
   (config) => {
-    const userStore = useUserStore()
-    // 2. 按照后端的要求拼接token数据
-    const token = userStore.userInfo?.token
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+    // const userStore = useUserStore()
+    // // 2. 按照后端的要求拼接token数据
+    // const token = userStore.userInfo?.token
+    // if (token) {
+    //   config.headers.Authorization = `Bearer ${token}`
+    // }
     return config
   },
   (error) => {
@@ -35,6 +35,7 @@ instance.interceptors.request.use(
 // 响应拦截器
 instance.interceptors.response.use(
   (response) => {
+    console.log(response)
     return response
   },
   (error) => {

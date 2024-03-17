@@ -52,6 +52,11 @@ const router = createRouter({
           path: 'refs',
           name: 'refs',
           component: () => import('@/views/layout/index.vue')
+        },
+        {
+          path: 'flip',
+          name: 'flip',
+          component: () => import('@/components/Flip.vue')
         }
       ]
     },
