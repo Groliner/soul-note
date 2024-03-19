@@ -2,15 +2,16 @@
 import { onBeforeMount, ref } from 'vue'
 import login from './login_async.vue'
 import { LogInTemplateAPI } from '@/api/user'
+import { ElMessage } from 'element-plus'
 let template = ref({})
 onBeforeMount(async () => {
   const res = await LogInTemplateAPI()
     .then((res) => res.data)
     .catch((err) => {
-      console.log(err)
+      ElMessage({ type: 'warning', message: err.data.msg })
     })
   if (res) {
-    template.value = res.template
+    template.value = res.data.template
   }
 })
 </script>

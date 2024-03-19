@@ -16,60 +16,60 @@ import {
 } from '@phosphor-icons/vue'
 import { gsap } from 'gsap'
 const props = defineProps({
-  sigUp: {
-    type: Array,
-    default: () => [
-      {
-        id: 'email',
-        type: 'email',
-        placeholder: 'Your email address',
-        spellcheck: 'false',
-        autocomplete: 'off',
-        regex: '^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$'
-      },
-      {
-        id: 'username',
-        type: 'text',
-        placeholder: 'Your username',
-        spellcheck: 'false',
-        autocomplete: 'off',
-        regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
-      },
-      {
-        id: 'password',
-        type: 'password',
-        placeholder: 'Password (More than 5 characters)',
-        autocomplete: 'off',
-        regex: '^\\S{6,}$'
-      }
-    ]
+  signUp: {
+    type: Array
+    // default: () => [
+    //   {
+    //     id: 'email',
+    //     type: 'email',
+    //     placeholder: 'Your email address',
+    //     spellcheck: 'false',
+    //     autocomplete: 'off',
+    //     regex: '^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$'
+    //   },
+    //   {
+    //     id: 'username',
+    //     type: 'text',
+    //     placeholder: 'Your username',
+    //     spellcheck: 'false',
+    //     autocomplete: 'off',
+    //     regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
+    //   },
+    //   {
+    //     id: 'password',
+    //     type: 'password',
+    //     placeholder: 'Password (More than 5 characters)',
+    //     autocomplete: 'off',
+    //     regex: '^\\S{6,}$'
+    //   }
+    // ]
   },
   logIn: {
-    type: Array,
-    default: () => [
-      {
-        id: 'username',
-        type: 'text',
-        placeholder: 'Your username',
-        spellcheck: 'false',
-        autocomplete: 'off',
-        regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
-      },
-      {
-        id: 'password',
-        type: 'password',
-        placeholder: 'Password ',
-        autocomplete: 'off',
-        regex: '^\\S{6,}$'
-      },
-      {
-        id: 'verifyCode',
-        type: 'text',
-        placeholder: 'verifyCode (Only 4 characters)',
-        autocomplete: 'off',
-        regex: '^\\S{4}$'
-      }
-    ]
+    type: Array
+    // default: () => [
+    //   {
+    //     id: 'username',
+    //     type: 'text',
+    //     placeholder: 'Your username',
+    //     spellcheck: 'false',
+    //     autocomplete: 'off',
+    //     regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
+    //   },
+    //   {
+    //     id: 'password',
+    //     type: 'password',
+    //     placeholder: 'Password ',
+    //     autocomplete: 'off',
+    //     regex: '^\\S{6,}$'
+    //   },
+    //   {
+    //     id: 'verifyCode',
+    //     type: 'text',
+    //     placeholder: 'verifyCode (Only 4 characters)',
+    //     autocomplete: 'off',
+    //     regex: '^\\S{4}$'
+    //   }
+    // ]
   }
 })
 
@@ -104,7 +104,7 @@ const isHover = ref(false)
 const handleHover = (el) => {
   if (isHover.value) return
   if (el.target.classList.contains('up')) {
-    inputArray.value = props.sigUp
+    inputArray.value = props.signUp
     isSignUp.value = true
   }
   if (el.target.classList.contains('down')) {
@@ -241,23 +241,23 @@ const handleAnimation = () => {
   }
 }
 const handleSignUp = async (resetTween) => {
-  const data = {
-    email: refArray[0].value.value,
-    username: refArray[1].value.value,
-    password: refArray[2].value.value
-  }
+  const formData = new FormData()
+  formData.append('email', refArray[0].value.value)
+  formData.append('username', refArray[1].value.value)
+  formData.append('password', refArray[2].value.value)
   //发送数据等待返回
-  const res = await signup(data)
+  const res = await signup(formData)
   // console.log('handleSignUp:res', res)
-  responseData.value.data = data
+  // 将formData数据存入responseData对象
+  responseData.value.data = Object.fromEntries(formData)
   resetTween(res, 0.5)
 }
 const handleLogIn = async (resetTween) => {
-  const data = {
-    email: refArray[0].value.value,
-    password: refArray[1].value.value
-  }
-  const res = await login(data)
+  const formData = new FormData()
+  formData.append('username', refArray[0].value.value)
+  formData.append('password', refArray[1].value.value)
+  formData.append('verifyCode', refArray[2].value.value)
+  const res = await login(formData)
   // console.log('handleLogIn:res', res)
   resetTween(res, 0.5)
 }
@@ -266,27 +266,42 @@ const handleLogIn = async (resetTween) => {
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 import { loginAPI, signUpAPI } from '@/api/user'
+import { ElMessage } from 'element-plus'
 const router = useRouter()
 const userStore = useUserStore()
 const login = async (data) => {
   return await loginAPI(data)
     .then((res) => {
-      if (res.token) {
+      if (res.data.code) {
         userStore.setToken(res.token)
+        ElMessage({ type: 'success', message: 'Login successfully' })
+        return res.data.code
+      } else {
+        ElMessage({
+          type: 'warning',
+          message: res.data.msg || 'Incorrect username or password'
+        })
       }
     })
     .catch((err) => {
-      console.log(err)
-      return false
+      ElMessage.error(err.data.msg)
     })
 }
 const signup = async (data) => {
   return await signUpAPI(data)
-    .then((res) => res.data.code)
+    .then((res) => {
+      if (res.data.code) {
+        ElMessage({ type: 'success', message: 'Signup successfully' })
+        return res.data.code
+      } else {
+        ElMessage({
+          type: 'warning',
+          message: res.data.msg || 'User creation failed'
+        })
+      }
+    })
     .catch((err) => {
-      console.log(err)
-      // return false
-      return false
+      ElMessage.error(err.data.msg)
     })
 }
 </script>
