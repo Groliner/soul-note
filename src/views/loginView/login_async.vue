@@ -63,9 +63,9 @@ const props = defineProps({
     //     regex: '^\\S{6,}$'
     //   },
     //   {
-    //     id: 'verifyCode',
+    //     id: 'captcha',
     //     type: 'text',
-    //     placeholder: 'verifyCode (Only 4 characters)',
+    //     placeholder: 'captcha (Only 4 characters)',
     //     autocomplete: 'off',
     //     regex: '^\\S{4}$'
     //   }
@@ -119,9 +119,10 @@ const handleHover = (el) => {
     }, 410)
 }
 const handleOut = () => {
+  console.log(responseData.value.data)
   isHover.value =
     stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
-  if (responseData.value?.data) {
+  if (responseData.value?.data && !isFinished.value) {
     responseData.value.data = undefined
   }
 }
@@ -164,10 +165,16 @@ const moveToPreviousStep = () => {
 // 定义结束以及异步动画
 const load = ref(true)
 const responseData = ref({})
-const reset = (change = true, toStep = 1) => {
+const reset = (change = true, toStep = '1') => {
   load.value = true
   progress.value.parentElement.classList.remove('hide-form')
-  stepNumber.value = toStep
+  console.log(toStep)
+  // 判断toStep是否包含username
+  stepNumber.value =
+    toStep === '1'
+      ? 1
+      : inputArray.value.findIndex((el) => toStep.includes(el.id)) + 1
+
   if (change) {
     inputArray.value = props.logIn
     isSignUp.value = false
@@ -203,12 +210,6 @@ const handleAnimation = () => {
     duration: 0.5,
     ease: 'power1.Out',
     paused: true,
-    onStart: () => {
-      gsap.set('#acc-success', {
-        yPercent: 300,
-        opacity: 0
-      })
-    },
     onComplete: () => {
       load.value = false
       gsap.set('.loading', {
@@ -222,8 +223,9 @@ const handleAnimation = () => {
     // console.log('是否注册', isSignup, '是否成功', result, '延迟', latency)
     setTimeout(() => {
       tween.play()
-      if (!result) reset(result)
-      else {
+      if (!result.code) {
+        reset(false, result.msg)
+      } else {
         if (isSignUp.value)
           gsap.to(
             '#acc-success',
@@ -231,7 +233,13 @@ const handleAnimation = () => {
               yPercent: 0,
               opacity: 1,
               duration: 0.5,
-              ease: 'power1.in'
+              ease: 'power1.in',
+              onStart: () => {
+                gsap.set('#acc-success', {
+                  yPercent: 300,
+                  opacity: 0
+                })
+              }
             },
             '>-0.3'
           )
@@ -245,18 +253,18 @@ const handleSignUp = async (resetTween) => {
   formData.append('email', refArray[0].value.value)
   formData.append('username', refArray[1].value.value)
   formData.append('password', refArray[2].value.value)
+  responseData.value.data = Object.fromEntries(formData)
   //发送数据等待返回
   const res = await signup(formData)
   // console.log('handleSignUp:res', res)
   // 将formData数据存入responseData对象
-  responseData.value.data = Object.fromEntries(formData)
   resetTween(res, 0.5)
 }
 const handleLogIn = async (resetTween) => {
   const formData = new FormData()
   formData.append('username', refArray[0].value.value)
   formData.append('password', refArray[1].value.value)
-  formData.append('verifyCode', refArray[2].value.value)
+  formData.append('captcha', refArray[2].value.value)
   const res = await login(formData)
   // console.log('handleLogIn:res', res)
   resetTween(res, 0.5)
@@ -265,23 +273,25 @@ const handleLogIn = async (resetTween) => {
 // 异步请求
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
-import { loginAPI, signUpAPI } from '@/api/user'
+import { loginAPI, signUpAPI, getCaptchaAPI } from '@/api/user'
 import { ElMessage } from 'element-plus'
 const router = useRouter()
 const userStore = useUserStore()
 const login = async (data) => {
+  const captcha = await getCaptchaAPI().then((res) => res.data.captchaCode)
+  console.log(captcha)
   return await loginAPI(data)
     .then((res) => {
       if (res.data.code) {
         userStore.setToken(res.token)
         ElMessage({ type: 'success', message: 'Login successfully' })
-        return res.data.code
       } else {
         ElMessage({
           type: 'warning',
           message: res.data.msg || 'Incorrect username or password'
         })
       }
+      return res.data
     })
     .catch((err) => {
       ElMessage.error(err.data.msg)
@@ -292,13 +302,13 @@ const signup = async (data) => {
     .then((res) => {
       if (res.data.code) {
         ElMessage({ type: 'success', message: 'Signup successfully' })
-        return res.data.code
       } else {
         ElMessage({
           type: 'warning',
           message: res.data.msg || 'User creation failed'
         })
       }
+      return res.data
     })
     .catch((err) => {
       ElMessage.error(err.data.msg)

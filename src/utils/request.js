@@ -9,7 +9,8 @@ import axios from 'axios'
 
 const instance = axios.create({
   baseURL: '/api',
-  timeout: 100000
+  timeout: 10000,
+  withCredentials: true
 })
 import { useUserStore } from '@/stores'
 import router from '@/router'
