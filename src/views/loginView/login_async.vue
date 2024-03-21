@@ -17,59 +17,59 @@ import {
 import { gsap } from 'gsap'
 const props = defineProps({
   signUp: {
-    type: Array
-    // default: () => [
-    //   {
-    //     id: 'email',
-    //     type: 'email',
-    //     placeholder: 'Your email address',
-    //     spellcheck: 'false',
-    //     autocomplete: 'off',
-    //     regex: '^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$'
-    //   },
-    //   {
-    //     id: 'username',
-    //     type: 'text',
-    //     placeholder: 'Your username',
-    //     spellcheck: 'false',
-    //     autocomplete: 'off',
-    //     regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
-    //   },
-    //   {
-    //     id: 'password',
-    //     type: 'password',
-    //     placeholder: 'Password (More than 5 characters)',
-    //     autocomplete: 'off',
-    //     regex: '^\\S{6,}$'
-    //   }
-    // ]
+    type: Array,
+    default: () => [
+      {
+        id: 'email',
+        type: 'email',
+        placeholder: 'Your email address',
+        spellcheck: 'false',
+        autocomplete: 'off',
+        regex: '^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$'
+      },
+      {
+        id: 'username',
+        type: 'text',
+        placeholder: 'Your username',
+        spellcheck: 'false',
+        autocomplete: 'off',
+        regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
+      },
+      {
+        id: 'password',
+        type: 'password',
+        placeholder: 'Password (More than 5 characters)',
+        autocomplete: 'off',
+        regex: '^\\S{6,}$'
+      }
+    ]
   },
   logIn: {
-    type: Array
-    // default: () => [
-    //   {
-    //     id: 'username',
-    //     type: 'text',
-    //     placeholder: 'Your username',
-    //     spellcheck: 'false',
-    //     autocomplete: 'off',
-    //     regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
-    //   },
-    //   {
-    //     id: 'password',
-    //     type: 'password',
-    //     placeholder: 'Password ',
-    //     autocomplete: 'off',
-    //     regex: '^\\S{6,}$'
-    //   },
-    //   {
-    //     id: 'captcha',
-    //     type: 'text',
-    //     placeholder: 'captcha (Only 4 characters)',
-    //     autocomplete: 'off',
-    //     regex: '^\\S{4}$'
-    //   }
-    // ]
+    type: Array,
+    default: () => [
+      {
+        id: 'username',
+        type: 'text',
+        placeholder: 'Your username',
+        spellcheck: 'false',
+        autocomplete: 'off',
+        regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
+      },
+      {
+        id: 'password',
+        type: 'password',
+        placeholder: 'Password ',
+        autocomplete: 'off',
+        regex: '^\\S{6,}$'
+      },
+      {
+        id: 'captcha',
+        type: 'text',
+        placeholder: 'captcha (Only 4 characters)',
+        autocomplete: 'off',
+        regex: '^\\S{4}$'
+      }
+    ]
   }
 })
 
@@ -119,7 +119,7 @@ const handleHover = (el) => {
     }, 410)
 }
 const handleOut = () => {
-  console.log(responseData.value.data)
+  // console.log(responseData.value.data)
   isHover.value =
     stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
   if (responseData.value?.data && !isFinished.value) {
@@ -168,13 +168,12 @@ const responseData = ref({})
 const reset = (change = true, toStep = '1') => {
   load.value = true
   progress.value.parentElement.classList.remove('hide-form')
-  console.log(toStep)
+  // console.log(toStep)
   // 判断toStep是否包含username
   stepNumber.value =
     toStep === '1'
       ? 1
       : inputArray.value.findIndex((el) => toStep.includes(el.id)) + 1
-
   if (change) {
     inputArray.value = props.logIn
     isSignUp.value = false
@@ -210,6 +209,12 @@ const handleAnimation = () => {
     duration: 0.5,
     ease: 'power1.Out',
     paused: true,
+    onStart: () => {
+      gsap.set('#acc-success', {
+        yPercent: 300,
+        opacity: 0
+      })
+    },
     onComplete: () => {
       load.value = false
       gsap.set('.loading', {
@@ -233,13 +238,7 @@ const handleAnimation = () => {
               yPercent: 0,
               opacity: 1,
               duration: 0.5,
-              ease: 'power1.in',
-              onStart: () => {
-                gsap.set('#acc-success', {
-                  yPercent: 300,
-                  opacity: 0
-                })
-              }
+              ease: 'power1.in'
             },
             '>-0.3'
           )
@@ -250,9 +249,9 @@ const handleAnimation = () => {
 }
 const handleSignUp = async (resetTween) => {
   const formData = new FormData()
-  formData.append('email', refArray[0].value.value)
-  formData.append('username', refArray[1].value.value)
-  formData.append('password', refArray[2].value.value)
+  refArray.forEach((item) => {
+    formData.append(item.value.name, item.value.value)
+  })
   responseData.value.data = Object.fromEntries(formData)
   //发送数据等待返回
   const res = await signup(formData)
@@ -262,9 +261,9 @@ const handleSignUp = async (resetTween) => {
 }
 const handleLogIn = async (resetTween) => {
   const formData = new FormData()
-  formData.append('username', refArray[0].value.value)
-  formData.append('password', refArray[1].value.value)
-  formData.append('captcha', refArray[2].value.value)
+  refArray.forEach((item) => {
+    formData.append(item.value.name, item.value.value)
+  })
   const res = await login(formData)
   // console.log('handleLogIn:res', res)
   resetTween(res, 0.5)
@@ -277,13 +276,13 @@ import { loginAPI, signUpAPI, getCaptchaAPI } from '@/api/user'
 import { ElMessage } from 'element-plus'
 const router = useRouter()
 const userStore = useUserStore()
-const login = async (data) => {
-  const captcha = await getCaptchaAPI().then((res) => res.data.captchaCode)
+const login = async (formData) => {
+  const captcha = await getCaptchaAPI().then((res) => res.data.data.captchaCode)
   console.log(captcha)
-  return await loginAPI(data)
+  return await loginAPI(formData)
     .then((res) => {
       if (res.data.code) {
-        userStore.setToken(res.token)
+        userStore.setToken(res.data.data.token)
         ElMessage({ type: 'success', message: 'Login successfully' })
       } else {
         ElMessage({
@@ -297,8 +296,8 @@ const login = async (data) => {
       ElMessage.error(err.data.msg)
     })
 }
-const signup = async (data) => {
-  return await signUpAPI(data)
+const signup = async (formData) => {
+  return await signUpAPI(formData)
     .then((res) => {
       if (res.data.code) {
         ElMessage({ type: 'success', message: 'Signup successfully' })
@@ -560,7 +559,7 @@ input {
   width: 100%;
   color: #fff;
   text-align: center;
-  padding: 16px 0;
+  padding: 1.6rem 0;
 }
 
 #working {
@@ -602,7 +601,7 @@ input {
 #init-login {
   font-size: 1.4rem;
   line-height: 1;
-  padding: 6px 10px 8px 10px;
+  padding: 0.6rem 1rem 0.8rem 1rem;
   cursor: pointer;
   border-radius: 2rem;
   background-color: #7d7d7d;

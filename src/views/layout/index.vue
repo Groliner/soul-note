@@ -1,26 +1,9 @@
 <template>
-  <div
-    @click="
-      () => {
-        ElMessage({
-          type: 'warning',
-          message: 'Please login first',
-          duration: 0
-        })
-      }
-    "
-  >
-    layout-index
+  <div class="grolin">
+    <grolin :pretty="false" width="2rem" color="orange" />
+    <p style="width: 2rem">grolin</p>
   </div>
 </template>
 
-<script setup>
-import { ElMessage } from 'element-plus'
-</script>
-<style lang="scss" scoped>
-div {
-  width: 100px;
-  height: 100px;
-  background-color: aqua;
-}
-</style>
+<script setup></script>
+<style lang="scss" scoped></style>

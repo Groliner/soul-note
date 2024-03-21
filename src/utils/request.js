@@ -39,7 +39,7 @@ instance.interceptors.response.use(
     return response
   },
   (error) => {
-    ElMessage.error(error.message || '未知错误')
+    // ElMessage.error(error.message || '未知错误')
     if (error.response?.status === 401) {
       const userStore = useUserStore()
       userStore.logout()

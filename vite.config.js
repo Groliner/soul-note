@@ -25,10 +25,12 @@ export default defineConfig({
   ],
   base: '/deepSouls',
   server: {
+    port: 5173,
+    host: '0.0.0.0',
     proxy: {
       '/api': {
         // '/api'是代理标识，用于告诉node，url前面是/api的就是使用代理的
-        target: 'http://192.168.244.208:12345', //目标地址，一般是指后台服务器地址
+        target: 'http://192.168.9.208:12345', //目标地址，一般是指后台服务器地址
         changeOrigin: true, //是否跨域
         rewrite: (path) => path.replace(/^\/api/, '') //重写路径，去掉路径中的/api
       }
@@ -44,7 +46,7 @@ export default defineConfig({
       // 这里配置 mixin.scss 混合文件的全局引入
       scss: {
         additionalData: `
-        @use "@/assets/styles/elementPlugin.scss" as *;
+        @use "@/assets/styles/element/index.scss" as *;
         @use "@/assets/styles/var.scss" as *;
         @use "@/assets/styles/mixin.scss" as *;
         `

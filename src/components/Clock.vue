@@ -7,6 +7,21 @@ showtime : 是否显示时间 (props)
 import { gsap } from 'gsap'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Draggable } from 'gsap/Draggable'
+const props = defineProps({
+  showtime: {
+    type: Boolean,
+    default: true
+  },
+  seconds_color: {
+    type: String,
+    default: 'var(--primary)'
+  },
+  point_color: {
+    type: String,
+    default: 'var(--primary)'
+  }
+})
+
 gsap.registerPlugin(Draggable)
 /*  clock */
 const hours = ref(null)
@@ -54,34 +69,30 @@ onMounted(() => {
     clearInterval(calibratePointer)
     clearInterval(updateTime)
   })
-  Draggable.create(['.showtime', '.clock'], {
+  Draggable.create(['.showtime', '.inner_clock'], {
     type: 'x,y',
     bounds: 'html'
   })
 })
-const props = defineProps({
-  showtime: {
-    type: Boolean,
-    default: true
-  }
-})
 </script>
 <template>
-  <div class="showtime" v-show="props.showtime">
-    {{ time }}
-  </div>
-  <div class="clock">
-    <div class="hand hours" ref="hours"></div>
-    <div class="hand minutes" ref="minutes"></div>
-    <div class="hand seconds" ref="seconds"></div>
-    <div class="point"></div>
-    <div class="marker">
-      <span
-        v-for="i in 4"
-        :class="`marker__${i}`"
-        :key="i"
-        :style="`transform: rotateZ(${90 * (i - 1)}deg)`"
-      ></span>
+  <div>
+    <div class="showtime" v-if="props.showtime">
+      {{ time }}
+    </div>
+    <div class="inner_clock">
+      <div class="hand hours" ref="hours"></div>
+      <div class="hand minutes" ref="minutes"></div>
+      <div class="hand seconds" ref="seconds"></div>
+      <div class="point"></div>
+      <div class="marker">
+        <span
+          v-for="i in 4"
+          :class="`marker__${i}`"
+          :key="i"
+          :style="`transform: rotateZ(${90 * (i - 1)}deg)`"
+        ></span>
+      </div>
     </div>
   </div>
 </template>
@@ -99,7 +110,7 @@ const props = defineProps({
   height: 2rem;
 }
 /*  CLOCK  */
-.clock {
+.inner_clock {
   width: 12rem;
   height: 12rem;
   box-shadow: $shadow;
@@ -131,14 +142,14 @@ const props = defineProps({
   .seconds {
     width: 0.2rem;
     height: 5.2rem;
-    background: var(--primary);
+    background: v-bind('props.seconds_color');
   }
   .point {
     position: absolute;
     width: 0.8rem;
     height: 0.8rem;
     border-radius: 50%;
-    background: var(--primary);
+    background: v-bind('props.point_color');
     z-index: 300;
   }
 
