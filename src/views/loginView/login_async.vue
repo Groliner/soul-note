@@ -293,7 +293,7 @@ const login = async (formData) => {
       return res.data
     })
     .catch((err) => {
-      ElMessage.error(err.data.msg)
+      ElMessage.error(err.data?.msg || err.data.message)
     })
 }
 const signup = async (formData) => {
@@ -310,7 +310,7 @@ const signup = async (formData) => {
       return res.data
     })
     .catch((err) => {
-      ElMessage.error(err.data.msg)
+      ElMessage.error(err.data?.msg || err.data.message)
     })
 }
 </script>

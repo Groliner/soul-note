@@ -10,9 +10,15 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/home',
-      name: 'home',
-      component: () => import('@/views/home.vue')
+      path: '/',
+      component: () => import('@/views/layout/index.vue'),
+      children: [
+        {
+          path: 'home',
+          name: 'home',
+          component: () => import('@/views/homeView/index.vue')
+        }
+      ]
     },
     {
       path: '/test',
@@ -57,6 +63,16 @@ const router = createRouter({
           path: 'flip',
           name: 'flip',
           component: () => import('@/components/Flip.vue')
+        },
+        {
+          path: 'search',
+          name: 'search',
+          component: () => import('@/components/Search.vue')
+        },
+        {
+          path: 'popup',
+          name: 'popup',
+          component: () => import('@/components/Popup.vue')
         }
       ]
     },

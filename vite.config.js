@@ -49,6 +49,7 @@ export default defineConfig({
         @use "@/assets/styles/element/index.scss" as *;
         @use "@/assets/styles/var.scss" as *;
         @use "@/assets/styles/mixin.scss" as *;
+        @use "@/assets/styles/fonts.scss" as *;
         `
       }
     }

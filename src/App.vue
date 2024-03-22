@@ -6,9 +6,11 @@
 -->
 <script setup>
 import zh from 'element-plus/es/locale/lang/zh-cn.mjs'
+import { ref } from 'vue'
+const pop = ref(false)
 </script>
 <template>
-  <div>
+  <div @click="pop = true">
     <el-config-provider :locale="zh">
       <!-- 路由出口 -->
       <router-view v-slot="{ Component }">
@@ -17,12 +19,21 @@ import zh from 'element-plus/es/locale/lang/zh-cn.mjs'
         </transition>
       </router-view>
     </el-config-provider>
+    <Teleport to="body">
+      <PopupComponent
+        :open="pop"
+        @close="pop = false"
+        @confirm="console.log('you agree')"
+        @refuse="console.log('you refuse')"
+        ><template #content>没有什么东西, 点 × 关闭</template></PopupComponent
+      ></Teleport
+    >
   </div>
 </template>
 <style lang="scss">
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.5s ease;
+  transition: opacity 0.77s cubic-bezier(0.5, 1, 0.89, 1);
 }
 
 .fade-enter-from,

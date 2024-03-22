@@ -1,13 +1,11 @@
-<script setup>
-import { RouterView } from 'vue-router'
-</script>
+<script setup></script>
 <template>
-  <div class="backImg">
+  <div class="back">
     <RouterView />
   </div>
 </template>
 <style lang="scss" scoped>
-.backImg {
+.back {
   width: 100vw;
   height: 100vh;
   // background-image: url('../assets/images/loading.webp');
