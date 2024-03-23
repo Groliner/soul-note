@@ -33,9 +33,13 @@ const pop = ref(false)
 <style lang="scss">
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.77s cubic-bezier(0.5, 1, 0.89, 1);
+  transition: all 0.78s ease-in;
+  width: 100%;
 }
-
+.fade-leave-active {
+  transition: all 0.66s ease-out;
+  position: absolute;
+}
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;

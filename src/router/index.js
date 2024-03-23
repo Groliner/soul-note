@@ -17,6 +17,26 @@ const router = createRouter({
           path: 'home',
           name: 'home',
           component: () => import('@/views/homeView/index.vue')
+        },
+        {
+          path: 'account',
+          name: 'account',
+          component: () => import('@/views/accountView/index.vue')
+        },
+        {
+          path: 'diary',
+          name: 'diary',
+          component: () => import('@/views/diaryView/index.vue')
+        },
+        {
+          path: 'library',
+          name: 'library',
+          component: () => import('@/views/libraryView/index.vue')
+        },
+        {
+          path: 'topic',
+          name: 'topic',
+          component: () => import('@/views/topicView/index.vue')
         }
       ]
     },
@@ -73,6 +93,11 @@ const router = createRouter({
           path: 'popup',
           name: 'popup',
           component: () => import('@/components/Popup.vue')
+        },
+        {
+          path: 'note',
+          name: 'note',
+          component: () => import('@/components/Note.vue')
         }
       ]
     },
@@ -81,14 +106,13 @@ const router = createRouter({
       name: 'login',
       component: () => import('@/views/loginView/index.vue')
     },
-
     {
       path: '/:pathMatch(.*)*',
       name: '404 not found',
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('@/views/404/index.vue')
+      component: () => import('@/views/layout/404/index.vue')
     }
   ],
   //路由行为

@@ -8,6 +8,7 @@ import grolin from './SvgModules/Grolin.vue'
 import wolong from './SvgModules/Wolong.vue'
 import grozhi from './SvgModules/Grozhi.vue'
 import popup from './Popup.vue'
+import notePage from './Note.vue'
 export const componentPlugin = {
   install(app) {
     app.component('ClockComponent', clock)
@@ -19,5 +20,6 @@ export const componentPlugin = {
     app.component('wolong', wolong)
     app.component('grozhi', grozhi)
     app.component('PopupComponent', popup)
+    app.component('notePage', notePage)
   }
 }

@@ -1,10 +1,5 @@
 <template>
-  <div class="container">123</div>
+  <div class="container">
+    <section>主页-----home</section>
+  </div>
 </template>
-<style lang="scss" scoped>
-.container {
-  width: 100%;
-  min-height: 100vh;
-  border: 5px solid black;
-}
-</style>

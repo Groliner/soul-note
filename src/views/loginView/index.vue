@@ -19,7 +19,7 @@ onBeforeMount(async () => {
 })
 </script>
 <template>
-  <div>
+  <div class="container">
     <div class="backImg"></div>
     <login v-bind="template" />
     <transition name="fade">
@@ -33,8 +33,12 @@ onBeforeMount(async () => {
   </div>
 </template>
 <style lang="scss" scoped>
+.container {
+}
 .backImg {
-  width: 100vw;
+  border: 2px solid black;
+  width: 100%;
+  padding: 2px;
   height: 100vh;
   background-image: url('../../assets/images/loading.webp');
   background-size: cover;
