@@ -7,6 +7,8 @@
   margin: 0;
 }
 html {
+  overflow-y: scroll;
+  overflow-x: hidden;
   background: var(--greyLight-1);
   font-family: "PatrickHand", "MaShanZheng", sans-serif;
 
@@ -32,8 +34,6 @@ html {
 }
 body {
   box-sizing: border-box;
-  overflow-y: scroll;
-  overflow-x: hidden;
 }
 
 /* 自定义滚动条的整体部分 */

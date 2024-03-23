@@ -1,4 +1,6 @@
-<script setup></script>
+<script setup>
+import logo from './logo.vue'
+</script>
 <template>
   <div class="container">
     <div class="wave-container">
@@ -40,10 +42,7 @@
       </svg>
     </div>
     <div class="foot-container">
-      <div class="logo">
-        <div class="img"></div>
-        <grolin class="grolin"></grolin>
-      </div>
+      <logo class="logo" />
       <div class="foot">
         <h1>
           Soul-Note<small style="color: #545454">.<sub>all</sub></small>
@@ -119,34 +118,19 @@
     }
   }
 }
-
 .foot-container {
   background-color: var(--c-yellow-300);
   position: relative;
   .logo {
-    width: auto;
-    height: 31%;
+    width: 22%;
+    height: 90%;
     position: absolute;
-    left: 10%;
-    top: 50%;
-    transform: translate(0, -50%);
-    display: flex;
-    .img {
-      background-image: url(../../assets/images/logo.png);
-      background-size: contain;
-      background-repeat: no-repeat;
-      height: 100%;
-      width: 56%;
-      filter: drop-shadow(2px 4px 6px var(--c-yellow-600));
-    }
-    .grolin {
-      margin-left: 1rem;
-      opacity: 0.05;
-      transition: opacity 0.5s ease;
-      &:hover {
-        opacity: 0.5;
-      }
-    }
+    bottom: 0;
+    left: 3%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 1rem;
   }
   .foot {
     text-align: center;

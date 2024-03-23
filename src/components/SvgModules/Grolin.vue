@@ -21,7 +21,7 @@ const props = defineProps({
       x="204.8349996948242"
       height="70.74000549316406"
       width="165.3300018310547"
-      style="width: 100%; height: 100%"
+      style="width: auto; height: 100%"
     >
       <g data-horizontal-grow="center" :style="`fill: ${props.color}`">
         <path
@@ -38,7 +38,7 @@ const props = defineProps({
       x="204.1999954223633"
       height="51.68000030517578"
       width="166.59999084472656"
-      :style="`width:${props.width};height:${props.height}`"
+      style="width: auto; height: 100%"
     >
       <g data-horizontal-grow="center" :style="`fill: ${props.color}`">
         <path

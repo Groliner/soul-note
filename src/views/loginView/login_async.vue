@@ -277,8 +277,12 @@ import { ElMessage } from 'element-plus'
 const router = useRouter()
 const userStore = useUserStore()
 const login = async (formData) => {
-  const captcha = await getCaptchaAPI().then((res) => res.data.data.captchaCode)
-  console.log(captcha)
+  const captcha = await getCaptchaAPI()
+    .then((res) => res.data.data.captchaCode)
+    .catch((err) => {
+      ElMessage.error(err.data?.msg || err.message)
+    })
+  // console.log(captcha)
   return await loginAPI(formData)
     .then((res) => {
       if (res.data.code) {
@@ -293,7 +297,7 @@ const login = async (formData) => {
       return res.data
     })
     .catch((err) => {
-      ElMessage.error(err.data?.msg || err.data.message)
+      ElMessage.error(err.data?.msg || err.message)
     })
 }
 const signup = async (formData) => {

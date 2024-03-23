@@ -5,6 +5,8 @@ import radioPlayer from './RadioPlayer.vue'
 import chip from './Chip.vue'
 import segmentedControl from './SegmentedControl.vue'
 import grolin from './SvgModules/Grolin.vue'
+import wolong from './SvgModules/Wolong.vue'
+import grozhi from './SvgModules/Grozhi.vue'
 import popup from './Popup.vue'
 export const componentPlugin = {
   install(app) {
@@ -14,6 +16,8 @@ export const componentPlugin = {
     app.component('ChipComponent', chip)
     app.component('SegmentedControlComponent', segmentedControl)
     app.component('grolin', grolin)
+    app.component('wolong', wolong)
+    app.component('grozhi', grozhi)
     app.component('PopupComponent', popup)
   }
 }

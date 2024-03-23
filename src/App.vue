@@ -10,7 +10,7 @@ import { ref } from 'vue'
 const pop = ref(false)
 </script>
 <template>
-  <div @click="pop = true">
+  <div>
     <el-config-provider :locale="zh">
       <!-- 路由出口 -->
       <router-view v-slot="{ Component }">
