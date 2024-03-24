@@ -13,7 +13,11 @@ watch(show, (newVal, oldVal) => {
       display: 'block',
       ease: 'Power2.easeInOut'
     })
-    gsap.fromTo('.nav', { xPercent: -100 }, { xPercent: 0, display: 'block', ease: 'Expo.easeOut' })
+    gsap.fromTo(
+      '.nav',
+      { xPercent: -100 },
+      { xPercent: 0, display: 'block', ease: 'Expo.easeOut' }
+    )
     gsap.from('.nav li', {
       opacity: 0,
       y: 20,
@@ -72,7 +76,7 @@ const logout = (startTime) => {
 }
 </script>
 <template>
-  <div class="wrapper">
+  <section class="wrapper">
     <div class="header">
       <div class="burger-wrapper" ref="burgerWrapper" @click="show = !show">
         <div class="burger"></div>
@@ -82,22 +86,32 @@ const logout = (startTime) => {
     <div class="nav">
       <ul class="nav_main">
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/home"> Home </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/home">
+            Home
+          </RouterLink>
         </li>
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/diary"> Diary </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/diary">
+            Diary
+          </RouterLink>
         </li>
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/library"> Library </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/library">
+            Library
+          </RouterLink>
         </li>
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/topic"> Topics </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/topic">
+            Topics
+          </RouterLink>
         </li>
       </ul>
       <div class="nav_divider"></div>
       <ul class="nav_sub" v-if="userStore.userInfo.token">
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/account"> Account </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/account">
+            Account
+          </RouterLink>
         </li>
         <li>
           <a class="nav_link" @click="pop = true"> Log out </a>
@@ -105,7 +119,9 @@ const logout = (startTime) => {
       </ul>
       <ul class="nav_sub" v-else>
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/account"> Account </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/account">
+            Account
+          </RouterLink>
         </li>
         <li>
           <a class="nav_link" @click="pop = true"> Log out </a>
@@ -121,11 +137,14 @@ const logout = (startTime) => {
         :open="pop"
         @close="pop = false"
         @confirm="logout(startTime)"
-        @refuse="(startTime) => (pop = Date.now() - startTime > pressTime ? false : pop)"
+        @refuse="
+          (startTime) =>
+            (pop = Date.now() - startTime > pressTime ? false : pop)
+        "
         ><template #content>Are you sure to logout ?</template></PopupComponent
       ></Teleport
     >
-  </div>
+  </section>
 </template>
 <style lang="scss" scoped>
 //  ===== Global Values =====
@@ -153,7 +172,7 @@ a {
   margin-left: -4px;
   margin-top: -1.3rem;
   color: $color-black;
-  z-index: 103;
+  z-index: 303;
   display: flex;
   cursor: pointer;
   align-items: center;
@@ -206,7 +225,7 @@ a {
   width: 23vw;
   min-width: 500px;
   height: 100vh;
-  z-index: 100;
+  z-index: 302;
   box-shadow: 0 30px 80px 0 rgba(97, 45, 45, 0.25);
   display: none;
 
@@ -272,9 +291,8 @@ a {
   background-color: rgba(37, 33, 32, 0.2);
   position: fixed;
   background-color: rgba(224, 221, 209, 0.701961);
-  z-index: 110;
   display: none;
-  z-index: 2;
+  z-index: 301;
   opacity: 0;
 }
 </style>

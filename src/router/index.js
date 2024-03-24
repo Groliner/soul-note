@@ -93,11 +93,6 @@ const router = createRouter({
           path: 'popup',
           name: 'popup',
           component: () => import('@/components/Popup.vue')
-        },
-        {
-          path: 'note',
-          name: 'note',
-          component: () => import('@/components/Note.vue')
         }
       ]
     },

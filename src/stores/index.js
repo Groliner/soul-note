@@ -5,3 +5,4 @@
  * @LastEditTime: 2024-03-11 22:23:21
  */
 export * from './modules/user'
+export * from './modules/diary'

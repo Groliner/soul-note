@@ -6,6 +6,16 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 const tl = gsap.timeline()
+
+const resizeObserver = new ResizeObserver((entries) => {
+  // for (let entry of entries) {
+  //   const { target } = entry
+  //   console.log(target)
+  //   // 这里可以根据目标元素的新尺寸来做一些事情
+  //   // 比如更新ScrollTrigger的配置
+  // }
+  ScrollTrigger.refresh()
+})
 onMounted(() => {
   tl.to('.footer', {
     keyframes: {
@@ -21,9 +31,11 @@ onMounted(() => {
     end: 'bottom bottom',
     scrub: 2.7
   })
+  resizeObserver.observe(document.querySelector('.mapper'))
 })
 onUnmounted(() => {
   clearInterval(updateTime)
+  resizeObserver.disconnect()
 })
 const time = ref({})
 const updateTime = setInterval(() => {
@@ -40,11 +52,15 @@ const updateTime = setInterval(() => {
     <section class="head-mask"></section>
     <section class="timer">
       <span class="timer__left"
-        >{{ time.hour || '--' }}:{{ time.minute || '--' }}&nbsp;&shortmid;&nbsp;</span
+        >{{ time.hour || '--' }}:{{
+          time.minute || '--'
+        }}&nbsp;&shortmid;&nbsp;</span
       >
-      <span class="timer__right">{{ time.month || '--' }}/{{ time.day || '--' }}</span>
+      <span class="timer__right"
+        >{{ time.month || '--' }}/{{ time.day || '--' }}</span
+      >
     </section>
-    <leftNav />
+    <leftNav class="_nav" />
     <section class="main">
       <router-view v-slot="{ Component }">
         <transition name="fade">
@@ -63,7 +79,7 @@ const updateTime = setInterval(() => {
   .head-mask {
     position: fixed;
     width: calc(100% - 10px);
-    height: 20px;
+    height: 70px;
     top: 0;
     border-top: 5px solid black;
     background-color: var(--greyLight-1);

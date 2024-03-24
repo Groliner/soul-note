@@ -1,28 +1,64 @@
 <script setup>
-import { ref, watchEffect } from 'vue'
-import { useUserStore } from '@/stores'
+import { watch, ref } from 'vue'
+import notePage from './note.vue'
+import pagination from './pagination.vue'
+import { useDiaryStore, useUserStore } from '@/stores'
 const userStore = useUserStore()
+const userDiaryInfo = ref(userStore.userInfo.diary)
 
-const diary = ref({
-  title: userStore.diary[userStore.page]?.title || 'Diary',
-  content: userStore.diary[userStore.page]?.content || '',
-  height: 'auto'
-})
-watchEffect(() => {
-  userStore.updateDiary(diary.value)
-})
+const diaryStore = useDiaryStore()
+const diary = diaryStore.getDiary(userDiaryInfo.value.last_read_diary_id)
+const page = ref(
+  diaryStore.getPage(
+    userDiaryInfo.value.last_read_diary_id,
+    userDiaryInfo.value.last_read_page
+  )
+)
+
+watch(
+  userDiaryInfo,
+  (newValue) => {
+    page.value = diaryStore.getPage(
+      newValue.last_read_diary_id,
+      newValue.last_read_page
+    )
+  },
+  { deep: true }
+)
 </script>
 <template>
-  <div class="container">
-    <title>--{{ diary.title }}--</title>
-    <section :id="diary.title">
-      <!--
-        页面resize会产生滚动条
-        注意媒体查询,对每一行底部横线的调节,消除位置异常
-      
-      -->
-      <notePage v-model:content="diary.content" v-model:height="diary.height"</notePage>
-    </section>
+  <div class="container_note">
+    <h1>--{{ diary.title }}</h1>
+    <article :id="page.title">
+      <h2>--{{ page.title }}--</h2>
+      <notePage
+        v-model:context="page.context"
+        v-model:content="page.content"
+        v-model:page="page.page"
+      />
+    </article>
+    <pagination
+      class="pagination"
+      :total="diary.pages"
+      v-model:page="userDiaryInfo.last_read_page"
+    />
   </div>
 </template>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.container_note {
+  padding-bottom: 9.3rem;
+}
+h1 {
+  font-size: 3rem;
+}
+article {
+  margin: 0 auto;
+  width: 90%;
+  h2 {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+</style>

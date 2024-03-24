@@ -1,32 +1,39 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
+import { useDiaryStore } from './diary'
+const defaultUserInfo = {
+  token: '',
+  diary: {
+    last_read_diary_id: 'diary_1',
+    last_read_page: 1
+  }
+}
 export const useUserStore = defineStore(
   'user',
   () => {
     // 存储用户信息
-    const userInfo = ref({})
-    //
+
+    const userInfo = ref(defaultUserInfo)
+    const diaryStore = useDiaryStore()
+    // 清空用户关联信息
     const logout = () => {
-      userInfo.value = {}
-      diary.value = []
+      userInfo.value = defaultUserInfo
+      diaryStore.setDiary()
+      diaryStore.setPages()
     }
     // 设置token
     const setToken = (token) => {
       userInfo.value.token = token
     }
-    const diary = ref([])
-    const updateDiary = (diaryData) => {
-      diary.value[page.value] = diaryData
+    const setReadPage = (page) => {
+      userInfo.value.diary.last_read_page = page
     }
-    const page = ref(0)
+
     return {
       userInfo,
-      diary,
-      page,
       setToken,
-      logout,
-      updateDiary
+      setReadPage,
+      logout
     }
   },
   {

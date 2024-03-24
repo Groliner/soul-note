@@ -12,7 +12,7 @@ let startTime = 0
 </script>
 <template>
   <Transition name="popup">
-    <div v-if="open" style="position: fixed; top: 0; z-index: 100">
+    <div v-if="open" style="position: fixed; top: 0; z-index: 600">
       <div class="mask"></div>
 
       <div class="modal">
@@ -54,7 +54,14 @@ let startTime = 0
       #ffd966 75%,
       #ffd966
     ),
-    linear-gradient(-45deg, #ffd966 25%, transparent 25%, transparent 75%, #ffd966 75%, #ffd966);
+    linear-gradient(
+      -45deg,
+      #ffd966 25%,
+      transparent 25%,
+      transparent 75%,
+      #ffd966 75%,
+      #ffd966
+    );
   background-size: 60px 60px;
   background-position: 0 0;
   animation: slide 4s infinite linear;
