@@ -1,10 +1,24 @@
 <script setup>
+/*
+日记本- 页组件
+实现日记本页的编辑功能
+crtl + z 撤销
+crtl + y 重做
+tab 插入9空格作为新段落的段首缩进
+diaryContext: 上下文属性(models)
+diaryContent: 内容属性(models)
+page: 当前页数(models)
+TODO
+- 优化撤销重做功能
+目前当使用撤回或重做,光标的撤销因为undoStack中的selectionStart并没有去实现(selectionStart===selectionEnd),
+所以光标会返回至上一个stack的selectionEnd
+*/
 import { nextTick, watch } from 'vue'
 import gsap from 'gsap'
 import { ScrollToPlugin } from 'gsap/all'
-import { ref, onUpdated, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 gsap.registerPlugin(ScrollToPlugin)
-gsap.defaults({ duration: 0.3 })
+gsap.defaults({ duration: 0.37 })
 const diaryContext = defineModel('context', {
   type: Object,
   required: true
@@ -25,14 +39,25 @@ const pretty = () => {
       autoKill: false
     }
   })
+  gsap.fromTo(
+    textareaRef.value,
+    { opacity: 0.33 },
+    {
+      opacity: 1,
+      duration: 1,
+      ease: 'power2.in'
+    }
+  )
   textareaRef.value.style.height = diaryContext.value.height
   undoStack.value = [
     {
       text: diaryContent.value,
       selectionStart: diaryContext.value.selectionStart,
-      selectionEnd: diaryContext.value.selectionEnd
+      selectionEnd: diaryContext.value.selectionEnd,
+      scrollY: diaryContext.value.scrollY
     }
   ]
+  currentIndex.value = 0
 }
 onMounted(() => {
   pretty()
@@ -41,7 +66,7 @@ watch(page, () => {
   pretty()
 })
 // 自动扩展高度以适应内容
-function autoExpand(event) {
+function autoExpand(event, scroll_distance = -1) {
   const textarea = event.target
   const y = window.scrollY
   // 先重置高度以确保能够减少高度,注意这个操作会引发html重绘,为了防止滚动条跳动,我们先记录滚动位置
@@ -49,28 +74,42 @@ function autoExpand(event) {
   // 然后设置为scrollHeight以适应内容
   textarea.style.height = textarea.scrollHeight + 'px'
   window.scrollTo(0, y)
+
   nextTick(() => {
-    // 检查是否需要滚动以保持视线
-    const bottomPosition = textarea.getBoundingClientRect().bottom
-    const viewBottom = bottomPosition + window.innerHeight * 0.29
-    // console.log(bottomPosition, viewBottom, window.innerHeight, window.scrollY)
-    if (bottomPosition + 21 < window.innerHeight) {
+    if (scroll_distance === -1) {
+      const bottomPosition = textarea.getBoundingClientRect().bottom
+      if (bottomPosition + 0.21 < window.innerHeight) {
+        const remaining_lines_match = textareaRef.value.value
+          .substring(diaryContext.value.selectionEnd)
+          .match(/\n/g)
+        const remaining_lines = remaining_lines_match
+          ? remaining_lines_match.length
+          : 0
+        // 检查是否需要滚动以保持视线
+        const viewBottom = bottomPosition + window.innerHeight * 0.28
+        scroll_distance =
+          remaining_lines < 5
+            ? window.scrollY + viewBottom - window.innerHeight
+            : -1
+      }
+    }
+    if (scroll_distance > -1) {
       gsap.to(window, {
         scrollTo: {
-          y: window.scrollY + viewBottom - window.innerHeight,
+          y: scroll_distance,
           autoKill: false
         }
       })
     }
-    diaryContext.value.height = textarea.style.height
-    diaryContext.value.scrollY = window.scrollY
   })
+  diaryContext.value.height = textarea.style.height
 }
 const undoStack = ref([
   {
     text: diaryContent.value,
     selectionStart: diaryContext.value.selectionStart,
-    selectionEnd: diaryContext.value.selectionEnd
+    selectionEnd: diaryContext.value.selectionEnd,
+    scrollY: diaryContext.value.scrollY
   }
 ])
 const currentIndex = ref(0)
@@ -82,13 +121,13 @@ function handleInput(event) {
     event.target.selectionStart)
   const selectionEnd = (diaryContext.value.selectionEnd =
     event.target.selectionEnd)
-
+  const scrollY = (diaryContext.value.scrollY = window.scrollY)
   if (currentIndex.value < undoStack.value.length - 1) {
     undoStack.value.splice(currentIndex.value + 1)
   }
 
   currentIndex.value++
-  undoStack.value.push({ text, selectionStart, selectionEnd })
+  undoStack.value.push({ text, selectionStart, selectionEnd, scrollY })
   autoExpand(event)
 }
 
@@ -106,6 +145,7 @@ function handleKeyDown(event) {
     event.preventDefault()
     insertTabAndExpand(event)
   }
+  textareaRef.value.focus()
 }
 // 插入9空格作为新段落的段首缩进，并扩展高度
 function insertTabAndExpand(event) {
@@ -129,11 +169,7 @@ function undo(event) {
     const prevState = undoStack.value[currentIndex.value]
     diaryContent.value = prevState.text
     // 恢复光标位置
-    nextTick(() => {
-      event.target.selectionStart = prevState.selectionStart
-      event.target.selectionEnd = prevState.selectionEnd
-      autoExpand(event)
-    })
+    rescueCursor(event, prevState)
   }
 }
 function redo(event) {
@@ -142,12 +178,15 @@ function redo(event) {
     const nextState = undoStack.value[currentIndex.value]
     diaryContent.value = nextState.text
     // 恢复光标位置
-    nextTick(() => {
-      event.target.selectionStart = nextState.selectionStart
-      event.target.selectionEnd = nextState.selectionEnd
-      autoExpand(event)
-    })
+    rescueCursor(event, nextState)
   }
+}
+const rescueCursor = (event, state) => {
+  nextTick(() => {
+    event.target.selectionStart = state.selectionStart
+    event.target.selectionEnd = state.selectionEnd
+    autoExpand(event, state.scrollY)
+  })
 }
 </script>
 <template>
