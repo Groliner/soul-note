@@ -93,6 +93,11 @@ const router = createRouter({
           path: 'popup',
           name: 'popup',
           component: () => import('@/components/Popup.vue')
+        },
+        {
+          path: 'popup2',
+          name: 'popup2',
+          component: () => import('@/views/diaryView/editPop.vue')
         }
       ]
     },

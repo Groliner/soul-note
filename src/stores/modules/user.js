@@ -6,7 +6,7 @@ const defaultUserInfo = {
 }
 const defaultDiary = {
   last_read_diary_id: 'diary_1',
-  last_read_page: 1
+  diaries: ['diary_1', 'diary_2', 'diary_3', 'diary_4']
 }
 export const useUserStore = defineStore(
   'user',

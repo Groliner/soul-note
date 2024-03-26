@@ -1,8 +1,8 @@
 <script setup>
 import { gsap } from 'gsap'
 import { useUserStore } from '@/stores'
-import { ref, watch, onMounted } from 'vue'
-const pressTime = 123
+import { ref, watch, onMounted, inject } from 'vue'
+const pressTime = inject('pressTime')
 const show = ref(false)
 gsap.defaults({ duration: 0.5 })
 // ===== Open Nav =====

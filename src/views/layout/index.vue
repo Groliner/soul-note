@@ -104,7 +104,7 @@ const updateTime = setInterval(() => {
   .main {
     width: 91%;
     margin: 0 auto;
-    margin-top: 5.2%;
+    margin-top: 5rem;
     min-height: 100vh;
     position: relative;
   }

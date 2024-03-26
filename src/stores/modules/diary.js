@@ -4,8 +4,45 @@ import { ref } from 'vue'
 const defaultDiary = [
   {
     diary_id: 'diary_1',
-    title: 'Hello World',
+    title: 'Hello World 1',
+    desc: 'some desc...haha',
+    cover: '/deepSouls/src/assets/images/soul-note/note_1.webp',
+    last_read_page: 1,
     pages: 3,
+    author: 'author',
+    create_time: Date.now(),
+    update_time: Date.now()
+  },
+  {
+    diary_id: 'diary_2',
+    title: 'Hello World 2',
+    desc: 'some desc...haha',
+    cover: '/deepSouls/src/assets/images/soul-note/note_2.webp',
+    author: 'author',
+    last_read_page: 1,
+    pages: 2,
+    create_time: Date.now(),
+    update_time: Date.now()
+  },
+  {
+    diary_id: 'diary_3',
+    title: 'Hello World 3',
+    desc: 'some desc...haha',
+    cover: '/deepSouls/src/assets/images/soul-note/note_3.webp',
+    author: 'author',
+    last_read_page: 1,
+    pages: 2,
+    create_time: Date.now(),
+    update_time: Date.now()
+  },
+  {
+    diary_id: 'diary_4',
+    title: 'Hello World 4',
+    cover: '/deepSouls/src/assets/images/soul-note/note_4.webp',
+    desc: 'some desc...haha',
+    author: 'author',
+    last_read_page: 1,
+    pages: 1,
     create_time: Date.now(),
     update_time: Date.now()
   }
@@ -20,7 +57,8 @@ const defaultPages = [
       selectionStart: 0,
       selectionEnd: 0,
       scrollY: 0,
-      height: '150px'
+      height: '150px',
+      words: 10
     },
     create_time: Date.now(),
     update_time: Date.now()
@@ -34,7 +72,8 @@ const defaultPages = [
       selectionStart: 0,
       selectionEnd: 0,
       scrollY: 0,
-      height: '150px'
+      height: '150px',
+      words: 10
     },
     create_time: Date.now(),
     update_time: Date.now()
@@ -42,13 +81,89 @@ const defaultPages = [
   {
     diary_book_id: 'diary_1',
     page: 3,
-    title: 'Hello World 3',
-    content: 'Hello World',
+    title: 'Hello diary_1 3',
+    content: 'Hello diary_1',
     context: {
       selectionStart: 0,
       selectionEnd: 0,
       scrollY: 0,
-      height: '150px'
+      height: '150px',
+      words: 10
+    },
+    create_time: Date.now(),
+    update_time: Date.now()
+  },
+  {
+    diary_book_id: 'diary_4',
+    page: 1,
+    title: 'Hello diary_4 3',
+    content: 'Hello diary_4',
+    context: {
+      selectionStart: 0,
+      selectionEnd: 0,
+      scrollY: 0,
+      height: '150px',
+      words: 10
+    },
+    create_time: Date.now(),
+    update_time: Date.now()
+  },
+  {
+    diary_book_id: 'diary_2',
+    page: 1,
+    title: 'Hello diary_2 3',
+    content: 'Hello diary_2',
+    context: {
+      selectionStart: 0,
+      selectionEnd: 0,
+      scrollY: 0,
+      height: '150px',
+      words: 10
+    },
+    create_time: Date.now(),
+    update_time: Date.now()
+  },
+  {
+    diary_book_id: 'diary_3',
+    page: 2,
+    title: 'Hello diary_3 3',
+    content: 'Hello diary_3',
+    context: {
+      selectionStart: 0,
+      selectionEnd: 0,
+      scrollY: 0,
+      height: '150px',
+      words: 10
+    },
+    create_time: Date.now(),
+    update_time: Date.now()
+  },
+  {
+    diary_book_id: 'diary_3',
+    page: 1,
+    title: 'Hello diary_3 3',
+    content: 'Hello diary_3',
+    context: {
+      selectionStart: 0,
+      selectionEnd: 0,
+      scrollY: 0,
+      height: '150px',
+      words: 10
+    },
+    create_time: Date.now(),
+    update_time: Date.now()
+  },
+  {
+    diary_book_id: 'diary_2',
+    page: 2,
+    title: 'Hello diary_2 3',
+    content: 'Hello diary_2',
+    context: {
+      selectionStart: 0,
+      selectionEnd: 0,
+      scrollY: 0,
+      height: '150px',
+      words: 10
     },
     create_time: Date.now(),
     update_time: Date.now()
@@ -104,6 +219,11 @@ export const useDiaryStore = defineStore(
         return diaryPages.value[index]
       }
     }
+    const getPages = (diary_book_id) => {
+      return diaryPages.value.filter(
+        (item) => item.diary_book_id === diary_book_id
+      )
+    }
     return {
       diary,
       diaryPages,
@@ -111,6 +231,7 @@ export const useDiaryStore = defineStore(
       setPages,
       getDiary,
       getPage,
+      getPages,
       updateDiaryTitle,
       updatePage
     }

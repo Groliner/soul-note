@@ -6,8 +6,9 @@
 -->
 <script setup>
 import zh from 'element-plus/es/locale/lang/zh-cn.mjs'
-import { ref } from 'vue'
+import { ref, provide } from 'vue'
 const pop = ref(false)
+provide('pressTime', 123)
 </script>
 <template>
   <div>

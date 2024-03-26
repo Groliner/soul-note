@@ -32,3 +32,9 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## z-index
+fixed组件：100
+蒙版：301
+nav:302
+header:303

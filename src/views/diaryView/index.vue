@@ -1,110 +1,255 @@
 <script setup>
-import { watch, ref } from 'vue'
+import { watchEffect, ref, nextTick, onMounted, onUnmounted, inject } from 'vue'
 import notePage from './note.vue'
 import pagination from './pagination.vue'
 import { useDiaryStore, useUserStore } from '@/stores'
 import { storeToRefs } from 'pinia'
+import { PhPencilLine } from '@phosphor-icons/vue'
+const pressTime = inject('pressTime')
 const userStore = useUserStore()
 const { user_diary } = storeToRefs(userStore)
 const diaryStore = useDiaryStore()
-const diary = diaryStore.getDiary(user_diary.value.last_read_diary_id)
+const diary = ref(diaryStore.getDiary(user_diary.value.last_read_diary_id))
 const page = ref(
   diaryStore.getPage(
     user_diary.value.last_read_diary_id,
-    user_diary.value.last_read_page
+    diary.value.last_read_page
   )
 )
-
-watch(
-  user_diary,
-  (newValue) => {
-    page.value = diaryStore.getPage(
-      newValue.last_read_diary_id,
-      newValue.last_read_page
-    )
-  },
-  { deep: true }
-)
+watchEffect(() => {
+  diary.value = diaryStore.getDiary(user_diary.value.last_read_diary_id)
+})
+watchEffect(() => {
+  page.value = diaryStore.getPage(
+    user_diary.value.last_read_diary_id,
+    diary.value.last_read_page
+  )
+})
 
 import { gsap } from 'gsap'
-const is_edit_page_title = ref(false)
 const mirror = ref(null)
-const adjustWidth = () => {
-  // 获取镜像span的宽度
-  const mirrorWidth = mirror.value.offsetWidth
-  console.log(mirror.value.offsetWidth)
-  // 根据内容宽度调整input宽度，这里+10是为了让宽度比内容宽一点点
-  gsap.to('.page_title_input', { width: mirrorWidth + 10 })
+const pageTitleInput = ref(null)
+const isEditPageTitle = ref(false)
+onMounted(() => {
+  if (mirror.value) {
+    // 创建一个ResizeObserver来监听尺寸变化
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        if (entry.contentRect.width)
+          // 更新<span>元素的宽度
+          gsap.to(pageTitleInput.value, {
+            width: entry.contentRect.width + 8,
+            ease: 'power4.Out',
+            duration: 0.3
+          })
+      }
+    })
+
+    // 开始观察<span>元素
+    observer.observe(mirror.value)
+
+    // 记得在组件卸载时停止观察
+    onUnmounted(() => {
+      observer.disconnect()
+    })
+  }
+})
+const handleEdit = (m) => {
+  isEditPageTitle.value = m
+  if (!isEditPageTitle.value) return
+  pageTitleInput.value.style.width = mirror.value.offsetWidth + 8 + 'px'
+  // 此处聚焦要延时,否则无法聚焦,但是会引入魔法延迟
+  // setTimeout(() => {
+  //   pageTitleInput.value.focus()
+  // }, 100)
+  //nextTick允许在下一个“tick”执行代码，确保所有的DOM更新都已经完成。完美解决
+  nextTick(() => {
+    pageTitleInput.value.focus()
+  })
 }
+
+//编辑日记本
+const pop = ref(false)
 </script>
 <template>
   <div class="container_note">
-    <h1>--{{ diary.title }}</h1>
-    <article :id="page.title">
-      <h2>
-        <span class="sub__">--</span>
-        <input
-          class="page_title_input"
-          v-show="is_edit_page_title"
-          v-model="page.title"
-          @blur="is_edit_page_title = false"
-          @input="adjustWidth"
-        />
-        <span
-          ref="mirror"
-          v-show="!is_edit_page_title"
-          @click="is_edit_page_title = true"
-          >{{ page.title }}</span
+    <div class="diaryNav">
+      <ul class="diaryNav_main">
+        <li
+          v-for="(item, index) in user_diary.diaries"
+          :key="item"
+          :data-index="index"
         >
-        <span class="sup__">--</span>
+          <a
+            class="nav_link"
+            :class="{
+              active: user_diary.last_read_diary_id === item ? true : false
+            }"
+            @click="user_diary.last_read_diary_id = item"
+            >{{ item }}</a
+          >
+          <ph-pencil-line
+            class="icon_pencil"
+            weight="duotone"
+            @click="pop = true"
+          />
+        </li>
+      </ul>
+    </div>
+    <article>
+      <h2 @mouseenter="handleEdit(true)" :class="{ active: isEditPageTitle }">
+        <p class="sub__">--</p>
+        <input
+          ref="pageTitleInput"
+          v-model="page.title"
+          @blur="handleEdit(false)"
+          :class="{ hidden: !isEditPageTitle }"
+        />
+        <span ref="mirror" :class="{ hidden: isEditPageTitle }">{{
+          page.title || '"Untitled"'
+        }}</span>
+        <p class="sup__">--</p>
       </h2>
 
       <Transition name="fade">
         <notePage
           v-model:context="page.context"
           v-model:content="page.content"
-          v-model:page="page.page"
+          :page="page.page"
+          :diaryId="diary.diary_id"
         />
       </Transition>
     </article>
     <pagination
       class="pagination"
       :total="diary.pages"
-      v-model:page="user_diary.last_read_page"
+      v-model:page="diary.last_read_page"
     />
+    <Teleport to="body">
+      <PopupComponent
+        :open="pop"
+        @close="pop = false"
+        @confirm="console.log(123)"
+        @refuse="
+          (startTime) =>
+            (pop = Date.now() - startTime > pressTime ? false : pop)
+        "
+        ><template #content>tht ?</template></PopupComponent
+      ></Teleport
+    >
   </div>
 </template>
 <style lang="scss" scoped>
 .container_note {
   padding-bottom: 9.3rem;
+  padding-top: 70px;
+  @media screen and (max-width: 1200px) {
+    padding-top: 88px;
+  }
 }
-h1 {
-  font-size: 3rem;
+.diaryNav {
+  will-change: transform;
+  position: fixed;
+  left: 50px;
+
+  ul {
+    color: rgb(68, 68, 68);
+    padding: 0;
+
+    &.diaryNav_main {
+      a {
+        font-size: 1.97rem;
+      }
+    }
+
+    li {
+      margin-bottom: 0.5vw;
+      position: relative;
+      list-style: none;
+    }
+  }
 }
+
+.nav_link {
+  cursor: pointer;
+
+  &:before {
+    content: '';
+    position: absolute;
+    width: 50px;
+    height: 6.6px;
+    background-color: rgb(68, 68, 68);
+    left: -100px;
+    top: 50%;
+    transition: 0.4s;
+  }
+}
+.icon_pencil {
+  position: absolute;
+  right: -1.2em;
+  font-size: 1.4em;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition: 0.3s ease-in;
+  opacity: 0;
+  visibility: hidden;
+
+  &:hover {
+    color: var(--primary-light);
+  }
+}
+
+.diaryNav li .nav_link:hover:before {
+  left: -77px;
+}
+.diaryNav li .nav_link.active:before {
+  left: -66px;
+}
+.diaryNav li .nav_link.active ~ .icon_pencil {
+  opacity: 1;
+  visibility: visible;
+}
+
 article {
   margin: 0 auto;
-  width: 90%;
+  width: 86%;
+
   h2 {
     position: fixed;
     top: 100px;
     left: 50%;
+    width: max-content;
     transform: translateX(-50%);
+    z-index: 100;
     input {
       background-color: transparent;
       outline: none;
       font-family: inherit;
-      font-size: 1.5em;
-      width: fit-content;
+      font-size: inherit;
+      font-weight: inherit;
+      height: 2rem;
     }
-
     span {
-      transition: all 0.3s ease;
+      width: inherit;
+      white-space: pre;
     }
-    &:hover span.sub__ {
-      transform: translateX(-5px);
+    .hidden {
+      visibility: hidden;
+      position: fixed;
     }
-    &:hover span.sup__ {
-      transform: translateX(5px);
+    p.sub__,
+    p.sup__ {
+      transition: transform 0.3s ease;
+      display: inline-block;
+    }
+    &:hover p.sub__,
+    &.active p.sub__ {
+      transform: translateX(-6.6px);
+    }
+    &:hover p.sup__,
+    &.active p.sup__ {
+      transform: translateX(6.6px);
     }
   }
 }

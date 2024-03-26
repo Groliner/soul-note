@@ -7,13 +7,13 @@ crtl + y 重做
 tab 插入9空格作为新段落的段首缩进
 diaryContext: 上下文属性(models)
 diaryContent: 内容属性(models)
-page: 当前页数(models)
+props: 当前页数与diaryId(props)
 TODO
 - 优化撤销重做功能
 目前当使用撤回或重做,光标的撤销因为undoStack中的selectionStart并没有去实现(selectionStart===selectionEnd),
 所以光标会返回至上一个stack的selectionEnd
 */
-import { nextTick, watch } from 'vue'
+import { nextTick, watch, computed } from 'vue'
 import gsap from 'gsap'
 import { ScrollToPlugin } from 'gsap/all'
 import { ref, onMounted } from 'vue'
@@ -27,11 +27,28 @@ const diaryContent = defineModel('content', {
   type: String,
   required: true
 })
-const page = defineModel('page', {
-  type: Number,
-  required: true
+diaryContext.value.words = computed(() => diaryContent.value.length)
+const props = defineProps({
+  diaryId: {
+    type: String,
+    required: true
+  },
+  page: {
+    type: Number,
+    required: true
+  }
 })
 const textareaRef = ref(null)
+let undoStack = [
+  {
+    text: diaryContent.value,
+    selectionStart: diaryContext.value.selectionStart,
+    selectionEnd: diaryContext.value.selectionEnd,
+    scrollY: diaryContext.value.scrollY
+  }
+]
+let currentIndex = 0
+
 const pretty = () => {
   gsap.to(window, {
     scrollTo: {
@@ -41,15 +58,16 @@ const pretty = () => {
   })
   gsap.fromTo(
     textareaRef.value,
-    { opacity: 0.33 },
+    { opacity: 0.42 },
     {
       opacity: 1,
       duration: 1,
-      ease: 'power2.in'
+      ease: 'power2'
     }
   )
   textareaRef.value.style.height = diaryContext.value.height
-  undoStack.value = [
+  diaryContext.value.words = computed(() => diaryContent.value.length)
+  undoStack = [
     {
       text: diaryContent.value,
       selectionStart: diaryContext.value.selectionStart,
@@ -57,14 +75,17 @@ const pretty = () => {
       scrollY: diaryContext.value.scrollY
     }
   ]
-  currentIndex.value = 0
+  currentIndex = 0
 }
 onMounted(() => {
   pretty()
 })
-watch(page, () => {
-  pretty()
-})
+watch(
+  () => [props.diaryId, props.page],
+  () => {
+    pretty()
+  }
+)
 // 自动扩展高度以适应内容
 function autoExpand(event, scroll_distance = -1) {
   const textarea = event.target
@@ -77,21 +98,19 @@ function autoExpand(event, scroll_distance = -1) {
 
   nextTick(() => {
     if (scroll_distance === -1) {
-      const bottomPosition = textarea.getBoundingClientRect().bottom
-      if (bottomPosition + 0.21 < window.innerHeight) {
-        const remaining_lines_match = textareaRef.value.value
-          .substring(diaryContext.value.selectionEnd)
-          .match(/\n/g)
-        const remaining_lines = remaining_lines_match
-          ? remaining_lines_match.length
-          : 0
-        // 检查是否需要滚动以保持视线
-        const viewBottom = bottomPosition + window.innerHeight * 0.28
-        scroll_distance =
-          remaining_lines < 5
-            ? window.scrollY + viewBottom - window.innerHeight
-            : -1
-      }
+      const remaining_lines_match = textareaRef.value.value
+        .substring(diaryContext.value.selectionEnd)
+        .match(/\n/g)
+      const remaining_lines = remaining_lines_match
+        ? remaining_lines_match.length
+        : 0
+      // 检查是否需要滚动以保持视线
+      const viewBottom =
+        textarea.getBoundingClientRect().bottom + window.innerHeight * 0.28
+      scroll_distance =
+        remaining_lines < 5
+          ? window.scrollY + viewBottom - window.innerHeight
+          : -1
     }
     if (scroll_distance > -1) {
       gsap.to(window, {
@@ -104,15 +123,6 @@ function autoExpand(event, scroll_distance = -1) {
   })
   diaryContext.value.height = textarea.style.height
 }
-const undoStack = ref([
-  {
-    text: diaryContent.value,
-    selectionStart: diaryContext.value.selectionStart,
-    selectionEnd: diaryContext.value.selectionEnd,
-    scrollY: diaryContext.value.scrollY
-  }
-])
-const currentIndex = ref(0)
 
 function handleInput(event) {
   if (event.isComposing) return // 处理中文输入法,取消输入法输入时的事件
@@ -122,12 +132,12 @@ function handleInput(event) {
   const selectionEnd = (diaryContext.value.selectionEnd =
     event.target.selectionEnd)
   const scrollY = (diaryContext.value.scrollY = window.scrollY)
-  if (currentIndex.value < undoStack.value.length - 1) {
-    undoStack.value.splice(currentIndex.value + 1)
+  if (currentIndex < undoStack.length - 1) {
+    undoStack.splice(currentIndex + 1)
   }
 
-  currentIndex.value++
-  undoStack.value.push({ text, selectionStart, selectionEnd, scrollY })
+  currentIndex++
+  undoStack.push({ text, selectionStart, selectionEnd, scrollY })
   autoExpand(event)
 }
 
@@ -164,18 +174,18 @@ function insertTabAndExpand(event) {
   })
 }
 function undo(event) {
-  if (currentIndex.value > 0) {
-    currentIndex.value--
-    const prevState = undoStack.value[currentIndex.value]
+  if (currentIndex > 0) {
+    currentIndex--
+    const prevState = undoStack[currentIndex]
     diaryContent.value = prevState.text
     // 恢复光标位置
     rescueCursor(event, prevState)
   }
 }
 function redo(event) {
-  if (currentIndex.value < undoStack.value.length - 1) {
-    currentIndex.value++
-    const nextState = undoStack.value[currentIndex.value]
+  if (currentIndex < undoStack.length - 1) {
+    currentIndex++
+    const nextState = undoStack[currentIndex]
     diaryContent.value = nextState.text
     // 恢复光标位置
     rescueCursor(event, nextState)
@@ -220,6 +230,10 @@ textarea {
   word-wrap: break-word; /* 自动换行 */
   line-height: 2em; /* 调整行高以匹配背景横线 */
   overflow: hidden;
+
+  @media screen and (max-width: 1200px) {
+    padding: 12px;
+  }
 }
 
 /* 用于模拟每个段落开头空两格的样式 */
