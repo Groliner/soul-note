@@ -64,8 +64,7 @@ const router = useRouter()
 import { ElMessage } from 'element-plus'
 // 检查是否登录
 const userStore = useUserStore()
-const logout = (startTime) => {
-  if (Date.now() - startTime < pressTime) return
+const logout = () => {
   if (userStore.userInfo.token) {
     userStore.logout()
     ElMessage.success('Logout successfully')
@@ -136,11 +135,8 @@ const logout = (startTime) => {
       <PopupComponent
         :open="pop"
         @close="pop = false"
-        @confirm="logout(startTime)"
-        @refuse="
-          (startTime) =>
-            (pop = Date.now() - startTime > pressTime ? false : pop)
-        "
+        @confirm="logout"
+        @refuse="pop = false"
         ><template #content>Are you sure to logout ?</template></PopupComponent
       ></Teleport
     >

@@ -45,4 +45,16 @@ provide('pressTime', 123)
 .fade-leave-to {
   opacity: 0;
 }
+
+.popup-enter-from,
+.popup-leave-to {
+  opacity: 0;
+}
+
+.popup-enter-active {
+  transition: opacity 0.77s cubic-bezier(0.5, 1, 0.89, 1);
+}
+.popup-leave-active {
+  transition: opacity 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+}
 </style>

@@ -1,19 +1,73 @@
 <script setup>
+/*
+编辑日记
+删除,编辑,添加,查看日记
+
+*/
 import { gsap } from 'gsap'
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import avatar from '@/assets/images/logo.png'
+import { ref, computed, watch } from 'vue'
 import { formatTime } from '@/composables/formatTime'
-import { useDiaryStore } from '@/stores'
+import { useDiaryStore, useUserStore } from '@/stores'
+const props = defineProps({
+  diaryId: {
+    type: String
+  }
+})
+const open = defineModel('open', {
+  type: Boolean,
+  default: false
+})
+
+const userStore = useUserStore()
 const diaryStore = useDiaryStore()
-const diary = diaryStore.getDiary('diary_1')
-const pages = diaryStore.getPages(diary.diary_id)
-const menu = ref(['Overview', 'Others'])
-const select = ref(menu.value[0])
+const diaryRef = computed(() => diaryStore.getDiary(props.diaryId))
+const diaryPagesRef = computed(() => diaryStore.getPages(props.diaryId))
 const diaryInfo = {
-  author: diary.author,
-  last_read_page: diary.last_read_page,
-  create_time: formatTime(diary.create_time),
-  update_time: formatTime(diary.update_time)
+  author: diaryRef.value.author,
+  last_read_page: diaryRef.value.last_read_page,
+  total_pages: diaryRef.value.pages,
+  create_time: formatTime(diaryRef.value.create_time),
+  update_time: formatTime(diaryRef.value.update_time)
+}
+const diaryPageInfo = computed(() =>
+  diaryPagesRef.value.filter((page) =>
+    page.title.toLowerCase().includes(query.value.toLowerCase())
+  )
+)
+
+const diary = ref({ ...diaryRef.value })
+
+const menu = ref(['Overview', 'Others'])
+const select = ref(0)
+// popup
+import { PhTrash, PhPlusSquare, PhMagnifyingGlass } from '@phosphor-icons/vue'
+watch(open, () => {
+  console.log(props.diaryId)
+  diary.value = { ...diaryRef.value }
+  query.value = ''
+  select.value = 0
+})
+
+const pop = ref(false)
+const message = ref('')
+
+const handleAdd = () => {
+  message.value = 'want to add a new diary?'
+  pop.value = true
+}
+const handleDelete = () => {
+  message.value = 'Are you sure to delete this diary?'
+  pop.value = true
+}
+
+const handleSave = () => {
+  if (diaryStore.updateDiary(diary.value)) {
+    ElMessage.success('save success')
+    open.value = false
+  } else {
+    ElMessage.warning('save failed')
+    open.value = true
+  }
 }
 
 // textarea 动画
@@ -24,76 +78,195 @@ function autoExpand(event) {
   // 然后设置为scrollHeight以适应内容
   textarea.style.height = textarea.scrollHeight + 'px'
 }
+
+// search
+const query = ref('')
+
+// list 动画
+function onBeforeEnter(el) {
+  el.style.opacity = 0
+  el.style.height = 0
+}
+
+function onEnter(el, done) {
+  gsap.to(el, {
+    opacity: 1,
+    height: 'auto',
+    onComplete: done
+  })
+}
+
+function onLeave(el, done) {
+  gsap.to(el, {
+    opacity: 0,
+    height: 0,
+    onComplete: done
+  })
+}
+
+// cover upload
+const coverInput = ref(null)
+
+// 触发文件选择
+const triggerUpload = () => {
+  coverInput.value.click() // 打开文件选择对话框
+  // 使用GSAP添加一些动画，例如按钮点击反馈
+  gsap.to(coverInput.value, {
+    opacity: 0.7,
+    yoyo: true,
+    repeat: 1,
+    duration: 0.5
+  })
+}
+
+// 处理文件选择
+const handleCoverChange = (event) => {
+  const files = event.target.files
+  if (files.length > 0) {
+    // 处理文件上传或预览逻辑
+    console.log('文件已选择，可以进行上传或预览操作。')
+    console.log('文件', files)
+  }
+}
 </script>
 <template>
-  <div class="edit-pop">
-    <header class="header">
-      <div class="header-buttons">
-        <button class="avatar">
-          <img :src="avatar" />
-        </button>
-        <p>grolin</p>
+  <Transition name="popup">
+    <div
+      v-if="open"
+      style="position: fixed; top: 0; z-index: 600; width: 100%; height: 100%"
+    >
+      <div class="mask"></div>
+      <div class="edit-pop">
+        <div
+          class="mirror"
+          :style="`
+          background:url(${diary.cover});
+          background-size: cover;
+          background-position: center;`"
+        ></div>
+        <header class="header">
+          <div class="header-buttons">
+            <button class="avatar" disabled>
+              <img :src="userStore.userInfo.avatar" />
+            </button>
+            <p>grolin</p>
+          </div>
+          <div class="header-title">
+            <ph-plus-square class="add" weight="bold" @click="handleAdd" />
+            <h2>Diary</h2>
+            <ph-trash weight="bold" class="delete" @click="handleDelete" />
+          </div>
+          <div class="header-buttons">
+            <button class="cover" @click="triggerUpload">
+              <img :src="diary.cover" />
+            </button>
+            <input
+              type="file"
+              ref="coverInput"
+              @change="handleCoverChange"
+              style="display: none"
+            />
+          </div>
+        </header>
+        <section class="title">
+          <h3>
+            <flexInput v-model:text="diary.title" placeholder="diary title" />
+          </h3>
+          <p>
+            <textarea
+              v-model="diary.desc"
+              placeholder="diary desc"
+              @input="autoExpand"
+            ></textarea>
+          </p>
+        </section>
+        <section class="search">
+          <div class="search-inner">
+            <button class="search-button">
+              <ph-magnifying-glass class="search_icon" />
+            </button>
+            <input
+              v-model="query"
+              type="text"
+              class="search-input"
+              placeholder="Search Pages"
+            />
+          </div>
+        </section>
+        <nav class="navigation">
+          <a
+            v-for="(item, index) in menu"
+            :key="item"
+            :class="{ 'navigation-item': true, active: index === select }"
+            @click="select = index"
+            >{{ item }}</a
+          >
+        </nav>
+        <section class="profile">
+          <Transition
+            @before-enter="onBeforeEnter"
+            @enter="onEnter"
+            @leave="onLeave"
+          >
+            <TransitionGroup
+              tag="ul"
+              v-show="select === 0"
+              :class="menu[0]"
+              @before-enter="onBeforeEnter"
+              @enter="onEnter"
+              @leave="onLeave"
+            >
+              <li
+                v-for="item in diaryPageInfo"
+                :key="item.title"
+                :data-index="item.page"
+              >
+                <span>{{ item.title }}</span>
+                <span>words:{{ item.context.words }}</span>
+                <span>{{ formatTime(item.create_time) }}</span>
+              </li>
+            </TransitionGroup></Transition
+          >
+          <Transition
+            @before-enter="onBeforeEnter"
+            @enter="onEnter"
+            @leave="onLeave"
+          >
+            <ul v-show="select === 1" :class="menu[1]">
+              <li
+                v-for="(value, key, index) in diaryInfo"
+                :key="key"
+                :data-index="index"
+              >
+                <span>{{ key }}</span>
+                <span>{{ value }}</span>
+              </li>
+            </ul></Transition
+          >
+        </section>
+        <footer class="selection">
+          <button class="selection-item" @click="handleSave">Save</button>
+          <button class="selection-item" @click="open = false">Cancel</button>
+        </footer>
       </div>
-      <div class="header-title">Diary</div>
-      <div class="header-buttons">
-        <button class="cover">
-          <img :src="diary.cover" />
-        </button>
-      </div>
-    </header>
-    <section class="title">
-      <h3>
-        <flexInput v-model:text="diary.title" placeholder="diary title" />
-      </h3>
-      <p>
-        <textarea
-          v-model="diary.desc"
-          placeholder="diary desc"
-          @input="autoExpand"
-        ></textarea>
-      </p>
-    </section>
-    <nav class="navigation">
-      <a
-        v-for="item in menu"
-        :key="item"
-        :class="{ 'navigation-item': true, active: item === select }"
-        @click="select = item"
-        >{{ item }}</a
-      >
-    </nav>
-    <section class="profile">
-      <ul v-show="select === menu[0]">
-        <li v-for="item in pages" :key="item.title" :data-index="item.page">
-          <span>{{ item.title }}</span>
-          <span>words:{{ item.context.words }}</span>
-        </li>
-      </ul>
-      <ul v-show="select === menu[1]">
-        <li
-          v-for="(value, key, index) in diaryInfo"
-          :key="key"
-          :data-index="index"
-        >
-          <span>{{ key }}</span>
-          <span>{{ value }}</span>
-        </li>
-      </ul>
-    </section>
-    <footer class="selection">
-      <button class="selection-item">Save</button>
-      <button class="selection-item">Cancel</button>
-    </footer>
-  </div>
+    </div></Transition
+  >
+  <Teleport to="body">
+    <PopupComponent
+      :open="pop"
+      :mask="false"
+      @close="pop = false"
+      @confirm="console.log('you agree')"
+      @refuse="pop = false"
+      ><template #content>"{{ message }}"</template></PopupComponent
+    ></Teleport
+  >
 </template>
 <style lang="scss" scoped>
 textarea {
+  font-size: inherit;
   width: 100%;
-  background-image: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.1) 1.2px,
-    transparent 1.6px
-  );
+  background-image: linear-gradient(to top, #e68a69 1.2px, #faf5e9 1.6px);
   background-size: 100% 1.4em; /* 调整这里以匹配你的行高 */
   line-height: 1.4em;
   border: none; /* 无边框 */
@@ -119,11 +292,21 @@ img {
 .profile {
   ul {
     padding: 0;
+    &.Overview {
+      max-height: 30vh;
+      overflow-y: auto;
+    }
     li {
       list-style: none;
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 3fr 1fr min-content;
+      justify-content: space-round;
     }
+  }
+  ul:last-child li {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
   }
 }
 
@@ -133,7 +316,7 @@ button {
 }
 
 .edit-pop {
-  width: 460px;
+  width: 43vw;
   border-radius: 25px;
   overflow: hidden;
   padding: 2rem;
@@ -141,10 +324,29 @@ button {
     0 0 0 10px var(--c-gray-300),
     0 0 0 11px var(--c-gray-200);
   background-color: #fff;
-  position: relative;
-  z-index: 1;
-  margin-left: auto;
-  margin-right: auto;
+  @include absCenter;
+  top: 42%;
+  z-index: 302;
+
+  .mirror {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: -1;
+    filter: opacity(0.4) blur(4px);
+  }
+}
+
+.mask {
+  will-change: opacity;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(37, 33, 32, 0.2);
+  position: fixed;
+  background-color: rgba(224, 221, 209, 0.701961);
+  z-index: 301;
 }
 
 .header {
@@ -160,6 +362,37 @@ button {
   font-weight: 600;
   margin-left: auto;
   margin-right: auto;
+  position: relative;
+  user-select: none;
+
+  .delete {
+    position: absolute;
+    right: -100%;
+    top: 0.6rem;
+    font-size: 1.6rem;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--c-red-500);
+    }
+    &:active {
+      color: black;
+    }
+  }
+  .add {
+    position: absolute;
+    left: -100%;
+    top: 0.6rem;
+    font-size: 1.6rem;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--c-green-300);
+    }
+    &:active {
+      color: black;
+    }
+  }
 }
 
 .header-buttons {
@@ -170,15 +403,18 @@ button {
   &:first-child {
     justify-content: flex-start;
   }
+
+  p {
+    font-size: 1.2em;
+  }
 }
 
-.cover,
-.avatar {
+.cover {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 48px;
-  height: 48px;
+  width: 4rem;
+  height: 4rem;
   padding: 0;
   border-radius: 15px;
   overflow: hidden;
@@ -189,22 +425,89 @@ button {
   cursor: pointer;
   &:hover,
   &:focus {
-    transform: translatey(-4px);
-    box-shadow: 0 12px 14px -4px rgba(#000, 0.3);
+    box-shadow: 0 10px 12px -4px rgba(#000, 0.3);
   }
+}
+.avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 4rem;
+  height: 4rem;
+  padding: 0;
+  border-radius: 15px;
+  overflow: hidden;
+  border: 3px solid #fff;
+  transform-origin: center center;
 }
 
 .title {
   margin-top: 1rem;
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
+  h3 {
+    width: 95%;
+    font-size: 1.8rem;
+    font-weight: 500;
   }
 
   p {
-    font-size: 1rem;
+    font-size: 1.5rem;
     color: var(--c-gray-500);
     margin-top: 0.375em;
+  }
+}
+
+.search {
+  position: relative;
+}
+
+.search-inner {
+  display: flex;
+  align-items: center;
+  border: 2px solid var(--c-gray-900);
+  border-radius: 15px;
+  height: 3rem;
+  font-size: 1rem;
+  width: 66%;
+  background-color: #fff;
+  position: relative;
+  margin-top: 1rem;
+}
+
+.search-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px 0 0 15px;
+  border: 0;
+  background-color: var(--c-gray-100);
+  position: relative;
+  height: 100%;
+  border-right: 2px solid var(--c-gray-900);
+  width: 14%;
+  i {
+    font-size: 1.25em;
+  }
+
+  .search_icon {
+    font-size: 1.25em;
+  }
+}
+
+.search-input {
+  border: 0;
+  border-radius: 0 15px 15px 0;
+  height: 100%;
+  background-color: #fff;
+  width: 100%;
+  padding-left: 1em;
+  padding-right: 1em;
+  &:focus {
+    outline: 0;
+  }
+  &::placeholder {
+    font-weight: 600;
+    color: var(--c-gray-900);
+    transition: 0.15s ease;
   }
 }
 
@@ -213,7 +516,7 @@ button {
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--c-gray-900);
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .navigation-item {

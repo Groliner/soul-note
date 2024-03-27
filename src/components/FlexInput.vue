@@ -1,6 +1,6 @@
 <script setup>
 import { gsap } from 'gsap'
-import { watchEffect, ref, nextTick, onMounted, onUnmounted, inject } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 
 const mirror = ref(null)
 const inputRef = ref(null)
@@ -11,8 +11,16 @@ const props = defineProps({
     default: false
   },
   placeholder: {
-    type: String,
+    type: [String, Number],
     default: 'click to edit'
+  },
+  offsetWidth: {
+    type: Number,
+    default: 8
+  },
+  hover: {
+    type: Boolean,
+    default: true
   }
 })
 onMounted(() => {
@@ -22,10 +30,11 @@ onMounted(() => {
       for (let entry of entries) {
         if (entry.contentRect.width)
           if (!props.anime)
-            inputRef.value.style.width = entry.contentRect.width + 8 + 'px'
+            inputRef.value.style.width =
+              entry.contentRect.width + props.offsetWidth + 'px'
           else
             gsap.to(inputRef.value, {
-              width: entry.contentRect.width + 8,
+              width: entry.contentRect.width + props.offsetWidth,
               ease: 'power4.Out',
               duration: 0.3
             })
@@ -44,18 +53,25 @@ onMounted(() => {
 const handleEdit = (m) => {
   isInput.value = m
   if (!isInput.value) return
-  inputRef.value.style.width = mirror.value.offsetWidth + 8 + 'px'
+  inputRef.value.style.width =
+    mirror.value.offsetWidth + props.offsetWidth + 'px'
   nextTick(() => {
     inputRef.value.focus()
   })
 }
 const text = defineModel('text', {
-  type: String,
+  type: Number,
   default: ''
 })
 </script>
 <template>
-  <div @mouseenter="handleEdit(true)">
+  <div
+    @mouseenter="
+      () => {
+        if (props.hover) handleEdit(true)
+      }
+    "
+  >
     <input
       ref="inputRef"
       v-model="text"
@@ -63,8 +79,8 @@ const text = defineModel('text', {
       :class="{ hidden: !isInput }"
       :placeholder="placeholder"
     />
-    <span ref="mirror" :class="{ hidden: isInput }">{{
-      text || 'placeholder'
+    <span ref="mirror" :class="{ hidden: isInput }" @click="handleEdit(true)">{{
+      text || placeholder
     }}</span>
   </div>
 </template>
@@ -76,6 +92,7 @@ input {
   font-size: inherit;
   font-weight: inherit;
   padding: 0%;
+  transition: width 0.3s ease;
 }
 span {
   width: inherit;

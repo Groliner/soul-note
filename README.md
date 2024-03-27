@@ -38,3 +38,4 @@ fixed组件：100
 蒙版：301
 nav:302
 header:303
+popup: 600

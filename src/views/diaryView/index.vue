@@ -1,30 +1,22 @@
 <script setup>
-import { watchEffect, ref, nextTick, onMounted, onUnmounted, inject } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import notePage from './note.vue'
 import pagination from './pagination.vue'
 import { useDiaryStore, useUserStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { PhPencilLine } from '@phosphor-icons/vue'
-const pressTime = inject('pressTime')
 const userStore = useUserStore()
 const { user_diary } = storeToRefs(userStore)
 const diaryStore = useDiaryStore()
-const diary = ref(diaryStore.getDiary(user_diary.value.last_read_diary_id))
-const page = ref(
+const diary = computed(() =>
+  diaryStore.getDiary(user_diary.value.last_read_diary_id)
+)
+const diaryPage = computed(() =>
   diaryStore.getPage(
     user_diary.value.last_read_diary_id,
     diary.value.last_read_page
   )
 )
-watchEffect(() => {
-  diary.value = diaryStore.getDiary(user_diary.value.last_read_diary_id)
-})
-watchEffect(() => {
-  page.value = diaryStore.getPage(
-    user_diary.value.last_read_diary_id,
-    diary.value.last_read_page
-  )
-})
 
 import { gsap } from 'gsap'
 const mirror = ref(null)
@@ -69,7 +61,18 @@ const handleEdit = (m) => {
 }
 
 //编辑日记本
+
+import editPop from './editPop.vue'
+import { ElMessage } from 'element-plus'
 const pop = ref(false)
+
+const handleAdd_ = () => {
+  if (diaryStore.addPage(user_diary.value.last_read_diary_id)) {
+    ElMessage.success('Add page successfully')
+  } else {
+    ElMessage.warning('Add page failed')
+  }
+}
 </script>
 <template>
   <div class="container_note">
@@ -101,21 +104,21 @@ const pop = ref(false)
         <p class="sub__">--</p>
         <input
           ref="pageTitleInput"
-          v-model="page.title"
+          v-model="diaryPage.title"
           @blur="handleEdit(false)"
           :class="{ hidden: !isEditPageTitle }"
         />
         <span ref="mirror" :class="{ hidden: isEditPageTitle }">{{
-          page.title || '"Untitled"'
+          diaryPage.title || '"Untitled"'
         }}</span>
         <p class="sup__">--</p>
       </h2>
 
       <Transition name="fade">
         <notePage
-          v-model:context="page.context"
-          v-model:content="page.content"
-          :page="page.page"
+          v-model:context="diaryPage.context"
+          v-model:content="diaryPage.content"
+          :page="diaryPage.page"
           :diaryId="diary.diary_id"
         />
       </Transition>
@@ -124,17 +127,11 @@ const pop = ref(false)
       class="pagination"
       :total="diary.pages"
       v-model:page="diary.last_read_page"
+      @add="handleAdd_"
     />
     <Teleport to="body">
-      <PopupComponent
-        :open="pop"
-        @close="pop = false"
-        @confirm="console.log(123)"
-        @refuse="
-          (startTime) =>
-            (pop = Date.now() - startTime > pressTime ? false : pop)
-        "
-        ><template #content>tht ?</template></PopupComponent
+      <editPop :diaryId="user_diary.last_read_diary_id" v-model:open="pop" />
+
       ></Teleport
     >
   </div>

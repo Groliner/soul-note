@@ -2,7 +2,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useDiaryStore } from './diary'
 const defaultUserInfo = {
-  token: ''
+  token: '',
+  avatar: '/deepSouls/src/assets/images/logo.png'
 }
 const defaultDiary = {
   last_read_diary_id: 'diary_1',

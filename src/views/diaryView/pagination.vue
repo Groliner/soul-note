@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { getCurrentInstance } from 'vue'
+const { proxy } = getCurrentInstance()
+const props = defineProps({
   total: {
     type: Number,
     required: true
@@ -10,11 +12,27 @@ const page = defineModel('page', {
   type: Number,
   required: true
 })
+const emit = defineEmits(['add'])
+const handleAdd = async () => {
+  if (page.value < props.total)
+    page.value = Math.min(Math.max(page.value + 1, 1), props.total)
+  else {
+    console.log(123)
+    proxy
+      .$showConfirmModal('Do you want to add a new page?', {
+        mask: false,
+        pressTime: 20
+      })
+      .then((res) => {
+        if (res) {
+          emit('add')
+        }
+      })
+  }
+}
 </script>
 <template>
   <div class="container_pagination">
-    <div class="counter">{{ page }} / {{ total }}</div>
-
     <button
       class="paginate left"
       :data-state="page === 1 ? 'disabled' : ''"
@@ -22,10 +40,20 @@ const page = defineModel('page', {
     >
       <i></i><i></i>
     </button>
+    <div class="counter">
+      <flexInput
+        v-model:text="page"
+        :placeholder="page"
+        :offsetWidth="0"
+        :hover="false"
+      />
+      <p>/</p>
+      <p>{{ total }}</p>
+    </div>
     <button
       class="paginate right"
-      :data-state="page === total ? 'disabled' : ''"
-      @click="page = Math.min(Math.max(page + 1, 1), total)"
+      :data-state="page === total ? 'add' : ''"
+      @click="handleAdd"
     >
       <i></i><i></i>
     </button>
@@ -50,9 +78,26 @@ $angleActive: 25deg;
 
 .container_pagination {
   position: fixed;
-  top: 150px;
-  width: 150px;
-  right: 50px;
+  top: 120px;
+  right: 130px;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.3s ease;
+
+  .counter {
+    text-align: center;
+    font-size: 30px;
+    font-family: Helvetica, sans-serif;
+    text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.2);
+    color: #130303;
+    display: grid;
+    grid-template-columns: 1fr min-content 1fr;
+    justify-content: space-between;
+    align-items: center;
+  }
 }
 
 button {
@@ -70,9 +115,8 @@ button {
   cursor: pointer;
   transform: translate3d(0, 0, 0); // fixes flicker in webkit
 
-  position: absolute;
   top: 50%;
-  margin-top: -12px;
+  margin-top: -20px;
   -webkit-filter: drop-shadow(0 2px 0px rgba(0, 0, 0, 0.2));
 
   i {
@@ -88,8 +132,6 @@ button {
   }
 
   &.left {
-    right: 67%;
-
     i {
       transform-origin: 0% 50%;
     }
@@ -114,8 +156,6 @@ button {
   }
 
   &.right {
-    left: 67%;
-
     i {
       transform-origin: 100% 50%;
     }
@@ -129,31 +169,15 @@ button {
     &:active {
       @include arrowTransform($angleActive, 1px, 1px);
     }
-
-    &[data-state='disabled'] {
-      @include arrowTransform(0deg, 5px, 0);
-
-      &:hover {
-        @include arrowTransform(0deg, 5px, 0);
-      }
-    }
   }
 
+  &[data-state='add'] i {
+    background-color: var(--c-green-500);
+    cursor: default;
+  }
   &[data-state='disabled'] {
     opacity: 0.3;
     cursor: default;
   }
-}
-
-.counter {
-  text-align: center;
-  position: absolute;
-  width: 100%;
-  top: 50%;
-  margin-top: -20px;
-  font-size: 30px;
-  font-family: Helvetica, sans-serif;
-  text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.2);
-  color: #130303;
 }
 </style>

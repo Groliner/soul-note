@@ -180,13 +180,15 @@ export const useDiaryStore = defineStore(
     const setPages = (page = defaultPages) => {
       diaryPages.value = page
     }
-    const updateDiaryTitle = (diary_id, new_title) => {
+    const updateDiary = ({ diary_id, title, desc }) => {
       // 根据 diary_id 更新 diary
       const index = diary.value.findIndex((item) => item.diary_id === diary_id)
       if (index !== -1) {
         diary.value[index].update_time = Date.now()
-        diary.value[index].title = new_title
+        diary.value[index].title = title
+        diary.value[index].desc = desc
       }
+      return true
     }
     const updatePage = (diary_book_id, page, pageData) => {
       const index = diaryPages.value.findIndex(
@@ -207,6 +209,31 @@ export const useDiaryStore = defineStore(
           pages: [pageData]
         })
       }
+    }
+    const addPage = (diary_book_id) => {
+      const index = diary.value.findIndex(
+        (item) => item.diary_id === diary_book_id
+      )
+      if (index === -1) return false
+      // 添加 diary_page
+      const page = {
+        diary_book_id: diary_book_id,
+        page: ++diary.value[index].pages,
+        title: 'NEW PAGE',
+        content: 'Hello World',
+        context: {
+          selectionStart: 0,
+          selectionEnd: 0,
+          scrollY: 0,
+          height: '150px',
+          words: 11
+        },
+        create_time: Date.now(),
+        update_time: Date.now()
+      }
+      diaryPages.value.push(page)
+      diary.value[index].last_read_page = page.page
+      return true
     }
     const getDiary = (diary_id) => {
       return diary.value.find((item) => item.diary_id === diary_id)
@@ -232,8 +259,9 @@ export const useDiaryStore = defineStore(
       getDiary,
       getPage,
       getPages,
-      updateDiaryTitle,
-      updatePage
+      updateDiary,
+      updatePage,
+      addPage
     }
   },
   {

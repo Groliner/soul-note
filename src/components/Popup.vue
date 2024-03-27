@@ -6,32 +6,57 @@ defineProps({
   open: {
     type: Boolean,
     default: false
+  },
+  pressTime: {
+    type: Number,
+    default: 123
+  },
+  mask: {
+    type: Boolean,
+    default: true
+  },
+  message: {
+    type: String,
+    default: 'Are you sure?'
   }
 })
 let startTime = 0
 </script>
 <template>
   <Transition name="popup">
-    <div v-if="open" style="position: fixed; top: 0; z-index: 600">
-      <div class="mask"></div>
+    <div
+      v-if="open"
+      style="position: fixed; top: 0; z-index: 600; height: 100vh; width: 100vw"
+    >
+      <div class="mask" v-show="mask"></div>
 
       <div class="modal">
-        <ph-x-circle weight="bold" class="x" @click="$emit('close')" />
+        <ph-x-circle weight="bold" class="x" @click="$emit('refuse')" />
         <p class="message">
-          <slot name="content">Wow! there are some popup message.</slot>
+          <slot name="content">{{ message }}</slot>
         </p>
         <div class="options">
           <button
             class="btn"
             @mousedown="startTime = Date.now()"
-            @click="$emit('confirm', startTime)"
+            @click="
+              () => {
+                if (pressTime < Date.now() - startTime) {
+                  $emit('confirm')
+                }
+              }
+            "
           >
             Yes
           </button>
           <button
             class="btn"
             @mousedown="startTime = Date.now()"
-            @click="$emit('refuse', startTime)"
+            @click="
+              () => {
+                if (pressTime < Date.now() - startTime) $emit('refuse')
+              }
+            "
           >
             No
           </button>
@@ -145,17 +170,5 @@ let startTime = 0
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-}
-
-.popup-enter-from,
-.popup-leave-to {
-  opacity: 0;
-}
-
-.popup-enter-active {
-  transition: opacity 0.77s cubic-bezier(0.5, 1, 0.89, 1);
-}
-.popup-leave-active {
-  transition: opacity 0.32s cubic-bezier(0.5, 1, 0.89, 1);
 }
 </style>
