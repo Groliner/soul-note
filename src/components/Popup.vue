@@ -18,9 +18,24 @@ defineProps({
   message: {
     type: String,
     default: 'Are you sure?'
+  },
+  draggable: {
+    type: Boolean,
+    default: false
   }
 })
 let startTime = 0
+import { gsap } from 'gsap'
+import { Draggable } from 'gsap/Draggable'
+import { onMounted } from 'vue'
+gsap.registerPlugin(Draggable)
+onMounted(() => {
+  Draggable.create('.modal', {
+    type: 'x,y',
+    bounds: 'html',
+    cursor: 'pointer'
+  })
+})
 </script>
 <template>
   <Transition name="popup">

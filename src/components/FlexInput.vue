@@ -1,6 +1,6 @@
 <script setup>
 import { gsap } from 'gsap'
-import { ref, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, watch } from 'vue'
 
 const mirror = ref(null)
 const inputRef = ref(null)
@@ -21,6 +21,10 @@ const props = defineProps({
   hover: {
     type: Boolean,
     default: true
+  },
+  type: {
+    type: String,
+    default: 'text'
   }
 })
 onMounted(() => {
@@ -60,19 +64,14 @@ const handleEdit = (m) => {
   })
 }
 const text = defineModel('text', {
-  type: Number,
+  type: String,
   default: ''
 })
 </script>
 <template>
-  <div
-    @mouseenter="
-      () => {
-        if (props.hover) handleEdit(true)
-      }
-    "
-  >
+  <div @mouseenter="handleEdit(props.hover)">
     <input
+      :type="props.type || 'text'"
       ref="inputRef"
       v-model="text"
       @blur="handleEdit(false)"

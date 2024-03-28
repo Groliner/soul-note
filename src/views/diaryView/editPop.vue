@@ -5,7 +5,7 @@
 
 */
 import { gsap } from 'gsap'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick, shallowRef } from 'vue'
 import { formatTime } from '@/composables/formatTime'
 import { useDiaryStore, useUserStore } from '@/stores'
 const props = defineProps({
@@ -17,6 +17,7 @@ const open = defineModel('open', {
   type: Boolean,
   default: false
 })
+const emit = defineEmits(['addDiary', 'deleteDiary'])
 
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
@@ -34,30 +35,53 @@ const diaryPageInfo = computed(() =>
     page.title.toLowerCase().includes(query.value.toLowerCase())
   )
 )
-
-const diary = ref({ ...diaryRef.value })
+const textareaDesc = ref(null)
+const diary = ref({
+  ...diaryRef.value
+})
 
 const menu = ref(['Overview', 'Others'])
 const select = ref(0)
 // popup
 import { PhTrash, PhPlusSquare, PhMagnifyingGlass } from '@phosphor-icons/vue'
-watch(open, () => {
-  console.log(props.diaryId)
+import { ElMessage } from 'element-plus'
+import { getCurrentInstance } from 'vue'
+const { proxy } = getCurrentInstance()
+const pretty = () => {
   diary.value = { ...diaryRef.value }
   query.value = ''
   select.value = 0
+}
+watch(diaryRef, () => {
+  pretty()
 })
 
-const pop = ref(false)
-const message = ref('')
-
 const handleAdd = () => {
-  message.value = 'want to add a new diary?'
-  pop.value = true
+  proxy
+    .$showConfirmModal('Want to add a new diary?', {
+      mask: false,
+      pressTime: 100,
+      draggable: true
+    })
+    .then((res) => {
+      if (res) {
+        emit('addDiary')
+      }
+    })
 }
+
 const handleDelete = () => {
-  message.value = 'Are you sure to delete this diary?'
-  pop.value = true
+  proxy
+    .$showConfirmModal('Are you sure to delete the diary?', {
+      mask: false,
+      pressTime: 80,
+      draggable: true
+    })
+    .then((res) => {
+      if (res) {
+        emit('deleteDiary')
+      }
+    })
 }
 
 const handleSave = () => {
@@ -73,10 +97,11 @@ const handleSave = () => {
 // textarea 动画
 function autoExpand(event) {
   const textarea = event.target
-  // 先重置高度以确保能够减少高度,注意这个操作会引发html重绘,为了防止滚动条跳动,我们先记录滚动位置
   textarea.style.height = 'auto'
   // 然后设置为scrollHeight以适应内容
   textarea.style.height = textarea.scrollHeight + 'px'
+  diary.value.context.height = textarea.scrollHeight
+  diary.value.context.words = textarea.value.length
 }
 
 // search
@@ -174,6 +199,12 @@ const handleCoverChange = (event) => {
           </h3>
           <p>
             <textarea
+              style="
+                max-height: 180px;
+                overflow: auto;
+                background-attachment: local;
+              "
+              ref="textareaDesc"
               v-model="diary.desc"
               placeholder="diary desc"
               @input="autoExpand"
@@ -222,6 +253,11 @@ const handleCoverChange = (event) => {
                 :data-index="item.page"
               >
                 <span>{{ item.title }}</span>
+                <span @click="diaryStore.addPage(item.diary_book_id)">+</span>
+                <span
+                  @click="diaryStore.deletePage(item.diary_book_id, item.page)"
+                  >-</span
+                >
                 <span>words:{{ item.context.words }}</span>
                 <span>{{ formatTime(item.create_time) }}</span>
               </li>
@@ -250,16 +286,6 @@ const handleCoverChange = (event) => {
         </footer>
       </div>
     </div></Transition
-  >
-  <Teleport to="body">
-    <PopupComponent
-      :open="pop"
-      :mask="false"
-      @close="pop = false"
-      @confirm="console.log('you agree')"
-      @refuse="pop = false"
-      ><template #content>"{{ message }}"</template></PopupComponent
-    ></Teleport
   >
 </template>
 <style lang="scss" scoped>
@@ -294,12 +320,12 @@ img {
     padding: 0;
     &.Overview {
       max-height: 30vh;
-      overflow-y: auto;
+      overflow-y: scroll;
     }
     li {
       list-style: none;
       display: grid;
-      grid-template-columns: 3fr 1fr min-content;
+      grid-template-columns: 3fr 1fr min-content auto auto;
       justify-content: space-round;
     }
   }
@@ -325,7 +351,6 @@ button {
     0 0 0 11px var(--c-gray-200);
   background-color: #fff;
   @include absCenter;
-  top: 42%;
   z-index: 302;
 
   .mirror {

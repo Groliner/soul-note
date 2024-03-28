@@ -7,21 +7,19 @@ const props = defineProps({
     required: true
   }
 })
-
 const page = defineModel('page', {
   type: Number,
   required: true
 })
-const emit = defineEmits(['add'])
-const handleAdd = async () => {
-  if (page.value < props.total)
-    page.value = Math.min(Math.max(page.value + 1, 1), props.total)
-  else {
-    console.log(123)
+const emit = defineEmits(['add', 'flip'])
+const handleAdd = (m) => {
+  if (page.value < props.total || m === -1) {
+    emit('flip', m)
+  } else {
     proxy
       .$showConfirmModal('Do you want to add a new page?', {
         mask: false,
-        pressTime: 20
+        pressTime: 120
       })
       .then((res) => {
         if (res) {
@@ -36,27 +34,34 @@ const handleAdd = async () => {
     <button
       class="paginate left"
       :data-state="page === 1 ? 'disabled' : ''"
-      @click="page = Math.min(Math.max(page - 1, 1), total)"
+      @click="handleAdd(-1)"
     >
       <i></i><i></i>
     </button>
     <div class="counter">
-      <flexInput
-        v-model:text="page"
-        :placeholder="page"
-        :offsetWidth="0"
-        :hover="false"
-      />
+      <p>{{ page }}</p>
       <p>/</p>
       <p>{{ total }}</p>
     </div>
     <button
       class="paginate right"
       :data-state="page === total ? 'add' : ''"
-      @click="handleAdd"
+      @click="handleAdd(1)"
     >
       <i></i><i></i>
     </button>
+    <div class="select_container">
+      <select v-model="page" size="15">
+        <option
+          v-for="i in total"
+          :key="i"
+          :value="i"
+          :class="{ active: page == i }"
+        >
+          {{ i }}
+        </option>
+      </select>
+    </div>
   </div>
 </template>
 <style lang="scss" scoped>
@@ -178,6 +183,41 @@ button {
   &[data-state='disabled'] {
     opacity: 0.3;
     cursor: default;
+  }
+}
+
+.select_container {
+  position: fixed;
+  right: 10px;
+  top: 26%;
+  font-family: inherit;
+  overflow: hidden;
+
+  select {
+    font-family: inherit;
+
+    option {
+      font-family: inherit;
+      background-color: var(--c-yellow-100);
+      text-align: center;
+
+      &.active {
+        background-color: var(--c-yellow-200);
+      }
+    }
+    appearance: none;
+    background-color: transparent;
+    width: 100px;
+    padding: 10px;
+    border: none;
+    font-size: 1.5em;
+    outline: none;
+    cursor: pointer;
+
+    // 移除 IE 浏览器的默认样式
+    &::-ms-expand {
+      display: none;
+    }
   }
 }
 </style>

@@ -66,11 +66,29 @@ import editPop from './editPop.vue'
 import { ElMessage } from 'element-plus'
 const pop = ref(false)
 
-const handleAdd_ = () => {
+const handleAdd = () => {
   if (diaryStore.addPage(user_diary.value.last_read_diary_id)) {
     ElMessage.success('Add page successfully')
   } else {
     ElMessage.warning('Add page failed')
+  }
+}
+const handleFlip = (m) => {
+  diary.value.last_read_page = Math.min(
+    Math.max(Number.parseInt(diary.value.last_read_page) + m, 1),
+    diary.value.pages || diary.value.last_read_page
+  )
+}
+
+const handleAddDiary = () => {
+  const diaryId = diaryStore.addDiary()
+  if (!diaryId) ElMessage.warning('Add diary failed')
+}
+const handleDeleteDiary = () => {
+  if (diaryStore.deleteDiary(user_diary.value.last_read_diary_id)) {
+    ElMessage.success('Delete diary successfully')
+  } else {
+    ElMessage.warning('Delete diary failed')
   }
 }
 </script>
@@ -89,7 +107,7 @@ const handleAdd_ = () => {
               active: user_diary.last_read_diary_id === item ? true : false
             }"
             @click="user_diary.last_read_diary_id = item"
-            >{{ item }}</a
+            ><p>{{ diaryStore.getDiary(item).title }}</p></a
           >
           <ph-pencil-line
             class="icon_pencil"
@@ -127,10 +145,16 @@ const handleAdd_ = () => {
       class="pagination"
       :total="diary.pages"
       v-model:page="diary.last_read_page"
-      @add="handleAdd_"
+      @add="handleAdd"
+      @flip="handleFlip"
     />
     <Teleport to="body">
-      <editPop :diaryId="user_diary.last_read_diary_id" v-model:open="pop" />
+      <editPop
+        :diaryId="user_diary.last_read_diary_id"
+        v-model:open="pop"
+        @addDiary="handleAddDiary"
+        @deleteDiary="handleDeleteDiary"
+      />
 
       ></Teleport
     >
@@ -148,6 +172,10 @@ const handleAdd_ = () => {
   will-change: transform;
   position: fixed;
   left: 50px;
+  z-index: 100;
+  @media screen and (max-width: 1200px) {
+    left: 40px;
+  }
 
   ul {
     color: rgb(68, 68, 68);
@@ -155,7 +183,13 @@ const handleAdd_ = () => {
 
     &.diaryNav_main {
       a {
-        font-size: 1.97rem;
+        font-size: 1.6rem;
+        p {
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 6em;
+          overflow: hidden;
+        }
       }
     }
 
@@ -163,6 +197,7 @@ const handleAdd_ = () => {
       margin-bottom: 0.5vw;
       position: relative;
       list-style: none;
+      width: fit-content;
     }
   }
 }

@@ -98,6 +98,11 @@ const router = createRouter({
           path: 'popup2',
           name: 'popup2',
           component: () => import('@/views/diaryView/editPop.vue')
+        },
+        {
+          path: 'select',
+          name: 'select',
+          component: () => import('@/components/Select.vue')
         }
       ]
     },

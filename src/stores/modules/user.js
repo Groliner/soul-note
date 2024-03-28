@@ -6,8 +6,8 @@ const defaultUserInfo = {
   avatar: '/deepSouls/src/assets/images/logo.png'
 }
 const defaultDiary = {
-  last_read_diary_id: 'diary_1',
-  diaries: ['diary_1', 'diary_2', 'diary_3', 'diary_4']
+  last_read_diary_id: 'diary',
+  diaries: ['diary', 'diary_2', 'diary_3', 'diary_4']
 }
 export const useUserStore = defineStore(
   'user',
@@ -27,16 +27,26 @@ export const useUserStore = defineStore(
     const setToken = (token) => {
       userInfo.value.token = token
     }
-    const setReadPage = (page) => {
-      userInfo.value.diary.last_read_page = page
+    const addDiary = (diary_id) => {
+      user_diary.value.diaries.push(diary_id)
+      user_diary.value.last_read_diary_id = diary_id
+    }
+    const deleteDiary = (diary_id) => {
+      const index = user_diary.value.diaries.indexOf(diary_id)
+      if (index !== -1) {
+        user_diary.value.diaries.splice(index, 1)
+        user_diary.value.last_read_diary_id =
+          user_diary.value.diaries[index - 1]
+      }
     }
 
     return {
       userInfo,
       user_diary,
       setToken,
-      setReadPage,
-      logout
+      logout,
+      addDiary,
+      deleteDiary
     }
   },
   {
