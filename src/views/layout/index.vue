@@ -75,6 +75,7 @@ const updateTime = setInterval(() => {
 .mapper {
   overflow: hidden;
   border: 5px solid black;
+  z-index: 101;
 
   .head-mask {
     position: fixed;

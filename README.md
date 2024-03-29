@@ -39,3 +39,6 @@ fixed组件：100
 nav:302
 header:303
 popup: 600
+
+## logis
+前端的数据都为及时存储,设计保存为向后端请求,所以前端不需要做save与temporary区分

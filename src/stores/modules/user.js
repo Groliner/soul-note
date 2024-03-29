@@ -3,7 +3,11 @@ import { ref } from 'vue'
 import { useDiaryStore } from './diary'
 const defaultUserInfo = {
   token: '',
-  avatar: '/deepSouls/src/assets/images/logo.png'
+  avatar: '/deepSouls/src/assets/images/logo.png',
+  username: 'grolin',
+  id: 'author',
+  email: '123@qwe.com',
+  desc: "there is nothing here, it's empty"
 }
 const defaultDiary = {
   last_read_diary_id: 'diary',

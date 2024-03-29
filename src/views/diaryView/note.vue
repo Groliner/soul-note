@@ -36,6 +36,10 @@ const props = defineProps({
   page: {
     type: Number,
     required: true
+  },
+  status: {
+    type: Number,
+    default: 0
   }
 })
 const textareaRef = ref(null)
@@ -206,6 +210,7 @@ const rescueCursor = (event, state) => {
     @keydown="handleKeyDown"
     placeholder="Start typing your diary entry..."
     @input="handleInput"
+    :disabled="status === 0"
   ></textarea>
 </template>
 <style lang="scss" scoped>

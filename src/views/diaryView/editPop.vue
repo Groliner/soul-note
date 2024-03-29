@@ -23,32 +23,38 @@ const userStore = useUserStore()
 const diaryStore = useDiaryStore()
 const diaryRef = computed(() => diaryStore.getDiary(props.diaryId))
 const diaryPagesRef = computed(() => diaryStore.getPages(props.diaryId))
-const diaryInfo = {
-  author: diaryRef.value.author,
-  last_read_page: diaryRef.value.last_read_page,
-  total_pages: diaryRef.value.pages,
-  create_time: formatTime(diaryRef.value.create_time),
-  update_time: formatTime(diaryRef.value.update_time)
-}
+const diaryInfo = computed(() => {
+  return {
+    author: diaryRef.value.author,
+    last_read_page: diaryRef.value.last_read_page,
+    total_pages: diaryRef.value.pages,
+    create_time: formatTime(diaryRef.value.create_time),
+    update_time: formatTime(diaryRef.value.update_time)
+  }
+})
 const diaryPageInfo = computed(() =>
-  diaryPagesRef.value.filter((page) =>
-    page.title.toLowerCase().includes(query.value.toLowerCase())
-  )
+  diaryPagesRef.value
+    .filter((page) =>
+      page.title.toLowerCase().includes(query.value.toLowerCase())
+    )
+    .toSorted((a, b) => -a.page + b.page)
 )
 const textareaDesc = ref(null)
-const diary = ref({
-  ...diaryRef.value
-})
 
 const menu = ref(['Overview', 'Others'])
 const select = ref(0)
 // popup
-import { PhTrash, PhPlusSquare, PhMagnifyingGlass } from '@phosphor-icons/vue'
+import {
+  PhTrash,
+  PhPlusSquare,
+  PhMagnifyingGlass,
+  PhFilePlus,
+  PhBackspace
+} from '@phosphor-icons/vue'
 import { ElMessage } from 'element-plus'
 import { getCurrentInstance } from 'vue'
 const { proxy } = getCurrentInstance()
 const pretty = () => {
-  diary.value = { ...diaryRef.value }
   query.value = ''
   select.value = 0
 }
@@ -83,9 +89,21 @@ const handleDelete = () => {
       }
     })
 }
-
+const handleDeletePage = (page) => {
+  proxy
+    .$showConfirmModal('Are you sure to delete the page (past)? ', {
+      mask: false,
+      pressTime: 60,
+      draggable: true
+    })
+    .then((res) => {
+      if (res) {
+        diaryStore.deletePage(diaryRef.value.diary_id, page)
+      }
+    })
+}
 const handleSave = () => {
-  if (diaryStore.updateDiary(diary.value)) {
+  if (diaryStore.updateDiary(diaryRef.value)) {
     ElMessage.success('save success')
     open.value = false
   } else {
@@ -100,8 +118,8 @@ function autoExpand(event) {
   textarea.style.height = 'auto'
   // 然后设置为scrollHeight以适应内容
   textarea.style.height = textarea.scrollHeight + 'px'
-  diary.value.context.height = textarea.scrollHeight
-  diary.value.context.words = textarea.value.length
+  diaryRef.value.context.height = textarea.scrollHeight
+  diaryRef.value.context.words = textarea.value.length
 }
 
 // search
@@ -117,6 +135,7 @@ function onEnter(el, done) {
   gsap.to(el, {
     opacity: 1,
     height: 'auto',
+    delay: el.dataset.index * 0.06,
     onComplete: done
   })
 }
@@ -125,6 +144,7 @@ function onLeave(el, done) {
   gsap.to(el, {
     opacity: 0,
     height: 0,
+    delay: el.dataset.index * 0.05,
     onComplete: done
   })
 }
@@ -165,7 +185,7 @@ const handleCoverChange = (event) => {
         <div
           class="mirror"
           :style="`
-          background:url(${diary.cover});
+          background:url(${diaryRef.cover});
           background-size: cover;
           background-position: center;`"
         ></div>
@@ -183,7 +203,7 @@ const handleCoverChange = (event) => {
           </div>
           <div class="header-buttons">
             <button class="cover" @click="triggerUpload">
-              <img :src="diary.cover" />
+              <img :src="diaryRef.cover" />
             </button>
             <input
               type="file"
@@ -195,7 +215,10 @@ const handleCoverChange = (event) => {
         </header>
         <section class="title">
           <h3>
-            <flexInput v-model:text="diary.title" placeholder="diary title" />
+            <flexInput
+              v-model:text="diaryRef.title"
+              placeholder="diary title"
+            />
           </h3>
           <p>
             <textarea
@@ -205,7 +228,7 @@ const handleCoverChange = (event) => {
                 background-attachment: local;
               "
               ref="textareaDesc"
-              v-model="diary.desc"
+              v-model="diaryRef.desc"
               placeholder="diary desc"
               @input="autoExpand"
             ></textarea>
@@ -248,21 +271,29 @@ const handleCoverChange = (event) => {
               @leave="onLeave"
             >
               <li
-                v-for="item in diaryPageInfo"
+                v-for="(item, index) in diaryPageInfo"
                 :key="item.title"
-                :data-index="item.page"
+                :data-index="index"
               >
-                <span>{{ item.title }}</span>
-                <span @click="diaryStore.addPage(item.diary_book_id)">+</span>
-                <span
-                  @click="diaryStore.deletePage(item.diary_book_id, item.page)"
-                  >-</span
-                >
+                <span>{{ item.page }}-{{ item.title }}</span>
+
                 <span>words:{{ item.context.words }}</span>
                 <span>{{ formatTime(item.create_time) }}</span>
+                <ph-backspace
+                  v-if="item.page === diaryRef.pages"
+                  weight="bold"
+                  @click="handleDeletePage(item.page)"
+                  class="icon del"
+                />
               </li>
-            </TransitionGroup></Transition
-          >
+              <li key="icon_add">
+                <ph-file-plus
+                  weight="bold"
+                  @click="diaryStore.addPage(diaryRef.diary_id)"
+                  class="icon add"
+                />
+              </li> </TransitionGroup
+          ></Transition>
           <Transition
             @before-enter="onBeforeEnter"
             @enter="onEnter"
@@ -316,8 +347,15 @@ img {
 }
 
 .profile {
+  position: relative;
   ul {
     padding: 0;
+    /* 自定义滚动条的整体部分 */
+    &::-webkit-scrollbar {
+      width: 4px; /* 设置滚动条的宽度 */
+      height: 4px; /* 设置滚动条的高度，对水平滚动条有效 */
+    }
+
     &.Overview {
       max-height: 30vh;
       overflow-y: scroll;
@@ -325,8 +363,29 @@ img {
     li {
       list-style: none;
       display: grid;
-      grid-template-columns: 3fr 1fr min-content auto auto;
+      grid-template-columns: 3fr 1fr min-content 30px;
       justify-content: space-round;
+      align-items: center;
+
+      .icon {
+        &.del {
+          margin-left: auto;
+          font-size: 1.2rem;
+          &:hover {
+            color: var(--c-red-500);
+          }
+        }
+        &.add {
+          position: absolute;
+          bottom: -2em;
+          font-size: 1.5rem;
+          &:hover {
+            color: var(--c-green-300);
+          }
+        }
+
+        cursor: pointer;
+      }
     }
   }
   ul:last-child li {

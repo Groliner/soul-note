@@ -46,7 +46,10 @@ onMounted(() => {
     })
   }
 })
+
+const isAbleToEdit = computed(() => diaryPage.value.status !== 0)
 const handleEdit = (m) => {
+  if (!isAbleToEdit.value) return
   isEditPageTitle.value = m
   if (!isEditPageTitle.value) return
   pageTitleInput.value.style.width = mirror.value.offsetWidth + 8 + 'px'
@@ -75,7 +78,7 @@ const handleAdd = () => {
 }
 const handleFlip = (m) => {
   diary.value.last_read_page = Math.min(
-    Math.max(Number.parseInt(diary.value.last_read_page) + m, 1),
+    Math.max(diary.value.last_read_page + m, 1),
     diary.value.pages || diary.value.last_read_page
   )
 }
@@ -119,17 +122,18 @@ const handleDeleteDiary = () => {
     </div>
     <article>
       <h2 @mouseenter="handleEdit(true)" :class="{ active: isEditPageTitle }">
-        <p class="sub__">--</p>
+        <p v-show="isAbleToEdit" class="sub__">--</p>
         <input
           ref="pageTitleInput"
           v-model="diaryPage.title"
           @blur="handleEdit(false)"
           :class="{ hidden: !isEditPageTitle }"
+          :disabled="diaryPage.status === 0"
         />
         <span ref="mirror" :class="{ hidden: isEditPageTitle }">{{
           diaryPage.title || '"Untitled"'
         }}</span>
-        <p class="sup__">--</p>
+        <p v-show="isAbleToEdit" class="sup__">--</p>
       </h2>
 
       <Transition name="fade">
@@ -138,6 +142,7 @@ const handleDeleteDiary = () => {
           v-model:content="diaryPage.content"
           :page="diaryPage.page"
           :diaryId="diary.diary_id"
+          :status="diaryPage.status"
         />
       </Transition>
     </article>

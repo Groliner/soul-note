@@ -19,7 +19,7 @@ const handleAdd = (m) => {
     proxy
       .$showConfirmModal('Do you want to add a new page?', {
         mask: false,
-        pressTime: 120
+        pressTime: 100
       })
       .then((res) => {
         if (res) {
@@ -27,6 +27,30 @@ const handleAdd = (m) => {
         }
       })
   }
+}
+
+import { gsap } from 'gsap'
+function onBeforeEnter(el) {
+  el.style.opacity = 0
+  el.style.height = 0
+}
+
+function onEnter(el, done) {
+  gsap.to(el, {
+    opacity: 1,
+    height: 'auto',
+    delay: el.dataset.index * 0.15,
+    onComplete: done
+  })
+}
+
+function onLeave(el, done) {
+  gsap.to(el, {
+    opacity: 0,
+    height: 0,
+    delay: el.dataset.index * 0.14,
+    onComplete: done
+  })
 }
 </script>
 <template>
@@ -50,17 +74,26 @@ const handleAdd = (m) => {
     >
       <i></i><i></i>
     </button>
-    <div class="select_container">
-      <select v-model="page" size="15">
-        <option
-          v-for="i in total"
-          :key="i"
-          :value="i"
-          :class="{ active: page == i }"
+    <div class="pages-container">
+      <TransitionGroup
+        tag="ul"
+        @before-enter="onBeforeEnter"
+        @enter="onEnter"
+        @leave="onLeave"
+        class="pages"
+      >
+        <li
+          class="pageNum"
+          v-for="pageNum in total"
+          :key="pageNum"
+          @click="page = pageNum"
+          :class="{ active: page === pageNum }"
         >
-          {{ i }}
-        </option>
-      </select>
+          <div class="page-content">
+            <div class="tip-title">{{ pageNum }}</div>
+          </div>
+        </li>
+      </TransitionGroup>
     </div>
   </div>
 </template>
@@ -186,37 +219,50 @@ button {
   }
 }
 
-.select_container {
+.pages-container {
   position: fixed;
-  right: 10px;
+  right: 21px;
   top: 26%;
   font-family: inherit;
+  border-radius: 5%;
   overflow: hidden;
 
-  select {
-    font-family: inherit;
-
-    option {
-      font-family: inherit;
-      background-color: var(--c-yellow-100);
-      text-align: center;
-
-      &.active {
-        background-color: var(--c-yellow-200);
-      }
+  .pages {
+    max-height: 33vh;
+    width: fit-content;
+    overflow-y: scroll;
+    user-select: none;
+    &::-webkit-scrollbar {
+      width: 3px;
+      height: 2px;
     }
-    appearance: none;
-    background-color: transparent;
-    width: 100px;
-    padding: 10px;
-    border: none;
-    font-size: 1.5em;
-    outline: none;
-    cursor: pointer;
-
-    // 移除 IE 浏览器的默认样式
-    &::-ms-expand {
-      display: none;
+    list-style: none;
+    padding: 0;
+    li {
+      width: 3.8rem;
+      background-color: var(--c-gray-100);
+      cursor: pointer;
+      .page-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        .tip-title {
+          font-size: 1em;
+          font-weight: bold;
+          &:not(last-child) {
+            border-bottom: 1px solid #e0e0e0;
+          }
+        }
+      }
+      &:hover {
+        background-color: var(--c-yellow-200);
+        color: var(--greyDark);
+      }
+      &.active {
+        background-color: var(--c-gray-900);
+        color: #fff;
+      }
     }
   }
 }

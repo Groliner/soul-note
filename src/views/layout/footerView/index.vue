@@ -36,7 +36,7 @@ import logo from './logo.vue'
         <br />
         <div>
           <small style="font-size: 0.83rem"
-            >&copy; 2024-, <a href="https://github.com/Groliner/soul-note.git">soul-note</a>, the
+            >&copy; 2024-, <a>soul-note</a>, the
             source of everything.</small
           >
         </div>

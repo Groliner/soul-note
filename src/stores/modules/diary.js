@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useUserStore } from './user'
+import { ElMessage } from 'element-plus'
 
 const defaultDiary = [
   {
     diary_id: 'diary',
-    title: 'Hello World',
+    title: 'origin',
     desc: 'the origin diary',
     context: {
       height: 88,
@@ -68,13 +69,19 @@ const defaultPages = [
   {
     diary_book_id: 'diary',
     page: 1,
-    title: 'Hello World 1',
-    content: 'tab to write a new paragraph \n redo Crtl + z / undo Crtl + y ',
+    title: 'origin',
+    content:
+      'tips: \n ' +
+      'tab to write a new paragraph \n ' +
+      'redo Crtl + z \n ' +
+      'undo Crtl + y \n ' +
+      'Please be sincere with every diary entry. \n ',
+    status: 0,
     context: {
       selectionStart: 0,
       selectionEnd: 0,
       scrollY: 0,
-      height: 220,
+      height: 500,
       words: 10
     },
     create_time: Date.now(),
@@ -85,6 +92,7 @@ const defaultPages = [
     page: 2,
     title: 'Hello World 2',
     content: 'Hello World',
+    status: 1,
     context: {
       selectionStart: 0,
       selectionEnd: 0,
@@ -100,6 +108,7 @@ const defaultPages = [
     page: 3,
     title: 'Hello diary 3',
     content: 'Hello diary',
+    status: 1,
     context: {
       selectionStart: 0,
       selectionEnd: 0,
@@ -115,6 +124,7 @@ const defaultPages = [
     page: 1,
     title: 'Hello diary_4 3',
     content: 'Hello diary_4',
+    status: 1,
     context: {
       selectionStart: 0,
       selectionEnd: 0,
@@ -130,6 +140,7 @@ const defaultPages = [
     page: 1,
     title: 'Hello diary_2 3',
     content: 'Hello diary_2',
+    status: 1,
     context: {
       selectionStart: 0,
       selectionEnd: 0,
@@ -145,6 +156,7 @@ const defaultPages = [
     page: 2,
     title: 'Hello diary_3 3',
     content: 'Hello diary_3',
+    status: 1,
     context: {
       selectionStart: 0,
       selectionEnd: 0,
@@ -160,6 +172,7 @@ const defaultPages = [
     page: 1,
     title: 'Hello diary_3 3',
     content: 'Hello diary_3',
+    status: 1,
     context: {
       selectionStart: 0,
       selectionEnd: 0,
@@ -175,6 +188,7 @@ const defaultPages = [
     page: 2,
     title: 'Hello diary_2 3',
     content: 'Hello diary_2',
+    status: 1,
     context: {
       selectionStart: 0,
       selectionEnd: 0,
@@ -239,6 +253,7 @@ export const useDiaryStore = defineStore(
         page: ++diary.value[index].pages,
         title: 'NEW PAGE',
         content: 'Hello World',
+        status: 1,
         context: {
           selectionStart: 0,
           selectionEnd: 0,
@@ -282,8 +297,15 @@ export const useDiaryStore = defineStore(
       const index = diaryPages.value.findIndex(
         (item) => item.diary_book_id === diary_book_id && item.page == page
       )
-      if (index !== -1 && page !== 1 && diary_book_id !== 'diary') {
+      const index_d = diary.value.findIndex(
+        (item) => item.diary_id === diary_book_id
+      )
+      if (page === 1) ElMessage.warning('The first page cannot be deleted')
+      else if (diaryPages.value[index].content.length > 1)
+        ElMessage.warning('Please delete the content first')
+      else if (index !== -1 && diary_book_id !== 'diary' && index_d !== -1) {
         diaryPages.value.splice(index, 1)
+        diary.value[index_d].last_read_page = --diary.value[index_d].pages
         return true
       }
       return false
@@ -301,9 +323,11 @@ export const useDiaryStore = defineStore(
       }
       return false
     }
-    const getDiary = (diary_id) => {
-      return diary.value.find((item) => item.diary_id == diary_id)
-    }
+    const getDiary = (diary_id) =>
+      diary.value.find((item) => item.diary_id == diary_id)
+    const getDiaries = (author) =>
+      diary.value.filter((item) => item.author == author)
+
     const getPage = (diary_book_id, page) => {
       const index = diaryPages.value.findIndex(
         (item) => item.diary_book_id === diary_book_id && item.page == page
@@ -323,6 +347,7 @@ export const useDiaryStore = defineStore(
       setDiary,
       setPages,
       getDiary,
+      getDiaries,
       getPage,
       getPages,
       updateDiary,

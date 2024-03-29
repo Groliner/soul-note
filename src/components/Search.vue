@@ -36,10 +36,10 @@ import { PhMagnifyingGlass, PhGoogleLogo } from '@phosphor-icons/vue'
     </section>
 
     <nav class="navigation">
-      <a href="#" class="navigation-item active">Overview</a>
-      <a href="#" class="navigation-item">Songs</a>
-      <a href="#" class="navigation-item">Albums</a>
-      <a href="#" class="navigation-item">Artists</a>
+      <a>Overview</a>
+      <a>Songs</a>
+      <a>Albums</a>
+      <a>Artists</a>
     </nav>
     <section class="playlists">
       <article class="card">
@@ -103,16 +103,16 @@ import { PhMagnifyingGlass, PhGoogleLogo } from '@phosphor-icons/vue'
     </section>
     <footer class="menu">
       <div class="menu-inner">
-        <a href="#" class="menu-item active">
+        <a>
           <ph-google-logo class="item_logo" />
         </a>
-        <a href="#" class="menu-item">
+        <a>
           <ph-google-logo class="item_logo" />
         </a>
-        <a href="#" class="menu-item">
+        <a>
           <ph-google-logo class="item_logo" />
         </a>
-        <a href="#" class="menu-item">
+        <a>
           <ph-google-logo class="item_logo" />
         </a>
       </div>
