@@ -7,7 +7,7 @@ import segmentedControl from './SegmentedControl.vue'
 import grolin from './SvgModules/Grolin.vue'
 import wolong from './SvgModules/Wolong.vue'
 import grozhi from './SvgModules/Grozhi.vue'
-import popup from './Popup.vue'
+import popup from './popup/Popup.vue'
 import flexInput from './FlexInput.vue'
 export const componentPlugin = {
   install(app) {

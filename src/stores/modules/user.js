@@ -7,7 +7,27 @@ const defaultUserInfo = {
   username: 'grolin',
   id: 'author',
   email: '123@qwe.com',
-  desc: "there is nothing here, it's empty"
+  desc: "there is nothing here, it's empty",
+  friends: [
+    {
+      id: 'friend_1',
+      username: 'friend_1',
+      avatar: '/deepSouls/src/assets/images/logo.png',
+      desc: 'friend_1 is a good friend'
+    },
+    {
+      id: 'friend_2',
+      username: 'friend_2',
+      avatar: '/deepSouls/src/assets/images/logo.png',
+      desc: 'friend_2 is a good friend'
+    },
+    {
+      id: 'friend_3',
+      username: 'friend_3',
+      avatar: '/deepSouls/src/assets/images/logo.png',
+      desc: 'friend_3 is a good friend'
+    }
+  ]
 }
 const defaultDiary = {
   last_read_diary_id: 'diary',

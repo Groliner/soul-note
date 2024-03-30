@@ -5,7 +5,7 @@
 
 */
 import { gsap } from 'gsap'
-import { ref, computed, watch, nextTick, shallowRef } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { formatTime } from '@/composables/formatTime'
 import { useDiaryStore, useUserStore } from '@/stores'
 const props = defineProps({
@@ -13,16 +13,15 @@ const props = defineProps({
     type: String
   }
 })
-const open = defineModel('open', {
-  type: Boolean,
-  default: false
+const diaryId = ref(props.diaryId)
+const open = ref(false)
+onMounted(() => {
+  open.value = true
 })
-const emit = defineEmits(['addDiary', 'deleteDiary'])
-
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
-const diaryRef = computed(() => diaryStore.getDiary(props.diaryId))
-const diaryPagesRef = computed(() => diaryStore.getPages(props.diaryId))
+const diaryRef = computed(() => diaryStore.getDiary(diaryId.value))
+const diaryPagesRef = computed(() => diaryStore.getPages(diaryId.value))
 const diaryInfo = computed(() => {
   return {
     author: diaryRef.value.author,
@@ -52,8 +51,7 @@ import {
   PhBackspace
 } from '@phosphor-icons/vue'
 import { ElMessage } from 'element-plus'
-import { getCurrentInstance } from 'vue'
-const { proxy } = getCurrentInstance()
+import { messageManager } from '@/directives/index'
 const pretty = () => {
   query.value = ''
   select.value = 0
@@ -63,35 +61,42 @@ watch(diaryRef, () => {
 })
 
 const handleAdd = () => {
-  proxy
-    .$showConfirmModal('Want to add a new diary?', {
+  messageManager
+    .showConfirmModal('Want to add a new diary?', {
       mask: false,
       pressTime: 100,
       draggable: true
     })
     .then((res) => {
       if (res) {
-        emit('addDiary')
+        const _diaryId = diaryStore.addDiary()
+        if (!_diaryId) ElMessage.warning('Add diary failed')
+        ElMessage.success('Add diary success')
+        diaryId.value = _diaryId
       }
     })
 }
 
 const handleDelete = () => {
-  proxy
-    .$showConfirmModal('Are you sure to delete the diary?', {
+  messageManager
+    .showConfirmModal('Are you sure to delete the diary?', {
       mask: false,
       pressTime: 80,
       draggable: true
     })
     .then((res) => {
       if (res) {
-        emit('deleteDiary')
+        const title = diaryRef.value.title
+        if (diaryStore.deleteDiary(diaryId.value))
+          ElMessage.success('Delete diary ' + title + ' success')
+        else ElMessage.warning('Delete diary' + title + ' failed')
       }
+      open.value = false
     })
 }
 const handleDeletePage = (page) => {
-  proxy
-    .$showConfirmModal('Are you sure to delete the page (past)? ', {
+  messageManager
+    .showConfirmModal('Are you sure to delete the page (past)? ', {
       mask: false,
       pressTime: 60,
       draggable: true

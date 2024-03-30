@@ -6,12 +6,64 @@ const userStore = useUserStore()
 const diaryStore = useDiaryStore()
 const { user_diary, userInfo } = storeToRefs(userStore)
 const diaries = computed(() => diaryStore.getDiaries(userInfo.value.id))
+
+import { gsap } from 'gsap'
+// avatar upload
+const avatarInput = ref(null)
+
+// 触发文件选择
+const triggerUpload = () => {
+  avatarInput.value.click() // 打开文件选择对话框
+  // 使用GSAP添加一些动画，例如按钮点击反馈
+  gsap.to(avatarInput.value, {
+    opacity: 0.7,
+    yoyo: true,
+    repeat: 1,
+    duration: 0.5
+  })
+}
+
+// 处理文件选择
+const handleAvatarChange = (event) => {
+  const files = event.target.files
+  if (files.length > 0) {
+    // 处理文件上传或预览逻辑
+    console.log('文件已选择，可以进行上传或预览操作。')
+    console.log('文件', files)
+  }
+}
+
+import { PhNotePencil } from '@phosphor-icons/vue'
+import { messageManager } from '@/directives/index'
+const handleFriends = () => {
+  messageManager.showConfirmModal('The friend system is developing ...', {
+    mask: false,
+    pressTime: 60,
+    draggable: true
+  })
+}
+const handleClick = (diaryId) => {
+  messageManager.showDiaryEditModal(diaryId)
+}
+
+import calendar from '@/components/modules/YearCalendar.vue'
 </script>
 <template>
   <div class="pfl-wrapper">
     <article>
-      <div class="profile-photo"></div>
+      <div class="profile-photo">
+        <button class="avatar" @click="triggerUpload">
+          <img :src="userInfo.avatar" />
+        </button>
+        <input
+          type="file"
+          ref="avatarInput"
+          @change="handleAvatarChange"
+          style="display: none"
+        />
+      </div>
       <div class="profile-info">
+        <div class="button-edit"><ph-note-pencil /></div>
         <h1>{{ userInfo.username }}</h1>
         <p>
           <a>{{ userInfo.email }}</a
@@ -21,23 +73,24 @@ const diaries = computed(() => diaryStore.getDiaries(userInfo.value.id))
         </p>
       </div>
       <div class="profile-content">
-        <div class="people">
-          <a class="round-tile">
-            <div class="roundal codepen"></div>
-            <h4>CodePen</h4>
-          </a>
-          <a class="round-tile">
-            <div class="roundal instagram"></div>
-            <h4>Instagram</h4>
-          </a>
-          <a class="round-tile">
-            <div class="roundal twitter"></div>
-            <h4>Twitter</h4>
-          </a>
+        <div class="friend-list">
+          <TransitionGroup tag="ul">
+            <li v-for="friend in userInfo.friends" :key="friend.id">
+              <div class="friend-card" @click="handleFriends">
+                <div class="friend-avatar">
+                  <img :src="friend.avatar" />
+                </div>
+                <div class="friend-info">
+                  <h4>{{ friend.username }}</h4>
+                  <p>{{ friend.desc }}</p>
+                </div>
+              </div>
+            </li>
+          </TransitionGroup>
         </div>
-        <div class="posts">
+        <div class="diary-list">
           <div class="tile" v-for="diary in diaries" :key="diary.diary_id">
-            <div class="inner">
+            <div class="inner" @click="handleClick(diary.diary_id)">
               <figure>
                 <img :src="diary.cover" />
                 <figcaption
@@ -54,6 +107,7 @@ const diaries = computed(() => diaryStore.getDiaries(userInfo.value.id))
         </div>
       </div>
     </article>
+    <calendar class="calendar-record" />
   </div>
 </template>
 <style lang="scss" scoped>
@@ -61,7 +115,7 @@ const diaries = computed(() => diaryStore.getDiaries(userInfo.value.id))
   width: 100%;
   height: 100%;
   padding: 40px;
-  background-color: var(--c-yellow-100);
+  background-color: var(--c-gray-100);
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.08);
 }
 
@@ -71,146 +125,153 @@ article {
   height: auto;
   padding: 50px 0;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   .profile-photo {
-    display: block;
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    background-color: white;
-    margin: 0 auto;
-    background-image: url(../../assets/images/logo.png);
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
+    .avatar {
+      cursor: pointer;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--greyDark);
+      padding: 2px;
+      background-color: white;
+      transition: all 0.25s;
+
+      img {
+        width: 100%;
+        height: 100%;
+        background-position: center;
+        background-size: cover;
+        transition: transform 0.25s;
+      }
+      &:hover {
+        box-shadow:
+          $shadow,
+          $inner-shadow,
+          0 0 50px rgba(0, 0, 0, 0.08);
+        border-color: transparent;
+        img {
+          transform: scale(0.9);
+        }
+      }
+    }
   }
 
   .profile-info {
     display: block;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
+    max-width: 80%;
     text-align: center;
+    position: relative;
+    .button-edit {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      transition: color 0.25s;
+      &:hover {
+        color: var(--primary);
+      }
+    }
 
     h1 {
       font-size: 2em;
       font-weight: 600;
-      margin-top: 0.5em;
+      margin-top: 0.3em;
+      margin-bottom: 0.2em;
     }
   }
   .profile-content {
+    margin-top: 1rem;
     display: grid;
     grid-template-columns: 1fr 4fr;
     gap: 1rem;
     border-top: 2px solid var(--primary-light);
     justify-content: space-around;
 
-    .people {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      margin: 60px 0 0;
-
-      .round-tile {
-        display: inline-block;
-        float: left;
-        margin-bottom: 30px;
-        text-align: center;
-        text-decoration: none;
-
-        &:hover {
-          text-decoration: none;
-
-          .roundal {
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.08);
-            transition: box-shadow 0.25s;
-          }
-
-          h4 {
-            color: rgb(2, 117, 216);
-            transition: color 0.25s;
-            text-decoration: none;
-          }
+    .friend-list {
+      width: 90%;
+      min-height: 3rem;
+      padding: 3rem;
+      width: 26rem;
+      min-width: 200px;
+      ul {
+        padding: 0;
+      }
+      li {
+        list-style: none;
+        transition: all 0.25s;
+        border-radius: 10px;
+        overflow: hidden;
+        .friend-card {
+          display: flex;
+          align-items: center;
+          border-bottom: 4px solid var(--c-gray-400);
+          cursor: pointer;
         }
-
-        .roundal {
-          display: block;
-          margin: 0 auto 10px;
-          width: 90px;
-          height: 90px;
-          background-color: #363636;
+        .friend-avatar {
+          margin: 0 1em;
+          width: 4rem;
+          height: 4rem;
           border-radius: 50%;
-          transition: box-shadow 0.25s;
-
-          &.twitter {
-            background-color: #1da1f2;
-            background-image: url('http://www.macdrifter.com/theme/images/twitter-snow.svg');
-            background-size: 50% auto;
-            background-position: center center;
-            background-repeat: no-repeat;
-          }
-
-          &.codepen {
-            background-color: black;
-            background-image: url('https://www.shareicon.net/download/2016/11/03/849433_codepen_512x512.png');
-            background-size: 115% auto;
-            background-position: center center;
-            background-repeat: no-repeat;
-          }
-
-          &.instagram {
-            background-color: transparent;
-            background-image: url('http://sevenfiguresocial.com/wp-content/uploads/2016/08/instagram_gradient_wallpaper_by_jasonzigrino-da28exh-550x400.png');
-            background-size: auto 100%;
-            background-position: center center;
-            background-repeat: no-repeat;
-            position: relative;
-            overflow: hidden;
-
-            &:before {
-              display: block;
-              content: '';
-              width: 100%;
-              height: 100%;
-              position: absolute;
-              top: 0;
-              left: 0;
-              background-image: url('https://sirgo.org/images/instagram-black-and-white-cliparts-11.png');
-              background-size: 50% auto;
-              background-position: center center;
-              background-repeat: no-repeat;
-              z-index: 1;
-            }
+          background-clip: border-box;
+          overflow: hidden;
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
           }
         }
-
-        h4 {
-          font-size: 1.1em;
-          color: rgba(32, 32, 32, 0.6);
-          transition: color 0.25s;
-          text-decoration: none;
+        .friend-info {
+          margin-right: 2em;
+          display: flex;
+          flex-direction: column;
+          h4 {
+            font-size: 1.2em;
+            margin-bottom: 0.5rem;
+          }
+          p {
+            font-size: 1em;
+            color: var(--c-gray-500);
+          }
+        }
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow:
+            0 0 20px rgba(0, 0, 0, 0.08),
+            $shadow;
+          h4 {
+            color: var(--primary);
+          }
+        }
+        &:not(:last-child) {
+          margin-bottom: 1em;
         }
       }
     }
 
-    .posts {
+    .diary-list {
+      align-self: flex-start;
       margin: 1rem 0;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr;
-      grid-auto-rows: 1fr;
+      display: flex;
+      flex-wrap: wrap;
       gap: 1rem;
 
       .tile {
         align-self: center;
         justify-self: center;
-        border: 2.7px solid #f1deda;
 
         .inner {
           overflow: hidden;
           border-radius: 5px;
           background-color: white;
           cursor: pointer;
+          border: 2.7px solid #f1deda;
+
           transition: box-shadow 0.25s;
 
           figure {
@@ -225,6 +286,9 @@ article {
               color: #fff;
               text-align: center;
               font-size: 1.2em;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              overflow: hidden;
 
               &.active {
                 background-color: var(--primary);
@@ -235,12 +299,18 @@ article {
           h4 {
             font-size: 1.1em;
             line-height: 1.4em;
-            padding: 20px 15px 10px;
+            padding: 0.7rem 0.4rem 1rem;
             transition: color 0.25s;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 9rem;
+            overflow: hidden;
           }
 
           &:hover {
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.08);
+            box-shadow:
+              0 0 50px rgba(0, 0, 0, 0.08),
+              $shadow;
             transition: box-shadow 0.25s;
 
             h4 {
@@ -252,5 +322,8 @@ article {
       }
     }
   }
+}
+.calendar-record {
+  margin: 0 auto;
 }
 </style>

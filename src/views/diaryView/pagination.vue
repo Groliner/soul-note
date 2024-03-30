@@ -1,6 +1,5 @@
 <script setup>
-import { getCurrentInstance } from 'vue'
-const { proxy } = getCurrentInstance()
+import { messageManager } from '@/directives/index'
 const props = defineProps({
   total: {
     type: Number,
@@ -16,8 +15,8 @@ const handleAdd = (m) => {
   if (page.value < props.total || m === -1) {
     emit('flip', m)
   } else {
-    proxy
-      .$showConfirmModal('Do you want to add a new page?', {
+    messageManager
+      .showConfirmModal('Do you want to add a new page?', {
         mask: false,
         pressTime: 100
       })

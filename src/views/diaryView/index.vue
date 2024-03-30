@@ -64,10 +64,8 @@ const handleEdit = (m) => {
 }
 
 //编辑日记本
-
-import editPop from './editPop.vue'
+import { messageManager } from '@/directives/index'
 import { ElMessage } from 'element-plus'
-const pop = ref(false)
 
 const handleAdd = () => {
   if (diaryStore.addPage(user_diary.value.last_read_diary_id)) {
@@ -83,16 +81,8 @@ const handleFlip = (m) => {
   )
 }
 
-const handleAddDiary = () => {
-  const diaryId = diaryStore.addDiary()
-  if (!diaryId) ElMessage.warning('Add diary failed')
-}
-const handleDeleteDiary = () => {
-  if (diaryStore.deleteDiary(user_diary.value.last_read_diary_id)) {
-    ElMessage.success('Delete diary successfully')
-  } else {
-    ElMessage.warning('Delete diary failed')
-  }
+const handClick = (diaryId) => {
+  messageManager.showDiaryEditModal(diaryId)
 }
 </script>
 <template>
@@ -115,7 +105,7 @@ const handleDeleteDiary = () => {
           <ph-pencil-line
             class="icon_pencil"
             weight="duotone"
-            @click="pop = true"
+            @click="handClick(item)"
           />
         </li>
       </ul>
@@ -153,16 +143,6 @@ const handleDeleteDiary = () => {
       @add="handleAdd"
       @flip="handleFlip"
     />
-    <Teleport to="body">
-      <editPop
-        :diaryId="user_diary.last_read_diary_id"
-        v-model:open="pop"
-        @addDiary="handleAddDiary"
-        @deleteDiary="handleDeleteDiary"
-      />
-
-      ></Teleport
-    >
   </div>
 </template>
 <style lang="scss" scoped>

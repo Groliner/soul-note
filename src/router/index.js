@@ -90,19 +90,14 @@ const router = createRouter({
           component: () => import('@/components/Search.vue')
         },
         {
-          path: 'popup',
-          name: 'popup',
-          component: () => import('@/components/Popup.vue')
-        },
-        {
-          path: 'popup2',
-          name: 'popup2',
-          component: () => import('@/views/diaryView/editPop.vue')
-        },
-        {
           path: 'select',
           name: 'select',
           component: () => import('@/components/Select.vue')
+        },
+        {
+          path: 'calendar',
+          name: 'calendar',
+          component: () => import('@/components/modules/YearCalendar.vue')
         }
       ]
     },
