@@ -21,10 +21,7 @@ instance.interceptors.request.use(
   (config) => {
     const userStore = useUserStore()
     // 2. 按照后端的要求拼接token数据
-    const token = userStore.userInfo?.token
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+    config.headers.token = userStore.userInfo?.token
     return config
   },
   (error) => {

@@ -6,18 +6,14 @@ import { useDiaryStore, useUserStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { PhPencilLine } from '@phosphor-icons/vue'
 const userStore = useUserStore()
-const { user_diary } = storeToRefs(userStore)
+const { userDiary } = storeToRefs(userStore)
 const diaryStore = useDiaryStore()
 const diary = computed(() =>
-  diaryStore.getDiary(user_diary.value.last_read_diary_id)
+  diaryStore.getDiary(userDiary.value.lastReadDiaryId)
 )
 const diaryPage = computed(() =>
-  diaryStore.getPage(
-    user_diary.value.last_read_diary_id,
-    diary.value.last_read_page
-  )
+  diaryStore.getPage(userDiary.value.lastReadDiaryId, diary.value.lastReadPage)
 )
-
 import { gsap } from 'gsap'
 const mirror = ref(null)
 const pageTitleInput = ref(null)
@@ -68,16 +64,16 @@ import { messageManager } from '@/directives/index'
 import { ElMessage } from 'element-plus'
 
 const handleAdd = () => {
-  if (diaryStore.addPage(user_diary.value.last_read_diary_id)) {
+  if (diaryStore.addPage(userDiary.value.lastReadDiaryId)) {
     ElMessage.success('Add page successfully')
   } else {
     ElMessage.warning('Add page failed')
   }
 }
 const handleFlip = (m) => {
-  diary.value.last_read_page = Math.min(
-    Math.max(diary.value.last_read_page + m, 1),
-    diary.value.pages || diary.value.last_read_page
+  diary.value.lastReadPage = Math.min(
+    Math.max(diary.value.lastReadPage + m, 1),
+    diary.value.pages || diary.value.lastReadPage
   )
 }
 
@@ -90,16 +86,16 @@ const handClick = (diaryId) => {
     <div class="diaryNav">
       <ul class="diaryNav_main">
         <li
-          v-for="(item, index) in user_diary.diaries"
+          v-for="(item, index) in userDiary.diaries"
           :key="item"
           :data-index="index"
         >
           <a
             class="nav_link"
             :class="{
-              active: user_diary.last_read_diary_id === item ? true : false
+              active: userDiary.lastReadDiaryId === item ? true : false
             }"
-            @click="user_diary.last_read_diary_id = item"
+            @click="userDiary.lastReadDiaryId = item"
             ><p>{{ diaryStore.getDiary(item).title }}</p></a
           >
           <ph-pencil-line
@@ -131,7 +127,7 @@ const handClick = (diaryId) => {
           v-model:context="diaryPage.context"
           v-model:content="diaryPage.content"
           :page="diaryPage.page"
-          :diaryId="diary.diary_id"
+          :diaryId="diary.id"
           :status="diaryPage.status"
         />
       </Transition>
@@ -139,7 +135,7 @@ const handClick = (diaryId) => {
     <pagination
       class="pagination"
       :total="diary.pages"
-      v-model:page="diary.last_read_page"
+      v-model:page="diary.lastReadPage"
       @add="handleAdd"
       @flip="handleFlip"
     />

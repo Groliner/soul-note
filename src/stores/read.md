@@ -36,7 +36,7 @@ const defaultPages = {
 {
     id: "diary1",
     title: "Diary Title",
-    ? belong: 'user_id',
+    ? belong: 'userId',
     pages: [
         {
             id: "page1",

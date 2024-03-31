@@ -1,36 +1,41 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useDiaryStore } from './diary'
+import { getUserInfoAPI, updateUserInfoAPI } from '@/api/user'
+import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
+import { ElMessage } from 'element-plus'
 const defaultUserInfo = {
   token: '',
   avatar: '/deepSouls/src/assets/images/logo.png',
   username: 'grolin',
   id: 'author',
   email: '123@qwe.com',
-  desc: "there is nothing here, it's empty",
+  description: "there is nothing here, it's empty",
+  status: 'active',
+  updatedTime: '',
   friends: [
     {
       id: 'friend_1',
       username: 'friend_1',
       avatar: '/deepSouls/src/assets/images/logo.png',
-      desc: 'friend_1 is a good friend'
+      description: 'friend_1 is a good friend'
     },
     {
       id: 'friend_2',
       username: 'friend_2',
       avatar: '/deepSouls/src/assets/images/logo.png',
-      desc: 'friend_2 is a good friend'
+      description: 'friend_2 is a good friend'
     },
     {
       id: 'friend_3',
       username: 'friend_3',
       avatar: '/deepSouls/src/assets/images/logo.png',
-      desc: 'friend_3 is a good friend'
+      description: 'friend_3 is a good friend'
     }
   ]
 }
 const defaultDiary = {
-  last_read_diary_id: 'diary',
+  lastReadDiaryId: 'diary',
   diaries: ['diary', 'diary_2', 'diary_3', 'diary_4']
 }
 export const useUserStore = defineStore(
@@ -38,12 +43,13 @@ export const useUserStore = defineStore(
   () => {
     // 存储用户信息
 
-    const userInfo = ref(defaultUserInfo)
-    const user_diary = ref(defaultDiary)
+    const userInfo = ref(JSON.parse(JSON.stringify(defaultUserInfo)))
+    const userDiary = ref(JSON.parse(JSON.stringify(defaultDiary)))
     const diaryStore = useDiaryStore()
     // 清空用户关联信息
     const logout = () => {
       userInfo.value = defaultUserInfo
+      console.log(defaultUserInfo)
       diaryStore.setDiary()
       diaryStore.setPages()
     }
@@ -51,23 +57,54 @@ export const useUserStore = defineStore(
     const setToken = (token) => {
       userInfo.value.token = token
     }
-    const addDiary = (diary_id) => {
-      user_diary.value.diaries.push(diary_id)
-      user_diary.value.last_read_diary_id = diary_id
+    const updateUserInfo = async (username) => {
+      const res = await getUserInfoAPI(username)
+      if (res.data.code) {
+        Object.keys(res.data.data).forEach((key) => {
+          if (Object.prototype.hasOwnProperty.call(userInfo.value, key)) {
+            userInfo.value[key] = res.data.data[key]
+          }
+        })
+        if (!userInfo.value.id) return
+        // 获取用户日记状态
+        const res2 = await getUserDiaryStatusAPI({ userId: userInfo.value.id })
+        if (res2.data.code) {
+          userDiary.value = res2.data.data
+          diaryStore.setDiary(userDiary.value.diaries)
+        } else ElMessage.error(res2.data.msg)
+      } else ElMessage.error(res.data.msg)
     }
-    const deleteDiary = (diary_id) => {
-      const index = user_diary.value.diaries.indexOf(diary_id)
+    const setUserInfo = (data) => {
+      Object.keys(data).forEach((key) => {
+        if (Object.prototype.hasOwnProperty.call(userInfo.value, key)) {
+          userInfo.value[key] = data[key]
+        }
+      })
+    }
+    const saveUserInfo = async () => {
+      const res = updateUserInfoAPI(userInfo.value)
+      if (res.data.code) ElMessage.success('保存成功')
+      else ElMessage.error(res.data.msg)
+    }
+    const addDiary = (id) => {
+      userDiary.value.diaries.push(id)
+      userDiary.value.lastReadDiaryId = id
+    }
+    const deleteDiary = (id) => {
+      const index = userDiary.value.diaries.indexOf(id)
       if (index !== -1) {
-        user_diary.value.diaries.splice(index, 1)
-        user_diary.value.last_read_diary_id =
-          user_diary.value.diaries[index - 1]
+        userDiary.value.diaries.splice(index, 1)
+        userDiary.value.lastReadDiaryId = userDiary.value.diaries[index - 1]
       }
     }
 
     return {
       userInfo,
-      user_diary,
+      userDiary,
       setToken,
+      updateUserInfo,
+      saveUserInfo,
+      setUserInfo,
       logout,
       addDiary,
       deleteDiary

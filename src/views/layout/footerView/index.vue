@@ -19,9 +19,24 @@ import logo from './logo.vue'
           />
         </defs>
         <g class="parallax">
-          <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7)" />
-          <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
-          <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+          <use
+            xlink:href="#gentle-wave"
+            x="48"
+            y="0"
+            fill="rgba(255,255,255,0.7)"
+          />
+          <use
+            xlink:href="#gentle-wave"
+            x="48"
+            y="3"
+            fill="rgba(255,255,255,0.5)"
+          />
+          <use
+            xlink:href="#gentle-wave"
+            x="48"
+            y="5"
+            fill="rgba(255,255,255,0.3)"
+          />
           <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
         </g>
       </svg>
@@ -36,8 +51,9 @@ import logo from './logo.vue'
         <br />
         <div>
           <small style="font-size: 0.83rem"
-            >&copy; 2024-, <a>soul-note</a>, the
-            source of everything.</small
+            >&copy; 2024-,
+            <a href="https://github.com/Groliner/soul-note.git">soul-note</a>,
+            the source of everything.</small
           >
         </div>
       </div>

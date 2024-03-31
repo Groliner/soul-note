@@ -25,7 +25,7 @@ const diaryPagesRef = computed(() => diaryStore.getPages(diaryId.value))
 const diaryInfo = computed(() => {
   return {
     author: diaryRef.value.author,
-    last_read_page: diaryRef.value.last_read_page,
+    lastReadPage: diaryRef.value.lastReadPage,
     total_pages: diaryRef.value.pages,
     create_time: formatTime(diaryRef.value.create_time),
     update_time: formatTime(diaryRef.value.update_time)
@@ -103,7 +103,7 @@ const handleDeletePage = (page) => {
     })
     .then((res) => {
       if (res) {
-        diaryStore.deletePage(diaryRef.value.diary_id, page)
+        diaryStore.deletePage(diaryRef.value.id, page)
       }
     })
 }
@@ -233,8 +233,8 @@ const handleCoverChange = (event) => {
                 background-attachment: local;
               "
               ref="textareaDesc"
-              v-model="diaryRef.desc"
-              placeholder="diary desc"
+              v-model="diaryRef.description"
+              placeholder="diary description"
               @input="autoExpand"
             ></textarea>
           </p>
@@ -294,7 +294,7 @@ const handleCoverChange = (event) => {
               <li key="icon_add">
                 <ph-file-plus
                   weight="bold"
-                  @click="diaryStore.addPage(diaryRef.diary_id)"
+                  @click="diaryStore.addPage(diaryRef.id)"
                   class="icon add"
                 />
               </li> </TransitionGroup

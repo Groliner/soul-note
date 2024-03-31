@@ -4,7 +4,7 @@ import { ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
-const { user_diary, userInfo } = storeToRefs(userStore)
+const { userDiary, userInfo } = storeToRefs(userStore)
 const diaries = computed(() => diaryStore.getDiaries(userInfo.value.id))
 
 import { gsap } from 'gsap'
@@ -23,17 +23,20 @@ const triggerUpload = () => {
   })
 }
 
+import { uploadImgAPI } from '@/api/fundamental'
 // 处理文件选择
-const handleAvatarChange = (event) => {
+const handleAvatarChange = async (event) => {
   const files = event.target.files
   if (files.length > 0) {
-    // 处理文件上传或预览逻辑
-    console.log('文件已选择，可以进行上传或预览操作。')
-    console.log('文件', files)
+    const formData = new FormData()
+    formData.append('image', files[0])
+    const res = await uploadImgAPI(formData)
+    console.log(res)
+    userStore.setUserInfo({ avatar: res.data.data })
   }
 }
 
-import { PhNotePencil } from '@phosphor-icons/vue'
+import { PhNotePencil, PhSlidersHorizontal } from '@phosphor-icons/vue'
 import { messageManager } from '@/directives/index'
 const handleFriends = () => {
   messageManager.showConfirmModal('The friend system is developing ...', {
@@ -61,15 +64,15 @@ import calendar from '@/components/modules/YearCalendar.vue'
           @change="handleAvatarChange"
           style="display: none"
         />
+        <div class="button-edit"><ph-note-pencil /></div>
       </div>
       <div class="profile-info">
-        <div class="button-edit"><ph-note-pencil /></div>
         <h1>{{ userInfo.username }}</h1>
         <p>
           <a>{{ userInfo.email }}</a
           >.
           <br />
-          {{ userInfo.desc }}
+          {{ userInfo.description }}
         </p>
       </div>
       <div class="profile-content">
@@ -82,26 +85,27 @@ import calendar from '@/components/modules/YearCalendar.vue'
                 </div>
                 <div class="friend-info">
                   <h4>{{ friend.username }}</h4>
-                  <p>{{ friend.desc }}</p>
+                  <p>{{ friend.description }}</p>
                 </div>
+                <a class="options"><ph-sliders-horizontal class="icon" /></a>
               </div>
             </li>
           </TransitionGroup>
         </div>
         <div class="diary-list">
-          <div class="tile" v-for="diary in diaries" :key="diary.diary_id">
-            <div class="inner" @click="handleClick(diary.diary_id)">
+          <div class="tile" v-for="diary in diaries" :key="diary.id">
+            <div class="inner" @click="handleClick(diary.id)">
               <figure>
                 <img :src="diary.cover" />
                 <figcaption
                   :class="{
-                    active: diary.diary_id === user_diary.last_read_diary_id
+                    active: diary.id === userDiary.lastReadDiaryId
                   }"
                 >
                   {{ diary.title }}
                 </figcaption>
               </figure>
-              <h4>{{ diary.desc }}</h4>
+              <h4>{{ diary.description }}</h4>
             </div>
           </div>
         </div>
@@ -130,6 +134,7 @@ article {
   align-items: center;
 
   .profile-photo {
+    position: relative;
     .avatar {
       cursor: pointer;
       width: 130px;
@@ -143,10 +148,10 @@ article {
 
       img {
         width: 100%;
-        height: 100%;
-        background-position: center;
-        background-size: cover;
+        object-fit: cover;
+        object-position: center;
         transition: transform 0.25s;
+        transform: scale(1.1);
       }
       &:hover {
         box-shadow:
@@ -155,8 +160,20 @@ article {
           0 0 50px rgba(0, 0, 0, 0.08);
         border-color: transparent;
         img {
-          transform: scale(0.9);
+          transform: scale(1.01);
         }
+      }
+    }
+
+    .button-edit {
+      position: absolute;
+      right: 0;
+      bottom: -1.6em;
+      font-size: 1.3em;
+      cursor: pointer;
+      transition: color 0.25s;
+      &:hover {
+        color: var(--primary);
       }
     }
   }
@@ -166,17 +183,6 @@ article {
     max-width: 80%;
     text-align: center;
     position: relative;
-    .button-edit {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      font-size: 20px;
-      cursor: pointer;
-      transition: color 0.25s;
-      &:hover {
-        color: var(--primary);
-      }
-    }
 
     h1 {
       font-size: 2em;
@@ -214,7 +220,7 @@ article {
           cursor: pointer;
         }
         .friend-avatar {
-          margin: 0 1em;
+          margin: 0.5em 1em;
           width: 4rem;
           height: 4rem;
           border-radius: 50%;
@@ -239,6 +245,16 @@ article {
             color: var(--c-gray-500);
           }
         }
+        .options {
+          background-color: var(--c-gray-300);
+          width: 2em;
+          height: 2em;
+          border-radius: 50%;
+          position: relative;
+          .icon {
+            @include absCenter;
+          }
+        }
         &:hover {
           transform: translateY(-5px);
           box-shadow:
@@ -247,7 +263,14 @@ article {
           h4 {
             color: var(--primary);
           }
+          .options {
+            background-color: var(--c-gray-400);
+            .icon {
+              color: var(--c-gray-900);
+            }
+          }
         }
+
         &:not(:last-child) {
           margin-bottom: 1em;
         }
@@ -270,7 +293,7 @@ article {
           border-radius: 5px;
           background-color: white;
           cursor: pointer;
-          border: 2.7px solid #f1deda;
+          border: 2.7px solid var(--c-gray-900);
 
           transition: box-shadow 0.25s;
 
@@ -315,7 +338,6 @@ article {
 
             h4 {
               color: rgb(2, 117, 216);
-              transition: color 0.25s;
             }
           }
         }

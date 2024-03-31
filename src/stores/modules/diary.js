@@ -5,69 +5,61 @@ import { ElMessage } from 'element-plus'
 
 const defaultDiary = [
   {
-    diary_id: 'diary',
+    id: 'diary',
     title: 'origin',
-    desc: 'the origin diary',
-    context: {
-      height: 88,
-      words: 10
-    },
+    description: 'the origin diary',
+    height: 88,
+    words: 10,
     cover: '/deepSouls/src/assets/images/soul-note/note_1.webp',
-    last_read_page: 1,
+    lastReadPage: 1,
     pages: 3,
-    author: 'author',
-    create_time: Date.now(),
-    update_time: Date.now()
+    userId: 'author',
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_id: 'diary_2',
+    id: 'diary_2',
     title: 'Hello World 2',
-    desc: 'some desc...haha',
-    context: {
-      height: 88,
-      words: 10
-    },
+    description: 'some desc...haha',
+    height: 88,
+    words: 10,
     cover: '/deepSouls/src/assets/images/soul-note/note_2.webp',
-    author: 'author',
-    last_read_page: 1,
+    userId: 'author',
+    lastReadPage: 1,
     pages: 2,
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_id: 'diary_3',
+    id: 'diary_3',
     title: 'Hello World 3',
-    desc: 'some desc...haha',
-    context: {
-      height: 88,
-      words: 10
-    },
+    description: 'some desc...haha',
+    height: 88,
+    words: 10,
     cover: '/deepSouls/src/assets/images/soul-note/note_3.webp',
-    author: 'author',
-    last_read_page: 1,
+    userId: 'author',
+    lastReadPage: 1,
     pages: 2,
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_id: 'diary_4',
+    id: 'diary_4',
     title: 'Hello World 4',
-    context: {
-      height: 88,
-      words: 10
-    },
+    height: 88,
+    words: 10,
     cover: '/deepSouls/src/assets/images/soul-note/note_4.webp',
-    desc: 'some desc...haha',
-    author: 'author',
-    last_read_page: 1,
+    description: 'some desc...haha',
+    userId: 'author',
+    lastReadPage: 1,
     pages: 1,
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   }
 ]
 const defaultPages = [
   {
-    diary_book_id: 'diary',
+    diaryId: 'diary',
     page: 1,
     title: 'origin',
     content:
@@ -84,11 +76,11 @@ const defaultPages = [
       height: 500,
       words: 10
     },
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_book_id: 'diary',
+    diaryId: 'diary',
     page: 2,
     title: 'Hello World 2',
     content: 'Hello World',
@@ -100,11 +92,11 @@ const defaultPages = [
       height: 150,
       words: 10
     },
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_book_id: 'diary',
+    diaryId: 'diary',
     page: 3,
     title: 'Hello diary 3',
     content: 'Hello diary',
@@ -116,11 +108,11 @@ const defaultPages = [
       height: 150,
       words: 10
     },
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_book_id: 'diary_4',
+    diaryId: 'diary_4',
     page: 1,
     title: 'Hello diary_4 3',
     content: 'Hello diary_4',
@@ -132,11 +124,11 @@ const defaultPages = [
       height: 150,
       words: 10
     },
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_book_id: 'diary_2',
+    diaryId: 'diary_2',
     page: 1,
     title: 'Hello diary_2 3',
     content: 'Hello diary_2',
@@ -148,11 +140,11 @@ const defaultPages = [
       height: 150,
       words: 10
     },
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_book_id: 'diary_3',
+    diaryId: 'diary_3',
     page: 2,
     title: 'Hello diary_3 3',
     content: 'Hello diary_3',
@@ -164,11 +156,11 @@ const defaultPages = [
       height: 150,
       words: 10
     },
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_book_id: 'diary_3',
+    diaryId: 'diary_3',
     page: 1,
     title: 'Hello diary_3 3',
     content: 'Hello diary_3',
@@ -180,11 +172,11 @@ const defaultPages = [
       height: 150,
       words: 10
     },
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   },
   {
-    diary_book_id: 'diary_2',
+    diaryId: 'diary_2',
     page: 2,
     title: 'Hello diary_2 3',
     content: 'Hello diary_2',
@@ -196,8 +188,8 @@ const defaultPages = [
       height: 150,
       words: 10
     },
-    create_time: Date.now(),
-    update_time: Date.now()
+    createdTime: Date.now(),
+    updatedTime: Date.now()
   }
 ]
 export const useDiaryStore = defineStore(
@@ -211,45 +203,23 @@ export const useDiaryStore = defineStore(
     const setPages = (page = defaultPages) => {
       diaryPages.value = page
     }
-    const updateDiary = ({ diary_id, title, desc, context }) => {
-      // 根据 diary_id 更新 diary
-      const index = diary.value.findIndex((item) => item.diary_id === diary_id)
+    const updateDiary = ({ id, title, description, context }) => {
+      // 根据 id 更新 diary
+      const index = diary.value.findIndex((item) => item.id === id)
       if (index !== -1) {
-        diary.value[index].update_time = Date.now()
+        diary.value[index].updatedTime = Date.now()
         diary.value[index].title = title
-        diary.value[index].desc = desc
+        diary.value[index].description = description
         diary.value[index].context = context
       }
       return true
     }
-    const updatePage = (diary_book_id, page, pageData) => {
-      const index = diaryPages.value.findIndex(
-        (item) => item.diary_book_id === diary_book_id
-      )
-      if (index !== -1) {
-        const pageIndex = diaryPages.value[index].pages.findIndex(
-          (item) => item.page === page
-        )
-        if (pageIndex !== -1) {
-          diaryPages.value[index].pages[pageIndex] = pageData
-        } else {
-          diaryPages.value[index].pages.push(pageData)
-        }
-      } else {
-        diaryPages.value.push({
-          diary_book_id,
-          pages: [pageData]
-        })
-      }
-    }
-    const addPage = (diary_book_id) => {
-      const index = diary.value.findIndex(
-        (item) => item.diary_id === diary_book_id
-      )
+    const addPage = (id) => {
+      const index = diary.value.findIndex((item) => item.id === id)
       if (index === -1) return false
       // 添加 diary_page
       const page = {
-        diary_book_id: diary_book_id,
+        id: id,
         page: ++diary.value[index].pages,
         title: 'NEW PAGE',
         content: 'Hello World',
@@ -261,85 +231,75 @@ export const useDiaryStore = defineStore(
           height: 150,
           words: 11
         },
-        create_time: Date.now(),
-        update_time: Date.now()
+        createdTime: Date.now(),
+        updatedTime: Date.now()
       }
       diaryPages.value.push(page)
-      diary.value[index].last_read_page = page.page
+      diary.value[index].lastReadPage = page.page
       return true
     }
     const addDiary = () => {
-      const diary_id = `diary_${diary.value.length + 1}`
+      const id = `diary_${diary.value.length + 1}`
       diary.value.push({
-        diary_id: diary_id,
+        id: id,
         title: 'Hello World',
-        context: {
-          height: 88,
-          words: 10
-        },
+        height: 88,
+        words: 10,
         cover: '/deepSouls/src/assets/images/soul-note/note_1.webp',
-        desc: 'some desc...',
-        author: 'author',
-        last_read_page: 0,
+        description: 'some desc...',
+        userId: 'author',
         pages: 0,
-        create_time: Date.now(),
-        update_time: Date.now()
+        createdTime: Date.now(),
+        updatedTime: Date.now()
       })
-      if (addPage(diary_id)) {
+      if (addPage(id)) {
         const userStore = useUserStore()
-        userStore.addDiary(diary_id)
-        return diary_id
+        userStore.addDiary(id)
+        return id
       }
       diary.value.pop()
       return false
     }
-    const deletePage = (diary_book_id, page) => {
+    const deletePage = (id, page) => {
       const index = diaryPages.value.findIndex(
-        (item) => item.diary_book_id === diary_book_id && item.page == page
+        (item) => item.id === id && item.page == page
       )
-      const index_d = diary.value.findIndex(
-        (item) => item.diary_id === diary_book_id
-      )
+      const index_d = diary.value.findIndex((item) => item.id === id)
       if (page === 1) ElMessage.warning('The first page cannot be deleted')
       else if (diaryPages.value[index].content.length > 1)
         ElMessage.warning('Please delete the content first')
-      else if (index !== -1 && diary_book_id !== 'diary' && index_d !== -1) {
+      else if (index !== -1 && id !== 'diary' && index_d !== -1) {
         diaryPages.value.splice(index, 1)
-        diary.value[index_d].last_read_page = --diary.value[index_d].pages
+        diary.value[index_d].lastReadPage = --diary.value[index_d].pages
         return true
       }
       return false
     }
-    const deleteDiary = (diary_id) => {
-      const index = diary.value.findIndex((item) => item.diary_id === diary_id)
+    const deleteDiary = (id) => {
+      const index = diary.value.findIndex((item) => item.id === id)
       if (index !== -1 && index !== 0) {
-        diaryPages.value = diaryPages.value.filter(
-          (item) => item.diary_book_id !== diary_id
-        )
+        diaryPages.value = diaryPages.value.filter((item) => item.id !== id)
         diary.value.splice(index, 1)
         const userStore = useUserStore()
-        userStore.deleteDiary(diary_id)
+        userStore.deleteDiary(id)
         return true
       }
       return false
     }
-    const getDiary = (diary_id) =>
-      diary.value.find((item) => item.diary_id == diary_id)
-    const getDiaries = (author) =>
-      diary.value.filter((item) => item.author == author)
+    const getDiary = (id) => diary.value.find((item) => item.id == id)
+    const getDiaries = (userId) =>
+      diary.value.filter((item) => item.userId == userId)
 
-    const getPage = (diary_book_id, page) => {
+    const getPage = (diaryId, page) => {
       const index = diaryPages.value.findIndex(
-        (item) => item.diary_book_id === diary_book_id && item.page == page
+        (item) => item.diaryId === diaryId && item.page == page
       )
       if (index !== -1) {
         return diaryPages.value[index]
       }
     }
-    const getPages = (diary_book_id) => {
-      return diaryPages.value.filter(
-        (item) => item.diary_book_id == diary_book_id
-      )
+    const getPages = (diaryId) => {
+      return diaryPages.value.filter((item) => item.diaryId == diaryId)
     }
     return {
       diary,
@@ -351,7 +311,6 @@ export const useDiaryStore = defineStore(
       getPage,
       getPages,
       updateDiary,
-      updatePage,
       addPage,
       addDiary,
       deletePage,

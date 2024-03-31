@@ -15,11 +15,21 @@
             v-if="day.value"
             class="box-item"
             effect="dark"
-            :content="`${day.isToday ? 'today' : day.day} ${day.value} times`"
+            :content="`${day.value} words`"
             placement="bottom-end"
           >
-            <el-button style="opacity: 0; padding: 0; width: 20px; height: 20px"
-              >1</el-button
+            <el-button
+              :style="{
+                backgroundColor: day.color || 'rgb(50 180 0 / 0%)'
+              }"
+              style="
+                padding: 0;
+                width: 20px;
+                height: 20px;
+                border: none;
+                font-family: inherit;
+              "
+              >{{ day.day }}</el-button
             >
           </el-tooltip>
           <span
@@ -40,26 +50,52 @@ const props = defineProps({
     type: Array,
     default: () => [
       {
-        timestamp: Date.now(),
-        value: 10
-      },
-      {
-        timestamp: Date.now() + 86400012,
+        timestamp: Date.now() - 86400012,
         value: 23
       },
       {
+        timestamp: Date.now(),
+        value: 1
+      },
+      {
+        timestamp: Date.now() + 86400012,
+        value: 23000
+      },
+      {
         timestamp: Date.now() + 86400000 * 2,
-        value: 100
+        value: 1000000
       }
     ]
   }
 })
 const months = ref([])
 // 根据值计算颜色
-function getColor(value) {
-  // 这里简化颜色计算逻辑，实际项目中可以根据需求调整
-  const intensity = Math.min(value / 100, 1) // 假设 100 是最大值
-  return `rgba(50, 180, 0, ${intensity})` // 根据强度显示颜色
+function getColor(wordCount) {
+  // 确保字数在0到100000之间
+  wordCount = Math.max(0, Math.min(wordCount, 100000))
+
+  let red, green, blue
+
+  if (wordCount <= 50000) {
+    // 从白色到青色的渐变
+    // 字数在0到50000之间，红色从255渐变到0，绿色和蓝色保持在255
+    const ratio = wordCount / 50000
+    red = 255 * (1 - ratio)
+    green = 255
+    blue = 255
+  } else {
+    // 从青色到绿色的渐变
+    // 字数在50001到100000之间，绿色保持255，蓝色从255渐变到0
+    const ratio = (wordCount - 50000) / 50000
+    red = 0
+    green = 255
+    blue = 255 * (1 - ratio)
+  }
+
+  // 生成RGB颜色字符串
+  const color = `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)})`
+
+  return color
 }
 const getDaysInMonth = (month, year) => {
   return new Date(year, month, 0).getDate()

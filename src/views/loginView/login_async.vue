@@ -90,7 +90,9 @@ watch(inputArray, () => {
   refArray.forEach((inner, index) => {
     const key = inputArray.value[index].id
     inner.value.value =
-      responseData.value?.data && key in responseData.value.data ? responseData.value.data[key] : ''
+      responseData.value?.data && key in responseData.value.data
+        ? responseData.value.data[key]
+        : ''
   })
 })
 const finishedStep = ref(0)
@@ -118,7 +120,8 @@ const handleHover = (el) => {
 }
 const handleOut = () => {
   // console.log(responseData.value.data)
-  isHover.value = stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
+  isHover.value =
+    stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
   if (responseData.value?.data && !isFinished.value) {
     responseData.value.data = undefined
   }
@@ -141,9 +144,14 @@ const checkInput = (el) => {
 }
 const moveToNextStep = () => {
   stepNumber.value =
-    finishedStep.value >= stepNumber.value ? stepNumber.value + 1 : finishedStep.value + 1
+    finishedStep.value >= stepNumber.value
+      ? stepNumber.value + 1
+      : finishedStep.value + 1
   progress.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
-  if (finishedStep.value < totalSteps.value || stepNumber.value <= totalSteps.value)
+  if (
+    finishedStep.value < totalSteps.value ||
+    stepNumber.value <= totalSteps.value
+  )
     return checkInput(refArray[stepNumber.value - 1])
   isFinished.value = true
   setTimeout(handleFinished, 500)
@@ -163,7 +171,9 @@ const reset = (change = true, toStep = '1') => {
   // console.log(toStep)
   // 判断toStep是否包含username
   stepNumber.value =
-    toStep === '1' ? 1 : inputArray.value.findIndex((el) => toStep.includes(el.id)) + 1
+    toStep === '1'
+      ? 1
+      : inputArray.value.findIndex((el) => toStep.includes(el.id)) + 1
   if (change) {
     inputArray.value = props.logIn
     isSignUp.value = false
@@ -272,11 +282,12 @@ const login = async (formData) => {
     .catch((err) => {
       ElMessage.error(err.data?.msg || err.message)
     })
-  // console.log(captcha)
+  console.log(captcha)
   return await loginAPI(formData)
     .then((res) => {
       if (res.data.code) {
         userStore.setToken(res.data.data.token)
+        userStore.updateUserInfo(res.data.data.username)
         ElMessage({ type: 'success', message: 'Login successfully' })
       } else {
         ElMessage({
@@ -316,7 +327,9 @@ const signup = async (formData) => {
     @mouseover="handleHover"
     @mouseleave="handleOut"
   >
-    <h1 id="heading" class="up" :class="{ inactive: !isSignUp && isHover }">Sign Up</h1>
+    <h1 id="heading" class="up" :class="{ inactive: !isSignUp && isHover }">
+      Sign Up
+    </h1>
 
     <form method="post" action="" autocomplete="off">
       <div id="inp-box-cover">
@@ -366,7 +379,9 @@ const signup = async (formData) => {
               Working<ph-arrows-clockwise class="loading" weight="bold" />
             </div>
             <div id="acc-success" v-show="!load">
-              <p>Account Created<ph-check-fat class="checkout" weight="fill" /></p>
+              <p>
+                Account Created<ph-check-fat class="checkout" weight="fill" />
+              </p>
               <span id="init-login" @click="reset">Login now</span>
             </div>
           </div>
@@ -374,7 +389,9 @@ const signup = async (formData) => {
       </div>
     </form>
 
-    <h1 id="heading" class="down" :class="{ inactive: isHover && isSignUp }">Log In</h1>
+    <h1 id="heading" class="down" :class="{ inactive: isHover && isSignUp }">
+      Log In
+    </h1>
   </div>
 </template>
 <style lang="scss" scoped>

@@ -58,10 +58,10 @@ onMounted(() => {
   })
 })
 
-const pop = ref(false)
 import { useRouter } from 'vue-router'
-const router = useRouter()
 import { ElMessage } from 'element-plus'
+import { messageManager } from '@/directives/index'
+const router = useRouter()
 // 检查是否登录
 const userStore = useUserStore()
 const logout = () => {
@@ -72,6 +72,11 @@ const logout = () => {
   } else {
     ElMessage.error('You are not logged in')
   }
+}
+const handleLogout = () => {
+  messageManager.showConfirmModal('Are you sure to logout ?').then((res) => {
+    if (res) logout()
+  })
 }
 </script>
 <template>
@@ -113,33 +118,16 @@ const logout = () => {
           </RouterLink>
         </li>
         <li>
-          <a class="nav_link" @click="pop = true"> Log out </a>
+          <a class="nav_link" @click="handleLogout"> Log out </a>
         </li>
       </ul>
       <ul class="nav_sub" v-else>
-        <li>
-          <RouterLink class="nav_link" active-class="active" to="/account">
-            Account
-          </RouterLink>
-        </li>
-        <li>
-          <a class="nav_link" @click="pop = true"> Log out </a>
-        </li>
         <li>
           <RouterLink class="nav_link" to="/login"> Log in </RouterLink>
         </li>
       </ul>
     </div>
     <div class="dim" @click="show = false"></div>
-    <Teleport to="body">
-      <PopupComponent
-        :open="pop"
-        @close="pop = false"
-        @confirm="logout"
-        @refuse="pop = false"
-        ><template #content>Are you sure to logout ?</template></PopupComponent
-      ></Teleport
-    >
   </section>
 </template>
 <style lang="scss" scoped>
