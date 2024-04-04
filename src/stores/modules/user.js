@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useDiaryStore } from './diary'
 import { getUserInfoAPI, updateUserInfoAPI } from '@/api/user'
 import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
@@ -49,7 +49,6 @@ export const useUserStore = defineStore(
     // 清空用户关联信息
     const logout = () => {
       userInfo.value = defaultUserInfo
-      console.log(defaultUserInfo)
       diaryStore.setDiary()
       diaryStore.setPages()
     }
@@ -57,8 +56,8 @@ export const useUserStore = defineStore(
     const setToken = (token) => {
       userInfo.value.token = token
     }
-    const updateUserInfo = async (username) => {
-      const res = await getUserInfoAPI(username)
+    const updateUserInfo = async () => {
+      const res = await getUserInfoAPI()
       if (res.data.code) {
         Object.keys(res.data.data).forEach((key) => {
           if (Object.prototype.hasOwnProperty.call(userInfo.value, key)) {
@@ -67,11 +66,11 @@ export const useUserStore = defineStore(
         })
         if (!userInfo.value.id) return
         // 获取用户日记状态
-        const res2 = await getUserDiaryStatusAPI({ userId: userInfo.value.id })
-        if (res2.data.code) {
-          userDiary.value = res2.data.data
-          diaryStore.setDiary(userDiary.value.diaries)
-        } else ElMessage.error(res2.data.msg)
+        // const res2 = await getUserDiaryStatusAPI({ userId: userInfo.value.id })
+        // if (res2.data.code) {
+        //   userDiary.value = res2.data.data
+        //   diaryStore.setDiary(userDiary.value.diaries)
+        // } else ElMessage.error(res2.data.msg)
       } else ElMessage.error(res.data.msg)
     }
     const setUserInfo = (data) => {
@@ -82,9 +81,18 @@ export const useUserStore = defineStore(
       })
     }
     const saveUserInfo = async () => {
-      const res = updateUserInfoAPI(userInfo.value)
-      if (res.data.code) ElMessage.success('保存成功')
-      else ElMessage.error(res.data.msg)
+      const res = await updateUserInfoAPI({
+        ...userInfo.value,
+        lastReadDiaryId: userDiary.value.lastReadDiaryId
+      })
+      if (res.data.code) {
+        ElMessage.success('保存成功')
+        return true
+      } else {
+        updateUserInfo(userInfo.value.username)
+        ElMessage.error(res.data.msg)
+        return false
+      }
     }
     const addDiary = (id) => {
       userDiary.value.diaries.push(id)
@@ -98,9 +106,12 @@ export const useUserStore = defineStore(
       }
     }
 
+    const isAuthenticated = computed(() => !!userInfo.value.token)
+
     return {
       userInfo,
       userDiary,
+      isAuthenticated,
       setToken,
       updateUserInfo,
       saveUserInfo,

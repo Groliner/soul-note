@@ -34,11 +34,11 @@ provide('pressTime', 123)
 <style lang="scss">
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.78s ease-in;
+  transition: all 0.54s ease-in;
   width: 100%;
 }
 .fade-leave-active {
-  transition: all 0.66s ease-out;
+  transition: all 0.34s ease-out;
   position: absolute;
 }
 .fade-enter-from,

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useUserStore } from './user'
 import { ElMessage } from 'element-plus'
-
+import { addDiaryAPI, deleteDiaryAPI } from '@/api/diary'
 const defaultDiary = [
   {
     id: 'diary',
@@ -13,7 +13,7 @@ const defaultDiary = [
     cover: '/deepSouls/src/assets/images/soul-note/note_1.webp',
     lastReadPage: 1,
     pages: 3,
-    userId: 'author',
+    username: 'author',
     createdTime: Date.now(),
     updatedTime: Date.now()
   },
@@ -24,7 +24,7 @@ const defaultDiary = [
     height: 88,
     words: 10,
     cover: '/deepSouls/src/assets/images/soul-note/note_2.webp',
-    userId: 'author',
+    username: 'author',
     lastReadPage: 1,
     pages: 2,
     createdTime: Date.now(),
@@ -37,7 +37,7 @@ const defaultDiary = [
     height: 88,
     words: 10,
     cover: '/deepSouls/src/assets/images/soul-note/note_3.webp',
-    userId: 'author',
+    username: 'author',
     lastReadPage: 1,
     pages: 2,
     createdTime: Date.now(),
@@ -50,7 +50,7 @@ const defaultDiary = [
     words: 10,
     cover: '/deepSouls/src/assets/images/soul-note/note_4.webp',
     description: 'some desc...haha',
-    userId: 'author',
+    username: 'author',
     lastReadPage: 1,
     pages: 1,
     createdTime: Date.now(),
@@ -195,8 +195,8 @@ const defaultPages = [
 export const useDiaryStore = defineStore(
   'diary',
   () => {
-    const diary = ref(defaultDiary)
-    const diaryPages = ref(defaultPages)
+    const diary = ref(JSON.parse(JSON.stringify(defaultDiary)))
+    const diaryPages = ref(JSON.parse(JSON.stringify(defaultPages)))
     const setDiary = (diary = defaultDiary) => {
       diary.value = diary
     }
@@ -219,7 +219,7 @@ export const useDiaryStore = defineStore(
       if (index === -1) return false
       // 添加 diary_page
       const page = {
-        id: id,
+        diaryId: id,
         page: ++diary.value[index].pages,
         title: 'NEW PAGE',
         content: 'Hello World',
@@ -238,7 +238,8 @@ export const useDiaryStore = defineStore(
       diary.value[index].lastReadPage = page.page
       return true
     }
-    const addDiary = () => {
+    const addDiary = async () => {
+      const userStore = useUserStore()
       const id = `diary_${diary.value.length + 1}`
       diary.value.push({
         id: id,
@@ -247,29 +248,35 @@ export const useDiaryStore = defineStore(
         words: 10,
         cover: '/deepSouls/src/assets/images/soul-note/note_1.webp',
         description: 'some desc...',
-        userId: 'author',
+        username: userStore.userInfo.username || 'author',
         pages: 0,
+        lastReadPage: 0,
         createdTime: Date.now(),
         updatedTime: Date.now()
       })
       if (addPage(id)) {
-        const userStore = useUserStore()
         userStore.addDiary(id)
+        const res = await addDiaryAPI()
+        console.log(res.data.data)
+        await deleteDiaryAPI(res.data.data.id)
         return id
       }
       diary.value.pop()
+
       return false
     }
     const deletePage = (id, page) => {
       const index = diaryPages.value.findIndex(
-        (item) => item.id === id && item.page == page
+        (item) => item.diaryId === id && item.page === page
       )
       const index_d = diary.value.findIndex((item) => item.id === id)
-      if (page === 1) ElMessage.warning('The first page cannot be deleted')
+      if (page === 1 && id === 'diary')
+        ElMessage.warning('The diary cannot be deleted')
       else if (diaryPages.value[index].content.length > 1)
         ElMessage.warning('Please delete the content first')
-      else if (index !== -1 && id !== 'diary' && index_d !== -1) {
+      else if (index !== -1 && index_d !== -1) {
         diaryPages.value.splice(index, 1)
+        console.log(diary.value[index_d].pages)
         diary.value[index_d].lastReadPage = --diary.value[index_d].pages
         return true
       }
@@ -278,7 +285,9 @@ export const useDiaryStore = defineStore(
     const deleteDiary = (id) => {
       const index = diary.value.findIndex((item) => item.id === id)
       if (index !== -1 && index !== 0) {
-        diaryPages.value = diaryPages.value.filter((item) => item.id !== id)
+        diaryPages.value = diaryPages.value.filter(
+          (item) => item.diaryId !== id
+        )
         diary.value.splice(index, 1)
         const userStore = useUserStore()
         userStore.deleteDiary(id)
@@ -287,12 +296,12 @@ export const useDiaryStore = defineStore(
       return false
     }
     const getDiary = (id) => diary.value.find((item) => item.id == id)
-    const getDiaries = (userId) =>
-      diary.value.filter((item) => item.userId == userId)
+    const getDiaries = (username) =>
+      diary.value.filter((item) => item.username == username)
 
     const getPage = (diaryId, page) => {
       const index = diaryPages.value.findIndex(
-        (item) => item.diaryId === diaryId && item.page == page
+        (item) => item.diaryId === diaryId && item.page === page
       )
       if (index !== -1) {
         return diaryPages.value[index]

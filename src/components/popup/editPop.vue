@@ -24,7 +24,7 @@ const diaryRef = computed(() => diaryStore.getDiary(diaryId.value))
 const diaryPagesRef = computed(() => diaryStore.getPages(diaryId.value))
 const diaryInfo = computed(() => {
   return {
-    author: diaryRef.value.author,
+    author: diaryRef.value.username,
     lastReadPage: diaryRef.value.lastReadPage,
     total_pages: diaryRef.value.pages,
     create_time: formatTime(diaryRef.value.create_time),
@@ -34,7 +34,7 @@ const diaryInfo = computed(() => {
 const diaryPageInfo = computed(() =>
   diaryPagesRef.value
     .filter((page) =>
-      page.title.toLowerCase().includes(query.value.toLowerCase())
+      (page.page + page.title).toLowerCase().includes(query.value.toLowerCase())
     )
     .toSorted((a, b) => -a.page + b.page)
 )
@@ -61,15 +61,16 @@ watch(diaryRef, () => {
 })
 
 const handleAdd = () => {
+  // 向后端发送请求,返回新的日记
   messageManager
     .showConfirmModal('Want to add a new diary?', {
       mask: false,
-      pressTime: 100,
+      pressTime: 80,
       draggable: true
     })
-    .then((res) => {
+    .then(async (res) => {
       if (res) {
-        const _diaryId = diaryStore.addDiary()
+        const _diaryId = await diaryStore.addDiary()
         if (!_diaryId) ElMessage.warning('Add diary failed')
         ElMessage.success('Add diary success')
         diaryId.value = _diaryId
@@ -108,6 +109,7 @@ const handleDeletePage = (page) => {
     })
 }
 const handleSave = () => {
+  // 保存日记信息
   if (diaryStore.updateDiary(diaryRef.value)) {
     ElMessage.success('save success')
     open.value = false
@@ -199,7 +201,7 @@ const handleCoverChange = (event) => {
             <button class="avatar" disabled>
               <img :src="userStore.userInfo.avatar" />
             </button>
-            <p>grolin</p>
+            <p>{{ userStore.userInfo.username }}</p>
           </div>
           <div class="header-title">
             <ph-plus-square class="add" weight="bold" @click="handleAdd" />
@@ -518,9 +520,6 @@ button {
   }
 }
 .avatar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   width: 4rem;
   height: 4rem;
   padding: 0;

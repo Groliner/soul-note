@@ -25,6 +25,10 @@ const props = defineProps({
   type: {
     type: String,
     default: 'text'
+  },
+  status: {
+    type: Boolean,
+    default: true
   }
 })
 onMounted(() => {
@@ -55,6 +59,7 @@ onMounted(() => {
   }
 })
 const handleEdit = (m) => {
+  if (!props.status) return
   isInput.value = m
   if (!isInput.value) return
   inputRef.value.style.width =
@@ -77,6 +82,7 @@ const text = defineModel('text', {
       @blur="handleEdit(false)"
       :class="{ hidden: !isInput }"
       :placeholder="placeholder"
+      :disabled="!props.status"
     />
     <span ref="mirror" :class="{ hidden: isInput }" @click="handleEdit(true)">{{
       text || placeholder

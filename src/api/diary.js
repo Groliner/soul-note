@@ -1,9 +1,8 @@
 import request from '@/utils/request'
 
-export const getDiaryListAPI = ({ diaryId, userId }) =>
-  request.get('diary?id=' + diaryId + '&userId=' + userId)
+export const getDiaryListAPI = () => request.get('diary')
 
-export const addDiaryAPI = (data) => request.post('diary', data)
+export const addDiaryAPI = () => request.get('diary/add')
 
 export const updateDiaryAPI = (data) => request.put('diary', data)
 

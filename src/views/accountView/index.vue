@@ -5,14 +5,20 @@ import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
 const { userDiary, userInfo } = storeToRefs(userStore)
-const diaries = computed(() => diaryStore.getDiaries(userInfo.value.id))
-
+let originalUserInfo = JSON.parse(JSON.stringify(userInfo.value))
+const diaries = computed(() => diaryStore.getDiaries(userInfo.value.username))
+onMounted(() => {
+  userStore.updateUserInfo(userInfo.value.username)
+})
 import { gsap } from 'gsap'
-// avatar upload
-const avatarInput = ref(null)
 
+// user Info edit
+const avatarInput = ref(null)
+const isEdit = ref(false)
+import { uploadImgAPI } from '@/api/fundamental'
 // 触发文件选择
 const triggerUpload = () => {
+  if (!isEdit.value) return
   avatarInput.value.click() // 打开文件选择对话框
   // 使用GSAP添加一些动画，例如按钮点击反馈
   gsap.to(avatarInput.value, {
@@ -22,8 +28,6 @@ const triggerUpload = () => {
     duration: 0.5
   })
 }
-
-import { uploadImgAPI } from '@/api/fundamental'
 // 处理文件选择
 const handleAvatarChange = async (event) => {
   const files = event.target.files
@@ -31,12 +35,24 @@ const handleAvatarChange = async (event) => {
     const formData = new FormData()
     formData.append('image', files[0])
     const res = await uploadImgAPI(formData)
-    console.log(res)
     userStore.setUserInfo({ avatar: res.data.data })
   }
 }
+const handleSave = () => {
+  isEdit.value = false
+  if (JSON.stringify(originalUserInfo) === JSON.stringify(userInfo.value))
+    return
+  if (userStore.saveUserInfo()) {
+    originalUserInfo = JSON.parse(JSON.stringify(userInfo.value))
+  }
+}
 
-import { PhNotePencil, PhSlidersHorizontal } from '@phosphor-icons/vue'
+// friends system
+import {
+  PhNotePencil,
+  PhCheckCircle,
+  PhSlidersHorizontal
+} from '@phosphor-icons/vue'
 import { messageManager } from '@/directives/index'
 const handleFriends = () => {
   messageManager.showConfirmModal('The friend system is developing ...', {
@@ -55,7 +71,11 @@ import calendar from '@/components/modules/YearCalendar.vue'
   <div class="pfl-wrapper">
     <article>
       <div class="profile-photo">
-        <button class="avatar" @click="triggerUpload">
+        <button
+          class="avatar"
+          @click="triggerUpload"
+          :class="{ active: isEdit }"
+        >
           <img :src="userInfo.avatar" />
         </button>
         <input
@@ -64,15 +84,40 @@ import calendar from '@/components/modules/YearCalendar.vue'
           @change="handleAvatarChange"
           style="display: none"
         />
-        <div class="button-edit"><ph-note-pencil /></div>
+        <div class="button-edit">
+          <ph-note-pencil
+            class="icon_avatar"
+            v-show="!isEdit"
+            @click="isEdit = true"
+          />
+          <ph-check-circle
+            class="icon_avatar"
+            v-show="isEdit"
+            @click="handleSave"
+          />
+        </div>
       </div>
       <div class="profile-info">
-        <h1>{{ userInfo.username }}</h1>
+        <h1 class="profile_username">
+          <flexInput
+            v-model:text="userInfo.username"
+            placeholder="username"
+            :status="isEdit"
+          />
+        </h1>
+        <a class="profile_email">
+          <flexInput
+            v-model:text="userInfo.email"
+            placeholder="email"
+            :status="isEdit"
+          />
+        </a>
         <p>
-          <a>{{ userInfo.email }}</a
-          >.
-          <br />
-          {{ userInfo.description }}
+          <flexInput
+            v-model:text="userInfo.description"
+            placeholder="description"
+            :status="isEdit"
+          />
         </p>
       </div>
       <div class="profile-content">
@@ -136,7 +181,6 @@ article {
   .profile-photo {
     position: relative;
     .avatar {
-      cursor: pointer;
       width: 130px;
       height: 130px;
       border-radius: 50%;
@@ -145,6 +189,9 @@ article {
       padding: 2px;
       background-color: white;
       transition: all 0.25s;
+      &.active {
+        cursor: pointer;
+      }
 
       img {
         width: 100%;
@@ -167,9 +214,10 @@ article {
 
     .button-edit {
       position: absolute;
-      right: 0;
-      bottom: -1.6em;
+      right: -2em;
+      bottom: -1.2em;
       font-size: 1.3em;
+      z-index: 100;
       cursor: pointer;
       transition: color 0.25s;
       &:hover {
@@ -184,11 +232,28 @@ article {
     text-align: center;
     position: relative;
 
-    h1 {
-      font-size: 2em;
-      font-weight: 600;
-      margin-top: 0.3em;
-      margin-bottom: 0.2em;
+    .profile {
+      &_username {
+        font-size: 2em;
+        font-weight: 600;
+        margin-top: 0.3em;
+        margin-bottom: 0.2em;
+      }
+      &_email {
+        display: inline-block;
+        font-size: 1.2em;
+        color: var(--c-blue-500);
+        margin-bottom: 0.2em;
+        cursor: pointer;
+        transition: color 0.25s;
+        &:hover {
+          color: var(--primary-light);
+        }
+      }
+      &_description {
+        font-size: 1.1em;
+        color: var(--c-gray-500);
+      }
     }
   }
   .profile-content {

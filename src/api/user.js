@@ -8,11 +8,6 @@ export const signUpAPI = (data) => request.post('public/signup', data)
 
 export const LogInTemplateAPI = () => request.get('public/template')
 
-export const getUserInfoAPI = (username) => request.get('user/' + username)
+export const getUserInfoAPI = () => request.get('user')
 
-export const updateUserInfoAPI = (data) =>
-  request.put('user', data, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  })
+export const updateUserInfoAPI = (data) => request.put('user', data)

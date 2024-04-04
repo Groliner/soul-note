@@ -69,7 +69,7 @@ const pretty = () => {
       ease: 'power2'
     }
   )
-  textareaRef.value.style.height = diaryContext.value.height + 'px'
+  textareaRef.value.style.height = diaryContext.value.height
   diaryContext.value.words = computed(() => diaryContent.value.length)
   undoStack = [
     {
