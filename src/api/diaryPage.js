@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
-export const getDiaryPageListAPI = ({ diaryId, page }) =>
-  request.get('diaryPage?diaryId' + diaryId + '&page=' + page)
+export const getDiaryPageListAPI = (data) =>
+  request.get('diaryPage', { params: data })
 
 export const addDiaryPageAPI = (data) => request.post('diaryPage', data)
 

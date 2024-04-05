@@ -4,9 +4,11 @@ import { ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
-const { userDiary, userInfo } = storeToRefs(userStore)
+const { userInfo } = storeToRefs(userStore)
 let originalUserInfo = JSON.parse(JSON.stringify(userInfo.value))
-const diaries = computed(() => diaryStore.getDiaries(userInfo.value.username))
+const diaries = computed(() =>
+  diaryStore.getLocalDiariesByUsername(userInfo.value.username)
+)
 onMounted(() => {
   userStore.updateUserInfo(userInfo.value.username)
 })
@@ -144,7 +146,7 @@ import calendar from '@/components/modules/YearCalendar.vue'
                 <img :src="diary.cover" />
                 <figcaption
                   :class="{
-                    active: diary.id === userDiary.lastReadDiaryId
+                    active: diary.id === userInfo.lastReadDiaryId
                   }"
                 >
                   {{ diary.title }}

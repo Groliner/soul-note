@@ -30,7 +30,7 @@ const diaryContent = defineModel('content', {
 diaryContext.value.words = computed(() => diaryContent.value.length)
 const props = defineProps({
   diaryId: {
-    type: String,
+    type: Number,
     required: true
   },
   page: {
@@ -38,8 +38,8 @@ const props = defineProps({
     required: true
   },
   status: {
-    type: Number,
-    default: 0
+    type: Boolean,
+    default: false
   }
 })
 const textareaRef = ref(null)
@@ -210,7 +210,7 @@ const rescueCursor = (event, state) => {
     @keydown="handleKeyDown"
     placeholder="Start typing your diary entry..."
     @input="handleInput"
-    :disabled="status === 0"
+    :disabled="!status"
   ></textarea>
 </template>
 <style lang="scss" scoped>

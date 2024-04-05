@@ -10,7 +10,11 @@ import { formatTime } from '@/composables/formatTime'
 import { useDiaryStore, useUserStore } from '@/stores'
 const props = defineProps({
   diaryId: {
-    type: String
+    type: Number
+  },
+  status: {
+    type: Boolean,
+    default: false
   }
 })
 const diaryId = ref(props.diaryId)
@@ -20,12 +24,14 @@ onMounted(() => {
 })
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
-const diaryRef = computed(() => diaryStore.getDiary(diaryId.value))
-const diaryPagesRef = computed(() => diaryStore.getPages(diaryId.value))
+const diaryRef = computed(() => diaryStore.getLocalDiaryById(diaryId.value))
+const diaryPagesRef = computed(() =>
+  diaryStore.getLocalPagesByDiaryId(diaryId.value)
+)
 const diaryInfo = computed(() => {
   return {
     author: diaryRef.value.username,
-    lastReadPage: diaryRef.value.lastReadPage,
+    lastReadPage: userStore.getLocalUserDiaryStatus(diaryId.value).lastReadPage,
     total_pages: diaryRef.value.pages,
     create_time: formatTime(diaryRef.value.create_time),
     update_time: formatTime(diaryRef.value.update_time)
@@ -85,26 +91,23 @@ const handleDelete = () => {
       pressTime: 80,
       draggable: true
     })
-    .then((res) => {
+    .then(async (res) => {
       if (res) {
-        const title = diaryRef.value.title
-        if (diaryStore.deleteDiary(diaryId.value))
-          ElMessage.success('Delete diary ' + title + ' success')
-        else ElMessage.warning('Delete diary' + title + ' failed')
+        await diaryStore.deleteDiary(diaryId.value)
       }
       open.value = false
     })
 }
-const handleDeletePage = (page) => {
+const handleDeletePage = () => {
   messageManager
     .showConfirmModal('Are you sure to delete the page (past)? ', {
       mask: false,
       pressTime: 60,
       draggable: true
     })
-    .then((res) => {
+    .then(async (res) => {
       if (res) {
-        diaryStore.deletePage(diaryRef.value.id, page)
+        await diaryStore.deletePage(diaryRef.value.id, diaryRef.value.pages)
       }
     })
 }
@@ -287,9 +290,11 @@ const handleCoverChange = (event) => {
                 <span>words:{{ item.context.words }}</span>
                 <span>{{ formatTime(item.create_time) }}</span>
                 <ph-backspace
-                  v-if="item.page === diaryRef.pages"
+                  v-if="
+                    item.page === diaryRef.pages && item.status !== 'disabled'
+                  "
                   weight="bold"
-                  @click="handleDeletePage(item.page)"
+                  @click="handleDeletePage"
                   class="icon del"
                 />
               </li>

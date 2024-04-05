@@ -13,6 +13,7 @@ const defaultUserInfo = {
   description: "there is nothing here, it's empty",
   status: 'active',
   updatedTime: '',
+  lastReadDiaryId: '',
   friends: [
     {
       id: 'friend_1',
@@ -34,10 +35,32 @@ const defaultUserInfo = {
     }
   ]
 }
-const defaultDiary = {
-  lastReadDiaryId: 'diary',
-  diaries: ['diary', 'diary_2', 'diary_3', 'diary_4']
-}
+const defaultDiary = [
+  {
+    id: 1,
+    diaryId: 1,
+    status: 'author',
+    lastReadPage: 1
+  },
+  {
+    id: 2,
+    diaryId: 2,
+    status: 'author',
+    lastReadPage: 1
+  },
+  {
+    id: 3,
+    diaryId: 3,
+    status: 'author',
+    lastReadPage: 1
+  },
+  {
+    id: 4,
+    diaryId: 4,
+    status: 'author',
+    lastReadPage: 1
+  }
+]
 export const useUserStore = defineStore(
   'user',
   () => {
@@ -65,13 +88,18 @@ export const useUserStore = defineStore(
           }
         })
         if (!userInfo.value.id) return
-        // 获取用户日记状态
-        // const res2 = await getUserDiaryStatusAPI({ userId: userInfo.value.id })
-        // if (res2.data.code) {
-        //   userDiary.value = res2.data.data
-        //   diaryStore.setDiary(userDiary.value.diaries)
-        // } else ElMessage.error(res2.data.msg)
+        // 获取用户日记状态 UserDiaryStatusList
+        await getUserDiaryStatus()
       } else ElMessage.error(res.data.msg)
+    }
+    const getUserDiaryStatus = async (userId = userInfo.value.id) => {
+      const res = await getUserDiaryStatusAPI({ userId })
+      if (res.data.code) {
+        userDiary.value = res.data.data
+        return true
+      }
+      ElMessage.error(res.data.msg)
+      return false
     }
     const setUserInfo = (data) => {
       Object.keys(data).forEach((key) => {
@@ -82,8 +110,7 @@ export const useUserStore = defineStore(
     }
     const saveUserInfo = async () => {
       const res = await updateUserInfoAPI({
-        ...userInfo.value,
-        lastReadDiaryId: userDiary.value.lastReadDiaryId
+        ...userInfo.value
       })
       if (res.data.code) {
         ElMessage.success('保存成功')
@@ -94,18 +121,21 @@ export const useUserStore = defineStore(
         return false
       }
     }
-    const addDiary = (id) => {
-      userDiary.value.diaries.push(id)
-      userDiary.value.lastReadDiaryId = id
+    const updateUserDiaryStatus = ({ diaryId, lastReadPage }) => {
+      const index = userDiary.value.findIndex(
+        (item) => item.diaryId === diaryId
+      )
+      if (index === -1) return false
+      userDiary.value[index].lastReadPage = lastReadPage
+      return true
     }
-    const deleteDiary = (id) => {
-      const index = userDiary.value.diaries.indexOf(id)
-      if (index !== -1) {
-        userDiary.value.diaries.splice(index, 1)
-        userDiary.value.lastReadDiaryId = userDiary.value.diaries[index - 1]
-      }
+    const getLocalUserDiaryStatus = (diaryId) => {
+      const index = userDiary.value.findIndex(
+        (item) => item.diaryId === diaryId
+      )
+      if (index === -1) return 1
+      return userDiary.value[index]
     }
-
     const isAuthenticated = computed(() => !!userInfo.value.token)
 
     return {
@@ -114,11 +144,12 @@ export const useUserStore = defineStore(
       isAuthenticated,
       setToken,
       updateUserInfo,
+      getUserDiaryStatus,
       saveUserInfo,
       setUserInfo,
       logout,
-      addDiary,
-      deleteDiary
+      updateUserDiaryStatus,
+      getLocalUserDiaryStatus
     }
   },
   {

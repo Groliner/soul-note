@@ -1,49 +1,61 @@
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
+import {
+  ref,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  computed,
+  reactive,
+  watch
+} from 'vue'
 import notePage from './note.vue'
 import pagination from './pagination.vue'
 import { useDiaryStore, useUserStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { PhPencilLine } from '@phosphor-icons/vue'
 const userStore = useUserStore()
-const { userDiary } = storeToRefs(userStore)
+const { userDiary, userInfo } = storeToRefs(userStore)
 const diaryStore = useDiaryStore()
+const userDiaryStatus = reactive(
+  userStore.getLocalUserDiaryStatus(userInfo.value.lastReadDiaryId)
+)
 const diary = computed(() =>
-  diaryStore.getDiary(userDiary.value.lastReadDiaryId)
+  diaryStore.getLocalDiaryById(userInfo.value.lastReadDiaryId)
 )
 const diaryPage = computed(() =>
-  diaryStore.getPage(userDiary.value.lastReadDiaryId, diary.value.lastReadPage)
+  diaryStore.getLocalPageByDiaryId(userInfo.value.lastReadDiaryId)
 )
+
 import { gsap } from 'gsap'
 const mirror = ref(null)
 const pageTitleInput = ref(null)
 const isEditPageTitle = ref(false)
-onMounted(() => {
-  if (mirror.value) {
-    // 创建一个ResizeObserver来监听尺寸变化
-    const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        if (entry.contentRect.width)
-          // 更新<span>元素的宽度
-          gsap.to(pageTitleInput.value, {
-            width: entry.contentRect.width + 8,
-            ease: 'power4.Out',
-            duration: 0.3
-          })
-      }
-    })
-
-    // 开始观察<span>元素
-    observer.observe(mirror.value)
-
-    // 记得在组件卸载时停止观察
-    onUnmounted(() => {
-      observer.disconnect()
-    })
+// 创建一个ResizeObserver来监听尺寸变化
+const observer = new ResizeObserver((entries) => {
+  for (let entry of entries) {
+    if (entry.contentRect.width)
+      // 更新<span>元素的宽度
+      gsap.to(pageTitleInput.value, {
+        width: entry.contentRect.width + 8,
+        ease: 'power4.Out',
+        duration: 0.3
+      })
   }
 })
 
-const isAbleToEdit = computed(() => diaryPage.value.status !== 0)
+onMounted(async () => {
+  await userStore.updateUserInfo()
+  await diaryStore.update()
+  // 开始观察<span>元素
+  observer.observe(mirror.value)
+})
+// 记得在组件卸载时停止观察
+onUnmounted(() => {
+  observer.disconnect()
+})
+const isAbleToEdit = computed(() =>
+  diaryPage.value ? !!(diaryPage.value.status === 'active') : false
+)
 const handleEdit = (m) => {
   if (!isAbleToEdit.value) return
   isEditPageTitle.value = m
@@ -61,47 +73,45 @@ const handleEdit = (m) => {
 
 //编辑日记本
 import { messageManager } from '@/directives/index'
-import { ElMessage } from 'element-plus'
 
 const handleAdd = () => {
-  if (diaryStore.addPage(userDiary.value.lastReadDiaryId)) {
-    ElMessage.success('Add page successfully')
-  } else {
-    ElMessage.warning('Add page failed')
-  }
+  diaryStore.addPage(userDiaryStatus.lastReadPage)
 }
 const handleFlip = (m) => {
-  diary.value.lastReadPage = Math.min(
-    Math.max(diary.value.lastReadPage + m, 1),
-    diary.value.pages || diary.value.lastReadPage
+  userDiaryStatus.lastReadPage = Math.min(
+    Math.max(userDiaryStatus.lastReadPage + m, 1),
+    diary.value.pages || userDiaryStatus.lastReadPage
   )
 }
 
 const handClick = (diaryId) => {
   messageManager.showDiaryEditModal(diaryId)
 }
+watch(userDiaryStatus, () => {
+  userStore.updateUserDiaryStatus(userDiaryStatus)
+})
 </script>
 <template>
   <div class="container_note">
     <div class="diaryNav">
       <ul class="diaryNav_main">
         <li
-          v-for="(item, index) in userDiary.diaries"
-          :key="item"
+          v-for="(item, index) in userDiary"
+          :key="item.id"
           :data-index="index"
         >
           <a
             class="nav_link"
             :class="{
-              active: userDiary.lastReadDiaryId === item ? true : false
+              active: userInfo.lastReadDiaryId === item.diaryId ? true : false
             }"
-            @click="userDiary.lastReadDiaryId = item"
-            ><p>{{ diaryStore.getDiary(item).title }}</p></a
+            @click="userInfo.lastReadDiaryId = item.diaryId"
+            ><p>{{ diaryStore.getLocalDiaryById(item.diaryId).title }}</p></a
           >
           <ph-pencil-line
             class="icon_pencil"
             weight="duotone"
-            @click="handClick(item)"
+            @click="handClick(item.diaryId)"
           />
         </li>
       </ul>
@@ -114,7 +124,7 @@ const handClick = (diaryId) => {
           v-model="diaryPage.title"
           @blur="handleEdit(false)"
           :class="{ hidden: !isEditPageTitle }"
-          :disabled="diaryPage.status === 0"
+          :disabled="!isAbleToEdit"
         />
         <span ref="mirror" :class="{ hidden: isEditPageTitle }">{{
           diaryPage.title || '"Untitled"'
@@ -128,14 +138,14 @@ const handClick = (diaryId) => {
           v-model:content="diaryPage.content"
           :page="diaryPage.page"
           :diaryId="diary.id"
-          :status="diaryPage.status"
+          :status="isAbleToEdit"
         />
       </Transition>
     </article>
     <pagination
       class="pagination"
       :total="diary.pages"
-      v-model:page="diary.lastReadPage"
+      v-model:page="userDiaryStatus.lastReadPage"
       @add="handleAdd"
       @flip="handleFlip"
     />
