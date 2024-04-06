@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useDiaryStore } from './diary'
-import { getUserInfoAPI, updateUserInfoAPI } from '@/api/user'
+import { getUserInfoAPI, updateUserInfoAPI, logOutAPI } from '@/api/user'
 import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
 import { ElMessage } from 'element-plus'
 const defaultUserInfo = {
@@ -13,7 +13,7 @@ const defaultUserInfo = {
   description: "there is nothing here, it's empty",
   status: 'active',
   updatedTime: '',
-  lastReadDiaryId: '',
+  lastReadDiaryId: 0,
   friends: [
     {
       id: 'friend_1',
@@ -38,26 +38,8 @@ const defaultUserInfo = {
 const defaultDiary = [
   {
     id: 1,
-    diaryId: 1,
-    status: 'author',
-    lastReadPage: 1
-  },
-  {
-    id: 2,
-    diaryId: 2,
-    status: 'author',
-    lastReadPage: 1
-  },
-  {
-    id: 3,
-    diaryId: 3,
-    status: 'author',
-    lastReadPage: 1
-  },
-  {
-    id: 4,
-    diaryId: 4,
-    status: 'author',
+    diaryId: 0,
+    status: 'reader',
     lastReadPage: 1
   }
 ]
@@ -70,10 +52,15 @@ export const useUserStore = defineStore(
     const userDiary = ref(JSON.parse(JSON.stringify(defaultDiary)))
     const diaryStore = useDiaryStore()
     // 清空用户关联信息
-    const logout = () => {
-      userInfo.value = defaultUserInfo
-      diaryStore.setDiary()
-      diaryStore.setPages()
+    const logout = async () => {
+      try {
+        await logOutAPI()
+      } finally {
+        userInfo.value = defaultUserInfo
+        userDiary.value = defaultDiary
+        diaryStore.setDiary()
+        diaryStore.setPages()
+      }
     }
     // 设置token
     const setToken = (token) => {
@@ -92,8 +79,8 @@ export const useUserStore = defineStore(
         await getUserDiaryStatus()
       } else ElMessage.error(res.data.msg)
     }
-    const getUserDiaryStatus = async (userId = userInfo.value.id) => {
-      const res = await getUserDiaryStatusAPI({ userId })
+    const getUserDiaryStatus = async (username = userInfo.value.username) => {
+      const res = await getUserDiaryStatusAPI({ username })
       if (res.data.code) {
         userDiary.value = res.data.data
         return true
@@ -121,7 +108,7 @@ export const useUserStore = defineStore(
         return false
       }
     }
-    const updateUserDiaryStatus = ({ diaryId, lastReadPage }) => {
+    const updateLocalUserDiaryStatus = ({ diaryId, lastReadPage }) => {
       const index = userDiary.value.findIndex(
         (item) => item.diaryId === diaryId
       )
@@ -136,6 +123,24 @@ export const useUserStore = defineStore(
       if (index === -1) return 1
       return userDiary.value[index]
     }
+    const addLocalUserDiaryStatus = (diaryId) => {
+      const diary_ = {
+        id: userDiary.value.length + 1,
+        diaryId,
+        status: 'author',
+        lastReadPage: 1
+      }
+      userDiary.value.push(diary_)
+      return diary_.id
+    }
+    const deleteLocalUserDiaryStatus = (diaryId) => {
+      const index = userDiary.value.findIndex(
+        (item) => item.diaryId === diaryId
+      )
+      if (index === -1) return false
+      userInfo.value.lastReadDiaryId = userDiary.value[index - 1].diaryId
+      userDiary.value.splice(index, 1)
+    }
     const isAuthenticated = computed(() => !!userInfo.value.token)
 
     return {
@@ -148,8 +153,10 @@ export const useUserStore = defineStore(
       saveUserInfo,
       setUserInfo,
       logout,
-      updateUserDiaryStatus,
-      getLocalUserDiaryStatus
+      updateLocalUserDiaryStatus,
+      getLocalUserDiaryStatus,
+      addLocalUserDiaryStatus,
+      deleteLocalUserDiaryStatus
     }
   },
   {

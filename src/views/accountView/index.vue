@@ -10,7 +10,7 @@ const diaries = computed(() =>
   diaryStore.getLocalDiariesByUsername(userInfo.value.username)
 )
 onMounted(() => {
-  userStore.updateUserInfo(userInfo.value.username)
+  userStore.getUserDiaryStatus()
 })
 import { gsap } from 'gsap'
 
@@ -117,7 +117,7 @@ import calendar from '@/components/modules/YearCalendar.vue'
         <p>
           <flexInput
             v-model:text="userInfo.description"
-            placeholder="description"
+            placeholder="there is nothing here, it's empty"
             :status="isEdit"
           />
         </p>

@@ -61,7 +61,7 @@ onMounted(() => {
 const handleEdit = (m) => {
   if (!props.status) return
   isInput.value = m
-  if (!isInput.value) return
+  if (!isInput.value || !inputRef.value) return
   inputRef.value.style.width =
     mirror.value.offsetWidth + props.offsetWidth + 'px'
   nextTick(() => {

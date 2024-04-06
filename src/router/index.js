@@ -125,7 +125,7 @@ import { useUserStore } from '@/stores'
 
 router.beforeEach(async (to, from) => {
   const userStore = useUserStore()
-  console.log(to.name)
+  console.log(to.name, userStore.isAuthenticated)
   if (['home', 'login'].includes(to.name) || userStore.isAuthenticated)
     return true
   userStore.logout()

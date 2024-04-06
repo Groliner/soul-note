@@ -32,9 +32,9 @@ const diaryInfo = computed(() => {
   return {
     author: diaryRef.value.username,
     lastReadPage: userStore.getLocalUserDiaryStatus(diaryId.value).lastReadPage,
-    total_pages: diaryRef.value.pages,
-    create_time: formatTime(diaryRef.value.create_time),
-    update_time: formatTime(diaryRef.value.update_time)
+    totalPages: diaryRef.value.pages,
+    createdTime: formatTime(diaryRef.value.create_time),
+    updatedTime: formatTime(diaryRef.value.update_time)
   }
 })
 const diaryPageInfo = computed(() =>
@@ -77,8 +77,6 @@ const handleAdd = () => {
     .then(async (res) => {
       if (res) {
         const _diaryId = await diaryStore.addDiary()
-        if (!_diaryId) ElMessage.warning('Add diary failed')
-        ElMessage.success('Add diary success')
         diaryId.value = _diaryId
       }
     })
@@ -91,11 +89,11 @@ const handleDelete = () => {
       pressTime: 80,
       draggable: true
     })
-    .then(async (res) => {
-      if (res) {
-        await diaryStore.deleteDiary(diaryId.value)
-      }
+    .then((res) => {
       open.value = false
+      if (res) {
+        diaryStore.deleteDiary(diaryId.value)
+      }
     })
 }
 const handleDeletePage = () => {
@@ -111,15 +109,10 @@ const handleDeletePage = () => {
       }
     })
 }
-const handleSave = () => {
+const handleSave = async () => {
   // 保存日记信息
-  if (diaryStore.updateDiary(diaryRef.value)) {
-    ElMessage.success('save success')
-    open.value = false
-  } else {
-    ElMessage.warning('save failed')
-    open.value = true
-  }
+  const res = await diaryStore.saveDiary(diaryId.value)
+  open.value = res ? false : true
 }
 
 // textarea 动画
@@ -160,6 +153,7 @@ function onLeave(el, done) {
 }
 
 // cover upload
+import { uploadImgAPI } from '@/api/fundamental'
 const coverInput = ref(null)
 
 // 触发文件选择
@@ -175,12 +169,16 @@ const triggerUpload = () => {
 }
 
 // 处理文件选择
-const handleCoverChange = (event) => {
+const handleCoverChange = async (event) => {
   const files = event.target.files
   if (files.length > 0) {
-    // 处理文件上传或预览逻辑
-    console.log('文件已选择，可以进行上传或预览操作。')
-    console.log('文件', files)
+    const formData = new FormData()
+    formData.append('image', files[0])
+    const res = await uploadImgAPI(formData)
+    diaryStore.updateLocalDiaryCover({
+      id: diaryRef.value.id,
+      cover: res.data.data
+    })
   }
 }
 </script>
@@ -291,7 +289,7 @@ const handleCoverChange = (event) => {
                 <span>{{ formatTime(item.create_time) }}</span>
                 <ph-backspace
                   v-if="
-                    item.page === diaryRef.pages && item.status !== 'disabled'
+                    item.page === diaryRef.pages && item.status !== 'disable'
                   "
                   weight="bold"
                   @click="handleDeletePage"
@@ -379,6 +377,12 @@ img {
       justify-content: space-round;
       align-items: center;
 
+      span:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 95%;
+      }
+
       .icon {
         &.del {
           margin-left: auto;
@@ -413,7 +417,8 @@ button {
 }
 
 .edit-pop {
-  width: 43vw;
+  max-width: 88vw;
+  min-width: 47vw;
   border-radius: 25px;
   overflow: hidden;
   padding: 2rem;
@@ -519,6 +524,12 @@ button {
   transform-origin: center center;
   transition: 0.15s ease;
   cursor: pointer;
+  img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
   &:hover,
   &:focus {
     box-shadow: 0 10px 12px -4px rgba(#000, 0.3);
@@ -532,6 +543,12 @@ button {
   overflow: hidden;
   border: 3px solid #fff;
   transform-origin: center center;
+  img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
 }
 
 .title {

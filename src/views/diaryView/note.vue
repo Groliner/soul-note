@@ -27,7 +27,6 @@ const diaryContent = defineModel('content', {
   type: String,
   required: true
 })
-diaryContext.value.words = computed(() => diaryContent.value.length)
 const props = defineProps({
   diaryId: {
     type: Number,
@@ -40,6 +39,10 @@ const props = defineProps({
   status: {
     type: Boolean,
     default: false
+  },
+  placeholder: {
+    type: String,
+    default: 'write down your past or thinking'
   }
 })
 const textareaRef = ref(null)
@@ -69,8 +72,8 @@ const pretty = () => {
       ease: 'power2'
     }
   )
-  textareaRef.value.style.height = diaryContext.value.height
-  diaryContext.value.words = computed(() => diaryContent.value.length)
+  textareaRef.value.style.height = diaryContext.value.height + 'px'
+
   undoStack = [
     {
       text: diaryContent.value,
@@ -125,7 +128,10 @@ function autoExpand(event, scroll_distance = -1) {
       })
     }
   })
-  diaryContext.value.height = textarea.style.height
+  diaryContext.value.height = textarea.scrollHeight
+  diaryContext.value.words = diaryContent.value
+    .replace(/\s+/g, '')
+    .trim().length
 }
 
 function handleInput(event) {
@@ -208,7 +214,7 @@ const rescueCursor = (event, state) => {
     ref="textareaRef"
     v-model="diaryContent"
     @keydown="handleKeyDown"
-    placeholder="Start typing your diary entry..."
+    :placeholder="placeholder"
     @input="handleInput"
     :disabled="!status"
   ></textarea>

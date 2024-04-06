@@ -6,7 +6,8 @@ import {
   onUnmounted,
   computed,
   reactive,
-  watch
+  watch,
+  onBeforeMount
 } from 'vue'
 import notePage from './note.vue'
 import pagination from './pagination.vue'
@@ -15,17 +16,21 @@ import { storeToRefs } from 'pinia'
 import { PhPencilLine } from '@phosphor-icons/vue'
 const userStore = useUserStore()
 const { userDiary, userInfo } = storeToRefs(userStore)
+const lastReadDiaryId = computed(() => userInfo.value.lastReadDiaryId)
 const diaryStore = useDiaryStore()
-const userDiaryStatus = reactive(
-  userStore.getLocalUserDiaryStatus(userInfo.value.lastReadDiaryId)
+const userDiaryStatus = computed(() =>
+  userStore.getLocalUserDiaryStatus(lastReadDiaryId.value)
 )
 const diary = computed(() =>
-  diaryStore.getLocalDiaryById(userInfo.value.lastReadDiaryId)
+  diaryStore.getLocalDiaryById(lastReadDiaryId.value)
 )
 const diaryPage = computed(() =>
-  diaryStore.getLocalPageByDiaryId(userInfo.value.lastReadDiaryId)
+  diaryStore.getLocalPageByDiaryId(
+    lastReadDiaryId.value,
+    userDiaryStatus.value.lastReadPage
+  )
 )
-
+let oldPage = JSON.stringify(diaryPage.value)
 import { gsap } from 'gsap'
 const mirror = ref(null)
 const pageTitleInput = ref(null)
@@ -43,15 +48,18 @@ const observer = new ResizeObserver((entries) => {
   }
 })
 
-onMounted(async () => {
-  await userStore.updateUserInfo()
+onBeforeMount(async () => {
+  await userStore.getUserDiaryStatus()
   await diaryStore.update()
+})
+onMounted(() => {
   // 开始观察<span>元素
   observer.observe(mirror.value)
 })
 // 记得在组件卸载时停止观察
 onUnmounted(() => {
   observer.disconnect()
+  diaryStore.savePage(lastReadDiaryId.value, userDiaryStatus.value.lastReadPage)
 })
 const isAbleToEdit = computed(() =>
   diaryPage.value ? !!(diaryPage.value.status === 'active') : false
@@ -75,21 +83,51 @@ const handleEdit = (m) => {
 import { messageManager } from '@/directives/index'
 
 const handleAdd = () => {
-  diaryStore.addPage(userDiaryStatus.lastReadPage)
+  diaryStore.addPage(lastReadDiaryId.value)
 }
 const handleFlip = (m) => {
-  userDiaryStatus.lastReadPage = Math.min(
-    Math.max(userDiaryStatus.lastReadPage + m, 1),
-    diary.value.pages || userDiaryStatus.lastReadPage
-  )
+  userStore.updateLocalUserDiaryStatus({
+    diaryId: lastReadDiaryId.value,
+    lastReadPage: Math.min(
+      Math.max(userDiaryStatus.value.lastReadPage + m, 1),
+      diary.value.pages || userDiaryStatus.value.lastReadPage
+    )
+  })
 }
 
 const handClick = (diaryId) => {
+  if (
+    oldPage !==
+    JSON.stringify(
+      diaryStore.getLocalPageByDiaryId(
+        lastReadDiaryId.value,
+        userDiaryStatus.value.lastReadPage
+      )
+    )
+  )
+    diaryStore.savePage(
+      lastReadDiaryId.value,
+      userDiaryStatus.value.lastReadPage
+    )
   messageManager.showDiaryEditModal(diaryId)
 }
-watch(userDiaryStatus, () => {
-  userStore.updateUserDiaryStatus(userDiaryStatus)
-})
+watch(
+  [() => userDiaryStatus.value.lastReadPage, lastReadDiaryId],
+  (
+    [newLastReadPage, newLastReadDiaryId],
+    [oldLastReadPage, oldLastReadDiaryId]
+  ) => {
+    if (
+      oldPage !==
+      JSON.stringify(
+        diaryStore.getLocalPageByDiaryId(oldLastReadDiaryId, oldLastReadPage)
+      )
+    ) {
+      diaryStore.savePage(oldLastReadDiaryId, oldLastReadPage)
+    }
+    oldPage = JSON.stringify(diaryPage.value)
+  }
+)
 </script>
 <template>
   <div class="container_note">
@@ -138,6 +176,7 @@ watch(userDiaryStatus, () => {
           v-model:content="diaryPage.content"
           :page="diaryPage.page"
           :diaryId="diary.id"
+          :placeholder="diaryStore.notePlaceholder"
           :status="isAbleToEdit"
         />
       </Transition>

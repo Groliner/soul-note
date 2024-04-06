@@ -6,6 +6,8 @@ export const loginAPI = (data) => request.post('public/login', data)
 
 export const signUpAPI = (data) => request.post('public/signup', data)
 
+export const logOutAPI = () => request.post('/public/logout')
+
 export const LogInTemplateAPI = () => request.get('public/template')
 
 export const getUserInfoAPI = () => request.get('user')
