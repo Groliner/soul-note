@@ -5,7 +5,7 @@
 
 */
 import { gsap } from 'gsap'
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { formatTime } from '@/composables/formatTime'
 import { useDiaryStore, useUserStore } from '@/stores'
 const props = defineProps({
@@ -21,10 +21,13 @@ const diaryId = ref(props.diaryId)
 const open = ref(false)
 onMounted(() => {
   open.value = true
+  nextTick(() => {
+    textareaDesc.value.style.height = diaryRef.value.height + 'px'
+  })
 })
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
-const diaryRef = computed(() => diaryStore.getLocalDiaryById(diaryId.value))
+const diaryRef = ref(diaryStore.getLocalDiaryById(diaryId.value))
 const diaryPagesRef = computed(() =>
   diaryStore.getLocalPagesByDiaryId(diaryId.value)
 )
@@ -33,8 +36,8 @@ const diaryInfo = computed(() => {
     author: diaryRef.value.username,
     lastReadPage: userStore.getLocalUserDiaryStatus(diaryId.value).lastReadPage,
     totalPages: diaryRef.value.pages,
-    createdTime: formatTime(diaryRef.value.create_time),
-    updatedTime: formatTime(diaryRef.value.update_time)
+    createdTime: formatTime(diaryRef.value.createdTime),
+    updatedTime: formatTime(diaryRef.value.updatedTime)
   }
 })
 const diaryPageInfo = computed(() =>
@@ -56,7 +59,6 @@ import {
   PhFilePlus,
   PhBackspace
 } from '@phosphor-icons/vue'
-import { ElMessage } from 'element-plus'
 import { messageManager } from '@/directives/index'
 const pretty = () => {
   query.value = ''
@@ -65,7 +67,6 @@ const pretty = () => {
 watch(diaryRef, () => {
   pretty()
 })
-
 const handleAdd = () => {
   // 向后端发送请求,返回新的日记
   messageManager
@@ -78,6 +79,7 @@ const handleAdd = () => {
       if (res) {
         const _diaryId = await diaryStore.addDiary()
         diaryId.value = _diaryId
+        diaryRef.value = diaryStore.getLocalDiaryById(_diaryId)
       }
     })
 }
@@ -111,8 +113,9 @@ const handleDeletePage = () => {
 }
 const handleSave = async () => {
   // 保存日记信息
-  const res = await diaryStore.saveDiary(diaryId.value)
+  const res = await diaryStore.saveDiary(diaryId.value, true)
   open.value = res ? false : true
+  // 添加动画
 }
 
 // textarea 动画
@@ -121,8 +124,11 @@ function autoExpand(event) {
   textarea.style.height = 'auto'
   // 然后设置为scrollHeight以适应内容
   textarea.style.height = textarea.scrollHeight + 'px'
-  diaryRef.value.context.height = textarea.scrollHeight
-  diaryRef.value.context.words = textarea.value.length
+  nextTick(() => {
+    diaryRef.value.height = textarea.scrollHeight
+    diaryRef.value.words = textarea.value.replace(/\s+/g, '').trim().length
+    diaryRef.value.isEdited = true
+  })
 }
 
 // search

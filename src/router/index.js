@@ -121,15 +121,24 @@ const router = createRouter({
   }
 })
 
-import { useUserStore } from '@/stores'
+import { useUserStore, useDiaryStore } from '@/stores'
 
-router.beforeEach(async (to, from) => {
+router.beforeEach((to, from) => {
   const userStore = useUserStore()
-  console.log(to.name, userStore.isAuthenticated)
-  if (['home', 'login'].includes(to.name) || userStore.isAuthenticated)
-    return true
-  userStore.logout()
-  return { name: 'login' }
+  const diaryStore = useDiaryStore()
+  if (!['home', 'login'].includes(to.name) && !userStore.isAuthenticated) {
+    userStore.logout()
+    return { name: 'login' }
+  }
+  if (['account', 'diary'].includes(to.name)) {
+    console.log('刷新页面可从数据库更新数据')
+    userStore.getUserDiaryStatus()
+    diaryStore.init()
+  }
+  if (['account'].includes(to.name)) {
+    userStore.updateUserInfo()
+  }
+  return true
 })
 
 export default router

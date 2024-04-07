@@ -28,7 +28,8 @@ const defaultDiary = [
     status: 'active',
     username: 'author',
     createdTime: Date.now(),
-    updatedTime: Date.now()
+    updatedTime: Date.now(),
+    isEdited: false
   }
 ]
 const defaultPages = {
@@ -43,7 +44,8 @@ const defaultPages = {
         selectionEnd: 0,
         scrollY: 0,
         height: 740,
-        words: 10
+        words: 10,
+        isEdited: false
       },
       createdTime: Date.now(),
       updatedTime: Date.now()
@@ -54,41 +56,8 @@ const defaultPages = {
 export const useDiaryStore = defineStore(
   'diary',
   () => {
-    const diary = ref([
-      {
-        id: 0,
-        title: 'origin',
-        description: 'the origin diary',
-        height: 88,
-        words: 3,
-        cover:
-          'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/3431aace-c971-43f6-b5dc-592eef39d2dc.jpg',
-        pages: 1,
-        status: 'active',
-        username: 'author',
-        createdTime: Date.now(),
-        updatedTime: Date.now()
-      }
-    ])
-    const diaryPages = ref({
-      0: [
-        {
-          page: 1,
-          title: 'origin',
-          content: 'please add a new diary, click left pencil',
-          status: 'disabled',
-          context: {
-            selectionStart: 0,
-            selectionEnd: 0,
-            scrollY: 0,
-            height: 740,
-            words: 10
-          },
-          createdTime: Date.now(),
-          updatedTime: Date.now()
-        }
-      ]
-    })
+    const diary = ref(JSON.parse(JSON.stringify(defaultDiary)))
+    const diaryPages = ref(JSON.parse(JSON.stringify(defaultPages)))
     let notePlaceholder = `
                         there are some tips for writing diary：
                         1. crtl + z  --> undo.
@@ -98,8 +67,11 @@ export const useDiaryStore = defineStore(
                         5. all you write down will auto save in the area when you go away.
                         6. Anytime there's a pop-up alert asking it's saved immediately.
     `
-    const update = async () => {
+    const initAll = ref(true) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
+    const init = async () => {
+      if (!initAll.value) return
       await getDiary()
+      initAll.value = false
       for (let i = 0; i < diary.value.length; i++) {
         await getDiaryPage(diary.value[i].id)
       }
@@ -115,7 +87,10 @@ export const useDiaryStore = defineStore(
     const getDiary = async () => {
       const res = await getDiaryListAPI()
       if (res.data.data) {
-        diary.value = res.data.data
+        diary.value = res.data.data.map((item) => {
+          item.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
+          return item
+        })
         ElMessage.success('Diary loaded successfully')
         return true
       }
@@ -127,6 +102,7 @@ export const useDiaryStore = defineStore(
       const res = await getDiaryPageListAPI({ diaryId })
       if (res.data.data.length > 0) {
         diaryPages.value[diaryId] = res.data.data.map((item) => {
+          item.diaryPageContext.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
           return { ...item.diaryPage, context: item.diaryPageContext }
         })
         return true
@@ -143,10 +119,12 @@ export const useDiaryStore = defineStore(
       })
       if (res.data.data) {
         const diaryPage_ = res.data.data
+        diaryPage_.diaryPageContext.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
         diaryPages.value[diaryId].push({
           ...diaryPage_.diaryPage,
           context: diaryPage_.diaryPageContext
         })
+
         ElMessage.success('Page added successfully')
         return true
       }
@@ -159,12 +137,14 @@ export const useDiaryStore = defineStore(
       const res = await addDiaryAPI()
       if (res.data.data) {
         const diary_ = res.data.data
+        diary_.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
         const res_ = await getDiaryPage(diary_.id)
         if (res_) {
           diary.value.push(diary_)
           userStore.addLocalUserDiaryStatus(diary_.id)
-          userStore.userInfo.lastReadDiaryId = diary_.id
+          userStore.setLocalLastReadDiaryId(diary_.id)
           ElMessage.success('Diary added successfully')
+
           return diary_.id
         }
       }
@@ -193,6 +173,7 @@ export const useDiaryStore = defineStore(
               lastReadPage: maxPage
             })
           diaryPages.value[id].splice(index, 1)
+
           ElMessage.success('Page deleted successfully')
           return true
         }
@@ -210,6 +191,7 @@ export const useDiaryStore = defineStore(
           userStore.deleteLocalUserDiaryStatus(id)
           diary.value.splice(index, 1)
           diaryPages.value[id] = []
+
           ElMessage.success(`Diary ${title} deleted successfully`)
           return true
         }
@@ -217,33 +199,42 @@ export const useDiaryStore = defineStore(
       ElMessage.error('Failed to delete diary')
       return false
     }
-    const saveDiary = async (diaryId) => {
+    const saveDiary = async (diaryId, isMust = false) => {
       const index = diary.value.findIndex((item) => item.id == diaryId)
-      if (index !== -1) {
+      if ((index !== -1 && diary.value[index].isEdited) || isMust) {
         const res = await updateDiaryAPI(diary.value[index])
         if (res.data.code) {
+          diary.value[index].isEdited = false
           ElMessage.success('Diary saved successfully')
           return true
         }
       }
       ElMessage.error('Failed to save diary')
     }
-    const savePage = async (diaryId, page) => {
+    const savePage = async (diaryId, page, isMust = false) => {
       const pageList = diaryPages.value[diaryId]
+      if (pageList === undefined) {
+        ElMessage.error('Failed to find diary')
+        return
+      }
       const index = pageList.findIndex(
         (item) => item.diaryId == diaryId && item.page == page
       )
-      if (index !== -1) {
-        const res = await updateDiaryPageAPI({
-          diaryPage: pageList[index],
-          diaryPageContext: pageList[index].context
-        })
-        if (res.data.code) {
-          ElMessage.success('Page saved successfully')
-          return true
-        }
-        ElMessage.error('Failed to save page')
+      if (index === -1) {
+        ElMessage.error('Failed to find page')
+        return
       }
+      if (!pageList[index].context.isEdited && !isMust) return true
+      const res = await updateDiaryPageAPI({
+        diaryPage: pageList[index],
+        diaryPageContext: pageList[index].context
+      })
+      if (res.data.code) {
+        pageList[index].context.isEdited = false
+        ElMessage.success('Page saved successfully')
+        return true
+      }
+      ElMessage.error('Failed to save page')
     }
     const getLocalDiaryById = (id) => diary.value.find((item) => item.id == id)
     const getLocalDiariesByUsername = (username) =>
@@ -267,6 +258,7 @@ export const useDiaryStore = defineStore(
         diary.value[index].title = title
         diary.value[index].description = description
         diary.value[index].height = height
+        diary.value[index].isEdited = true
       }
       return true
     }
@@ -275,6 +267,7 @@ export const useDiaryStore = defineStore(
       const index = diary.value.findIndex((item) => item.id === id)
       if (index !== -1) {
         diary.value[index].cover = cover
+        diary.value[index].isEdited = true
       }
       return true
     }
@@ -282,7 +275,7 @@ export const useDiaryStore = defineStore(
       diary,
       diaryPages,
       notePlaceholder,
-      update,
+      init,
       setDiary,
       setPages,
       getDiary,

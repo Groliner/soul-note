@@ -30,7 +30,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         // '/api'是代理标识，用于告诉node，url前面是/api的就是使用代理的
-        target: 'http://192.168.85.208:12345', //目标地址，一般是指后台服务器地址
+        target: 'http://192.168.214.208:12345', //目标地址，一般是指后台服务器地址
         changeOrigin: true, //是否跨域
         rewrite: (path) => path.replace(/^\/api/, '') //重写路径，去掉路径中的/api
       }

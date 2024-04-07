@@ -132,6 +132,7 @@ function autoExpand(event, scroll_distance = -1) {
   diaryContext.value.words = diaryContent.value
     .replace(/\s+/g, '')
     .trim().length
+  diaryContext.value.isEdited = true
 }
 
 function handleInput(event) {

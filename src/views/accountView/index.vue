@@ -1,6 +1,6 @@
 <script setup>
 import { useUserStore, useDiaryStore } from '@/stores'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onUnmounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
@@ -9,11 +9,10 @@ let originalUserInfo = JSON.parse(JSON.stringify(userInfo.value))
 const diaries = computed(() =>
   diaryStore.getLocalDiariesByUsername(userInfo.value.username)
 )
-onMounted(() => {
-  userStore.getUserDiaryStatus()
-})
 import { gsap } from 'gsap'
-
+onUnmounted(() => {
+  handleCancel()
+})
 // user Info edit
 const avatarInput = ref(null)
 const isEdit = ref(false)
@@ -40,19 +39,23 @@ const handleAvatarChange = async (event) => {
     userStore.setUserInfo({ avatar: res.data.data })
   }
 }
-const handleSave = () => {
+const handleSave = async () => {
   isEdit.value = false
-  if (JSON.stringify(originalUserInfo) === JSON.stringify(userInfo.value))
-    return
-  if (userStore.saveUserInfo()) {
-    originalUserInfo = JSON.parse(JSON.stringify(userInfo.value))
-  }
+  userInfo.value.isEdited =
+    JSON.stringify(originalUserInfo) !== JSON.stringify(userInfo.value)
+  await userStore.saveUserInfo()
+  originalUserInfo = JSON.parse(JSON.stringify(userInfo.value))
 }
-
+const handleCancel = () => {
+  isEdit.value = false
+  userStore.setUserInfo(originalUserInfo)
+  userInfo.value.isEdited = false
+}
 // friends system
 import {
   PhNotePencil,
   PhCheckCircle,
+  PhReceiptX,
   PhSlidersHorizontal
 } from '@phosphor-icons/vue'
 import { messageManager } from '@/directives/index'
@@ -86,7 +89,7 @@ import calendar from '@/components/modules/YearCalendar.vue'
           @change="handleAvatarChange"
           style="display: none"
         />
-        <div class="button-edit">
+        <div class="button button-edit">
           <ph-note-pencil
             class="icon_avatar"
             v-show="!isEdit"
@@ -96,6 +99,13 @@ import calendar from '@/components/modules/YearCalendar.vue'
             class="icon_avatar"
             v-show="isEdit"
             @click="handleSave"
+          />
+        </div>
+        <div class="button button-cancel" :class="{ active: isEdit }">
+          <ph-receipt-x
+            class="icon_cancel"
+            v-show="isEdit"
+            @click="handleCancel"
           />
         </div>
       </div>
@@ -214,16 +224,23 @@ article {
       }
     }
 
-    .button-edit {
+    .button {
       position: absolute;
       right: -2em;
       bottom: -1.2em;
       font-size: 1.3em;
       z-index: 100;
       cursor: pointer;
-      transition: color 0.25s;
+      transition: all 0.25s;
       &:hover {
         color: var(--primary);
+      }
+      &-cancel.active {
+        bottom: -2.8em;
+
+        &:hover {
+          color: var(--c-blue-500);
+        }
       }
     }
   }

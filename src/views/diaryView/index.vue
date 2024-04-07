@@ -5,7 +5,6 @@ import {
   onMounted,
   onUnmounted,
   computed,
-  reactive,
   watch,
   onBeforeMount
 } from 'vue'
@@ -30,7 +29,6 @@ const diaryPage = computed(() =>
     userDiaryStatus.value.lastReadPage
   )
 )
-let oldPage = JSON.stringify(diaryPage.value)
 import { gsap } from 'gsap'
 const mirror = ref(null)
 const pageTitleInput = ref(null)
@@ -48,10 +46,6 @@ const observer = new ResizeObserver((entries) => {
   }
 })
 
-onBeforeMount(async () => {
-  await userStore.getUserDiaryStatus()
-  await diaryStore.update()
-})
 onMounted(() => {
   // 开始观察<span>元素
   observer.observe(mirror.value)
@@ -77,6 +71,7 @@ const handleEdit = (m) => {
   nextTick(() => {
     pageTitleInput.value.focus()
   })
+  diaryPage.value.context.isEdited = true // 记录编辑状态
 }
 
 //编辑日记本
@@ -96,19 +91,7 @@ const handleFlip = (m) => {
 }
 
 const handClick = (diaryId) => {
-  if (
-    oldPage !==
-    JSON.stringify(
-      diaryStore.getLocalPageByDiaryId(
-        lastReadDiaryId.value,
-        userDiaryStatus.value.lastReadPage
-      )
-    )
-  )
-    diaryStore.savePage(
-      lastReadDiaryId.value,
-      userDiaryStatus.value.lastReadPage
-    )
+  diaryStore.savePage(lastReadDiaryId.value, userDiaryStatus.value.lastReadPage)
   messageManager.showDiaryEditModal(diaryId)
 }
 watch(
@@ -117,15 +100,7 @@ watch(
     [newLastReadPage, newLastReadDiaryId],
     [oldLastReadPage, oldLastReadDiaryId]
   ) => {
-    if (
-      oldPage !==
-      JSON.stringify(
-        diaryStore.getLocalPageByDiaryId(oldLastReadDiaryId, oldLastReadPage)
-      )
-    ) {
-      diaryStore.savePage(oldLastReadDiaryId, oldLastReadPage)
-    }
-    oldPage = JSON.stringify(diaryPage.value)
+    diaryStore.savePage(oldLastReadDiaryId, oldLastReadPage)
   }
 )
 </script>
