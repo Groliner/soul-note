@@ -6,7 +6,6 @@ signUP 注册设置数组(props)
 logIn 登录设置数组(props)
 */
 import { toRef, ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import {
   PhArrowCircleRight,
   PhArrowCircleLeft,
@@ -14,7 +13,6 @@ import {
   PhArrowsClockwise
 } from '@phosphor-icons/vue'
 import { gsap } from 'gsap'
-const router = useRouter()
 const logIn = [
   {
     id: 'username',
@@ -96,7 +94,8 @@ const handleHover = (el) => {
     }, 400)
 }
 const handleOut = () => {
-  isHover.value = stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
+  isHover.value =
+    stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
   if (responseData.value?.data) {
     // console.log('清除数据')
     responseData.value.data = undefined
@@ -120,9 +119,14 @@ const checkInput = (el) => {
 const moveToNextStep = () => {
   if (isFinished.value) return console.log('Account Created')
   stepNumber.value =
-    finishedStep.value >= stepNumber.value ? stepNumber.value + 1 : finishedStep.value + 1
+    finishedStep.value >= stepNumber.value
+      ? stepNumber.value + 1
+      : finishedStep.value + 1
   progress.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
-  if (finishedStep.value < totalSteps.value || stepNumber.value <= totalSteps.value)
+  if (
+    finishedStep.value < totalSteps.value ||
+    stepNumber.value <= totalSteps.value
+  )
     return checkInput(refArray[stepNumber.value - 1])
   isFinished.value = true
   setTimeout(handleFinished, 500)
@@ -231,7 +235,13 @@ const handleAnimation = () => {
     @mouseover="handleHover"
     @mouseleave="handleOut"
   >
-    <h1 id="heading" class="up" :class="{ inactive: totalSteps !== 3 && isHover }">Sign Up</h1>
+    <h1
+      id="heading"
+      class="up"
+      :class="{ inactive: totalSteps !== 3 && isHover }"
+    >
+      Sign Up
+    </h1>
 
     <form method="post" action="" autocomplete="off">
       <div id="inp-box-cover">
@@ -280,7 +290,9 @@ const handleAnimation = () => {
               Working<ph-arrows-clockwise class="loading" weight="bold" />
             </div>
             <div id="acc-success" v-show="!load">
-              <p>Account Created<ph-check-fat class="checkout" weight="fill" /></p>
+              <p>
+                Account Created<ph-check-fat class="checkout" weight="fill" />
+              </p>
               <span id="init-login" @click="toLogIn">Login now</span>
             </div>
           </div>
@@ -288,7 +300,13 @@ const handleAnimation = () => {
       </div>
     </form>
 
-    <h1 id="heading" class="down" :class="{ inactive: totalSteps !== 2 && isHover }">Log In</h1>
+    <h1
+      id="heading"
+      class="down"
+      :class="{ inactive: totalSteps !== 2 && isHover }"
+    >
+      Log In
+    </h1>
   </div>
 </template>
 <style lang="scss" scoped>

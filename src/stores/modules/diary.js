@@ -23,16 +23,16 @@ const defaultDiary = [
     height: 88,
     words: 3,
     cover:
-      'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/3431aace-c971-43f6-b5dc-592eef39d2dc.jpg',
+      'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/2a28bcf6-368b-48cf-afd5-dfea17203f4e.jpg',
     pages: 1,
     status: 'active',
-    username: 'author',
+    userId: 0,
     createdTime: Date.now(),
     updatedTime: Date.now(),
     isEdited: false
   }
 ]
-const defaultPages = {
+const defaultPages = JSON.stringify({
   0: [
     {
       page: 1,
@@ -47,17 +47,17 @@ const defaultPages = {
         words: 10,
         isEdited: false
       },
-      createdTime: Date.now(),
-      updatedTime: Date.now()
+      createdTime: 1712639239247,
+      updatedTime: 1712639239247
     }
   ]
-}
+})
 
 export const useDiaryStore = defineStore(
   'diary',
   () => {
     const diary = ref(JSON.parse(JSON.stringify(defaultDiary)))
-    const diaryPages = ref(JSON.parse(JSON.stringify(defaultPages)))
+    const diaryPages = ref(JSON.parse(defaultPages))
     let notePlaceholder = `
                         there are some tips for writing diary：
                         1. crtl + z  --> undo.
@@ -73,15 +73,14 @@ export const useDiaryStore = defineStore(
       await getDiary()
       initAll.value = false
       for (let i = 0; i < diary.value.length; i++) {
-        await getDiaryPage(diary.value[i].id)
+        const diaryId = diary.value[i].id
+        if (diaryId !== 0) await getDiaryPage(diaryId)
       }
     }
     const setDiary = (diary_ = defaultDiary) => {
-      console.log(diary_)
       diary.value = diary_
     }
-    const setPages = (page_ = defaultPages) => {
-      console.log(page_)
+    const setPages = (page_ = JSON.parse(defaultPages)) => {
       diaryPages.value = page_
     }
     const getDiary = async () => {
@@ -91,6 +90,7 @@ export const useDiaryStore = defineStore(
           item.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
           return item
         })
+        diary.value.unshift(defaultDiary[0])
         ElMessage.success('Diary loaded successfully')
         return true
       }
@@ -163,6 +163,7 @@ export const useDiaryStore = defineStore(
       } else {
         const res = await deleteDiaryPageAPI(pageList[index].id)
         if (res.data.code) {
+          // 保持最后阅读页码不会超过删除的页码,与后端同步
           const userStore = useUserStore()
           const lastReadPage =
             userStore.getLocalUserDiaryStatus(id).lastReadPage
@@ -183,7 +184,7 @@ export const useDiaryStore = defineStore(
     }
     const deleteDiary = async (id) => {
       const index = diary.value.findIndex((item) => item.id === id)
-      if (index !== -1 && index !== 0) {
+      if (index !== -1 && index !== 1) {
         const res = await deleteDiaryAPI(id)
         if (res.data.code) {
           const title = diary.value[index].title
@@ -213,18 +214,20 @@ export const useDiaryStore = defineStore(
     }
     const savePage = async (diaryId, page, isMust = false) => {
       const pageList = diaryPages.value[diaryId]
+      if (pageList.length === 0) return // 判断是否页面列表为空,为空则不保存
       if (pageList === undefined) {
-        ElMessage.error('Failed to find diary')
+        ElMessage.info('Failed to find diary')
         return
       }
       const index = pageList.findIndex(
         (item) => item.diaryId == diaryId && item.page == page
       )
       if (index === -1) {
-        ElMessage.error('Failed to find page')
+        // 要保存的页面不存在
+        ElMessage.info('Failed to save page')
         return
       }
-      if (!pageList[index].context.isEdited && !isMust) return true
+      if (!pageList[index].context.isEdited && !isMust) return true // 判断是否编辑过,未编辑过则不保存
       const res = await updateDiaryPageAPI({
         diaryPage: pageList[index],
         diaryPageContext: pageList[index].context
@@ -236,19 +239,27 @@ export const useDiaryStore = defineStore(
       }
       ElMessage.error('Failed to save page')
     }
-    const getLocalDiaryById = (id) => diary.value.find((item) => item.id == id)
-    const getLocalDiariesByUsername = (username) =>
-      diary.value.filter((item) => item.username == username)
+    const getLocalDiaryById = (id) => {
+      const index = diary.value.findIndex((item) => item.id === id && id !== 0)
+
+      if (index !== -1) return diary.value[index]
+      return diary.value[0]
+    }
+    const getLocalDiariesByUserId = (userId) =>
+      diary.value.filter((item) => item.userId == userId)
 
     const getLocalPageByDiaryId = (diaryId, page) => {
       const pageList = diaryPages.value[diaryId]
-      const index = pageList.findIndex((item) => item.page == page)
-      if (index !== -1) {
-        return pageList[index]
+      if (pageList !== undefined) {
+        const index = pageList.findIndex((item) => item.page == page)
+        if (index !== -1) {
+          return pageList[index]
+        }
       }
+      return diaryPages.value[0][0]
     }
     const getLocalPagesByDiaryId = (diaryId) => {
-      return diaryPages.value[diaryId].filter((item) => item.diaryId == diaryId)
+      return diaryPages.value[diaryId]
     }
     const updateLocalDiary = ({ id, title, description, height }) => {
       // 根据 id 更新 diary
@@ -280,7 +291,7 @@ export const useDiaryStore = defineStore(
       setPages,
       getDiary,
       getLocalDiaryById,
-      getLocalDiariesByUsername,
+      getLocalDiariesByUserId,
       getLocalPageByDiaryId,
       getLocalPagesByDiaryId,
       updateLocalDiary,

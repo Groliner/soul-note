@@ -23,4 +23,9 @@ app.use(router)
 app.use(lazyLoad)
 app.use(componentPlugin)
 
+// app.config.errorHandler = (err, vm, info) => {
+//   console.error(`捕获到全局错误：${err.toString()}\n信息：${info}`)
+//   // 这里可以添加错误上报逻辑或者错误处理逻辑
+// }
+
 app.mount('#app')

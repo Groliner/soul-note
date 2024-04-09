@@ -33,7 +33,7 @@ const diaryPagesRef = computed(() =>
 )
 const diaryInfo = computed(() => {
   return {
-    author: diaryRef.value.username,
+    author: userStore.getUsernameById(diaryRef.value.userId),
     lastReadPage: userStore.getLocalUserDiaryStatus(diaryId.value).lastReadPage,
     totalPages: diaryRef.value.pages,
     createdTime: formatTime(diaryRef.value.createdTime),
@@ -187,6 +187,18 @@ const handleCoverChange = async (event) => {
     })
   }
 }
+import router from '@/router'
+// 添加页面跳转
+const handleGoTo = (page) => {
+  router.push({
+    name: 'diary',
+    query: {
+      diaryId: diaryRef.value.id,
+      page: page
+    }
+  })
+  open.value = false
+}
 </script>
 <template>
   <Transition name="popup">
@@ -289,7 +301,11 @@ const handleCoverChange = async (event) => {
                 :key="item.title"
                 :data-index="index"
               >
-                <span>{{ item.page }}-{{ item.title }}</span>
+                <span
+                  @click="handleGoTo(item.page)"
+                  :class="{ active: item.page === diaryInfo.lastReadPage }"
+                  >{{ item.page }}-{{ item.title }}</span
+                >
 
                 <span>words:{{ item.context.words }}</span>
                 <span>{{ formatTime(item.create_time) }}</span>
@@ -387,6 +403,17 @@ img {
         overflow: hidden;
         text-overflow: ellipsis;
         width: 95%;
+        cursor: pointer;
+
+        &.active {
+          color: var(--primary);
+          &:hover {
+            color: var(--primary-dark);
+          }
+        }
+        &:not(.active):hover {
+          color: var(--primary-light);
+        }
       }
 
       .icon {

@@ -239,7 +239,6 @@ button {
     padding: 0;
     li {
       width: 3.8rem;
-      background-color: var(--c-gray-100);
       cursor: pointer;
       .page-content {
         display: flex;
@@ -259,7 +258,7 @@ button {
         color: var(--greyDark);
       }
       &.active {
-        background-color: var(--c-gray-900);
+        background: radial-gradient(circle at 50% 50%, #000000, #faf5e9);
         color: #fff;
       }
     }

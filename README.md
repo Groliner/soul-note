@@ -42,3 +42,25 @@ popup: 600
 
 ## logis
 前端的数据都为及时存储,设计保存为向后端请求,所以前端不需要做save与temporary区分
+store 中的const常量,比如字典defaultPages,defaultUserInfo,会同步改变,尽管有JSON序列化.....
+变量的相等判断用的全等,注意数字与字符的区别,route.query获得的为字符.
+
+
+## BUG
+logout逻辑中:
+ const logout = async () => {
+      try {
+        logOutAPI()
+      } catch (e) {
+        console.log(e)
+      } finally {
+        router.push('/login')
+        consol.log(defaultUserInfo) 添加这一语句就可以重置defaultUserInfo,若注释则....
+        userInfo.value = defaultUserInfo
+        friends.value = defaultFriends
+        userDiary.value = defaultDiary
+        diaryStore.setDiary()
+        diaryStore.setPages()
+        console.log('ok')
+      }
+    }

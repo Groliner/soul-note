@@ -1,13 +1,5 @@
 <script setup>
-import {
-  ref,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  computed,
-  watch,
-  onBeforeMount
-} from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, computed, watch } from 'vue'
 import notePage from './note.vue'
 import pagination from './pagination.vue'
 import { useDiaryStore, useUserStore } from '@/stores'
@@ -29,6 +21,8 @@ const diaryPage = computed(() =>
     userDiaryStatus.value.lastReadPage
   )
 )
+import { useRoute } from 'vue-router'
+const route = useRoute()
 import { gsap } from 'gsap'
 const mirror = ref(null)
 const pageTitleInput = ref(null)
@@ -45,15 +39,27 @@ const observer = new ResizeObserver((entries) => {
       })
   }
 })
-
 onMounted(() => {
   // 开始观察<span>元素
   observer.observe(mirror.value)
+  if (route.query.diaryId && route.query.page) {
+    const diaryId = parseInt(route.query.diaryId)
+    const lastReadPage = parseInt(route.query.page)
+    userStore.setLocalLastReadDiaryId(diaryId)
+    userStore.updateLocalUserDiaryStatus(
+      {
+        diaryId,
+        lastReadPage
+      },
+      false
+    )
+  }
 })
 // 记得在组件卸载时停止观察
 onUnmounted(() => {
   observer.disconnect()
   diaryStore.savePage(lastReadDiaryId.value, userDiaryStatus.value.lastReadPage)
+  userInfo.value.tt = 10
 })
 const isAbleToEdit = computed(() =>
   diaryPage.value ? !!(diaryPage.value.status === 'active') : false

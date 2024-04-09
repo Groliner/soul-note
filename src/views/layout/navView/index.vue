@@ -58,17 +58,13 @@ onMounted(() => {
   })
 })
 
-import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { messageManager } from '@/directives/index'
-const router = useRouter()
 // 检查是否登录
 const userStore = useUserStore()
 const logout = () => {
   if (userStore.userInfo.token) {
     userStore.logout()
-    ElMessage.success('Logout successfully')
-    router.push('/login')
   } else {
     ElMessage.error('You are not logged in')
   }

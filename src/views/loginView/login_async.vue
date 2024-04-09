@@ -288,7 +288,7 @@ const login = async (formData) => {
     .then((res) => {
       if (res.data.code) {
         userStore.setToken(res.data.data.token)
-        userStore.updateUserInfo(res.data.data.username)
+        userStore.updateUserInfo()
         diaryStore.init()
         ElMessage({ type: 'success', message: 'Login successfully' })
       } else {
