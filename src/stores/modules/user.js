@@ -4,9 +4,10 @@ import { useDiaryStore } from './diary'
 import { getUserInfoAPI, updateUserInfoAPI, logOutAPI } from '@/api/user'
 import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
 import { ElMessage } from 'element-plus'
+import defaultIMG from '../../assets/images/logo.png'
 const defaultUserInfoString = JSON.stringify({
   token: '',
-  avatar: '/deepSouls/src/assets/images/logo.png',
+  avatar: defaultIMG,
   username: 'grolin',
   id: 0,
   email: '123@qwe.com',
@@ -20,19 +21,19 @@ const defaultFriends = [
   {
     id: 1,
     username: 'friend_1',
-    avatar: '/deepSouls/src/assets/images/logo.png',
+    avatar: defaultIMG,
     description: 'friend_1 is a good friend'
   },
   {
     id: 2,
     username: 'friend_2',
-    avatar: '/deepSouls/src/assets/images/logo.png',
+    avatar: defaultIMG,
     description: 'friend_2 is a good friend'
   },
   {
     id: 3,
     username: 'friend_3',
-    avatar: '/deepSouls/src/assets/images/logo.png',
+    avatar: defaultIMG,
     description: 'friend_3 is a good friend'
   }
 ]
@@ -125,22 +126,15 @@ export const useUserStore = defineStore(
         return false
       }
     }
-    const updateLocalUserDiaryStatus = (
-      { diaryId, lastReadPage },
-      record = true
-    ) => {
-      const index = userDiary.value.findIndex(
-        (item) => item.diaryId === diaryId
-      )
+    const updateLocalUserDiaryStatus = ({ diaryId, lastReadPage }, record = true) => {
+      const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
       if (index === -1) return false
       userDiary.value[index].lastReadPage = lastReadPage
       isNeedToUpdate.value = record
       return true
     }
     const getLocalUserDiaryStatus = (diaryId) => {
-      const index = userDiary.value.findIndex(
-        (item) => item.diaryId === diaryId
-      )
+      const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
       if (index === -1) return defaultDiary[0]
       return userDiary.value[index]
     }
@@ -157,18 +151,14 @@ export const useUserStore = defineStore(
       return diary_.id
     }
     const deleteLocalUserDiaryStatus = (diaryId) => {
-      const index = userDiary.value.findIndex(
-        (item) => item.diaryId === diaryId
-      )
+      const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
       if (index < 1) return false
       userInfo.value.lastReadDiaryId = userDiary.value[index - 1].diaryId
       userDiary.value.splice(index, 1)
       isNeedToUpdate.value = true
     }
     const setLocalLastReadDiaryId = (diaryId, record = true) => {
-      const index = userDiary.value.findIndex(
-        (item) => item.diaryId === diaryId
-      )
+      const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
       let isNeedToSave = userInfo.value.lastReadDiaryId === 0 ? record : false
       if (index !== -1) userInfo.value.lastReadDiaryId = diaryId
       else {
