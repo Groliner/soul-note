@@ -1,4 +1,12 @@
+<!--
+ * @Author: Gro lin
+ * @Date: 2024-04-10 07:09:02
+ * @LastEditors: Gro lin
+ * @LastEditTime: 2024-04-10 13:30:18
+-->
+
 # soul-note
+
 a web for my friends and myself
 
 ## Recommended IDE Setup
@@ -34,33 +42,40 @@ npm run lint
 ```
 
 ## z-index
-fixed组件：100
-蒙版：301
-nav:302
-header:303
-popup: 600
+
+- fixed组件：100
+- 蒙版：301
+- nav:302
+- header:303
+- popup: 600
 
 ## logis
-前端的数据都为及时存储,设计保存为向后端请求,所以前端不需要做save与temporary区分
-store 中的const常量,比如字典defaultPages,defaultUserInfo,会同步改变,尽管有JSON序列化.....
-变量的相等判断用的全等,注意数字与字符的区别,route.query获得的为字符.
 
+### 前端的数据都为及时存储,设计保存为向后端请求,所以前端不需要做save与temporary区分
+
+### store 中的const常量,比如字典defaultPages,defaultUserInfo,会同步改变,尽管有JSON序列化.....
+
+### 变量的相等判断用的全等,注意数字与字符的区别,route.query获得的为字符.
 
 ## BUG
-logout逻辑中:
- const logout = async () => {
-      try {
-        logOutAPI()
-      } catch (e) {
-        console.log(e)
-      } finally {
-        router.push('/login')
-        consol.log(defaultUserInfo) 添加这一语句就可以重置defaultUserInfo,若注释则....
-        userInfo.value = defaultUserInfo
-        friends.value = defaultFriends
-        userDiary.value = defaultDiary
-        diaryStore.setDiary()
-        diaryStore.setPages()
-        console.log('ok')
-      }
-    }
+
+### logout逻辑中:
+
+```
+const logout = async () => {
+  try {
+    logOutAPI()
+  } catch (e) {
+    console.log(e)
+  } finally {
+    router.push('/login')
+    consol.log(defaultUserInfo) 添加这一语句就可以重置defaultUserInfo,若注释则....
+    userInfo.value = defaultUserInfo
+    friends.value = defaultFriends
+    userDiary.value = defaultDiary
+    diaryStore.setDiary()
+    diaryStore.setPages()
+    console.log('ok')
+  }
+}
+```

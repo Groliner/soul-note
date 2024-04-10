@@ -18,7 +18,9 @@ import { PhMagnifyingGlass, PhGoogleLogo } from '@phosphor-icons/vue'
           <i class="ai-bell"></i>
         </button>
         <button class="avatar">
-          <img src="https://assets.codepen.io/285131/pexels-photo-838875.jpeg" />
+          <img
+            src="https://assets.codepen.io/285131/pexels-photo-838875.jpeg"
+          />
         </button>
       </div>
     </header>
@@ -46,7 +48,9 @@ import { PhMagnifyingGlass, PhGoogleLogo } from '@phosphor-icons/vue'
         <div class="card-inner">
           <span class="card-pin"></span>
           <div class="card-image">
-            <img src="https://assets.codepen.io/285131/illustration-hand-with-cigarette-icon.jpg" />
+            <img
+              src="https://assets.codepen.io/285131/illustration-hand-with-cigarette-icon.jpg"
+            />
           </div>
           <div class="card-content">
             <div class="card-meta">
@@ -64,7 +68,9 @@ import { PhMagnifyingGlass, PhGoogleLogo } from '@phosphor-icons/vue'
         <div class="card-inner">
           <span class="card-pin"></span>
           <div class="card-image">
-            <img src="https://assets.codepen.io/285131/hand-drawn-monster-milkshake.jpg" />
+            <img
+              src="https://assets.codepen.io/285131/hand-drawn-monster-milkshake.jpg"
+            />
           </div>
           <div class="card-content">
             <div class="card-meta">
@@ -83,7 +89,9 @@ import { PhMagnifyingGlass, PhGoogleLogo } from '@phosphor-icons/vue'
         <div class="card-inner">
           <span class="card-pin simple"></span>
           <div class="card-image">
-            <img src="https://assets.codepen.io/285131/pink-pastel-juicy-banana.jpg" />
+            <img
+              src="https://assets.codepen.io/285131/pink-pastel-juicy-banana.jpg"
+            />
           </div>
           <div class="card-content">
             <div class="card-meta">

@@ -1,8 +1,7 @@
 <script setup>
 import { gsap } from 'gsap'
 import { useUserStore } from '@/stores'
-import { ref, watch, onMounted, inject } from 'vue'
-const pressTime = inject('pressTime')
+import { ref, watch, onMounted } from 'vue'
 const show = ref(false)
 gsap.defaults({ duration: 0.5 })
 // ===== Open Nav =====
@@ -13,11 +12,7 @@ watch(show, (newVal, oldVal) => {
       display: 'block',
       ease: 'Power2.easeInOut'
     })
-    gsap.fromTo(
-      '.nav',
-      { xPercent: -100 },
-      { xPercent: 0, display: 'block', ease: 'Expo.easeOut' }
-    )
+    gsap.fromTo('.nav', { xPercent: -100 }, { xPercent: 0, display: 'block', ease: 'Expo.easeOut' })
     gsap.from('.nav li', {
       opacity: 0,
       y: 20,
@@ -86,32 +81,22 @@ const handleLogout = () => {
     <div class="nav">
       <ul class="nav_main">
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/home">
-            Home
-          </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/home"> Home </RouterLink>
         </li>
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/diary">
-            Diary
-          </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/diary"> Diary </RouterLink>
         </li>
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/library">
-            Library
-          </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/library"> Library </RouterLink>
         </li>
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/topic">
-            Topics
-          </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/topic"> Topics </RouterLink>
         </li>
       </ul>
       <div class="nav_divider"></div>
       <ul class="nav_sub" v-if="userStore.userInfo.token">
         <li>
-          <RouterLink class="nav_link" active-class="active" to="/account">
-            Account
-          </RouterLink>
+          <RouterLink class="nav_link" active-class="active" to="/account"> Account </RouterLink>
         </li>
         <li>
           <a class="nav_link" @click="handleLogout"> Log out </a>

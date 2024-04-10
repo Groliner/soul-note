@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:23:44
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-03-11 22:24:12
+ * @LastEditTime: 2024-04-10 07:15:46
  */
 // axios请求
 import axios from 'axios'
@@ -14,7 +14,6 @@ const instance = axios.create({
 })
 import { useUserStore } from '@/stores'
 import router from '@/router'
-import { ElMessage } from 'element-plus'
 
 // 请求拦截器
 instance.interceptors.request.use(

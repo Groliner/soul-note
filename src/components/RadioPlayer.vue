@@ -34,7 +34,12 @@ onMounted(() => {
         weight="fill"
         :class="{ visibility: !isActive }"
       ></phPause>
-      <phPlay class="play" name="play" weight="fill" :class="{ visibility: !isActive }"></phPlay>
+      <phPlay
+        class="play"
+        name="play"
+        weight="fill"
+        :class="{ visibility: !isActive }"
+      ></phPlay>
     </span>
     <span class="circle__back-1" :class="{ paused: !isActive }"></span>
     <span class="circle__back-2" :class="{ paused: !isActive }"></span>
@@ -105,7 +110,11 @@ onMounted(() => {
     box-shadow:
       0.4rem 0.4rem 0.8rem var(--greyLight-2),
       -0.4rem -0.4rem 0.8rem var(--white);
-    background: linear-gradient(to bottom right, var(--greyLight-2) 0%, var(--white) 100%);
+    background: linear-gradient(
+      to bottom right,
+      var(--greyLight-2) 0%,
+      var(--white) 100%
+    );
     animation: waves 4s linear infinite;
 
     &.paused {

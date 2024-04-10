@@ -76,7 +76,11 @@ onMounted(() => {
 
     // assign a circle to each point
     for (var ii in points) {
-      var c = new Circle(points[ii], 2 + Math.random() * 2, 'rgba(255,255,255,0.3)')
+      var c = new Circle(
+        points[ii],
+        2 + Math.random() * 2,
+        'rgba(255,255,255,0.3)'
+      )
       points[ii].circle = c
     }
   }
@@ -97,8 +101,12 @@ onMounted(() => {
       posx = e.pageX
       posy = e.pageY
     } else if (e.clientX || e.clientY) {
-      posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft
-      posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop
+      posx =
+        e.clientX +
+        document.body.scrollLeft +
+        document.documentElement.scrollLeft
+      posy =
+        e.clientY + document.body.scrollTop + document.documentElement.scrollTop
     }
     target.x = posx
     target.y = posy
@@ -209,7 +217,8 @@ onMounted(() => {
     var lastTime = 0
     var vendors = ['ms', 'moz', 'webkit', 'o']
     for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-      window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame']
+      window.requestAnimationFrame =
+        window[vendors[x] + 'RequestAnimationFrame']
       window.cancelAnimationFrame =
         window[vendors[x] + 'CancelAnimationFrame'] ||
         window[vendors[x] + 'CancelRequestAnimationFrame']

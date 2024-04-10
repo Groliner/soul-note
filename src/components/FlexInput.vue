@@ -1,6 +1,6 @@
 <script setup>
 import { gsap } from 'gsap'
-import { ref, nextTick, onMounted, onUnmounted, watch } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 
 const mirror = ref(null)
 const inputRef = ref(null)

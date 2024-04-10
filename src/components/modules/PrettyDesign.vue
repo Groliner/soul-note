@@ -168,7 +168,9 @@ const isActive = ref(false)
         </div>
         <div class="checkbox__2">
           <input id="checkbox-2" type="checkbox" checked />
-          <label for="checkbox-2"><phCheck class="phCheck" weight="bold" /></label>
+          <label for="checkbox-2"
+            ><phCheck class="phCheck" weight="bold"
+          /></label>
         </div>
       </div>
 
@@ -238,8 +240,16 @@ const isActive = ref(false)
             :class="{ visibility: !isActive }"
           ></phPlay>
         </span>
-        <span class="circle__back-1" ref="wave1" :class="{ paused: !isActive }"></span>
-        <span class="circle__back-2" ref="wave2" :class="{ paused: !isActive }"></span>
+        <span
+          class="circle__back-1"
+          ref="wave1"
+          :class="{ paused: !isActive }"
+        ></span>
+        <span
+          class="circle__back-2"
+          ref="wave2"
+          :class="{ paused: !isActive }"
+        ></span>
       </div>
 
       <div class="form">
@@ -746,7 +756,11 @@ const isActive = ref(false)
     box-shadow:
       0.4rem 0.4rem 0.8rem var(--greyLight-2),
       -0.4rem -0.4rem 0.8rem var(--white);
-    background: linear-gradient(to bottom right, var(--greyLight-2) 0%, var(--white) 100%);
+    background: linear-gradient(
+      to bottom right,
+      var(--greyLight-2) 0%,
+      var(--white) 100%
+    );
     animation: waves 4s linear infinite;
 
     &.paused {

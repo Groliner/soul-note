@@ -1,6 +1,12 @@
+<!--
+ * @Author: Gro lin
+ * @Date: 2024-04-10 07:09:02
+ * @LastEditors: Gro lin
+ * @LastEditTime: 2024-04-10 07:15:17
+-->
 <script setup>
 import { gsap } from 'gsap'
-import { watchEffect, ref, nextTick, onMounted, onUnmounted, inject } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 
 const mirror = ref(null)
 const inputRef = ref(null)
