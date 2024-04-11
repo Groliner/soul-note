@@ -1,12 +1,11 @@
 <script setup>
 import profileFront from './profileFront.vue'
 import calendar from '@/components/modules/YearCalendar.vue'
-import { ref } from 'vue'
-const flip = ref(false)
+import { onMounted, ref } from 'vue'
 </script>
 <template>
   <div class="container_profile">
-    <div class="card" :class="{ flipped: flip }">
+    <div class="card">
       <div class="front"><profileFront /></div>
       <div class="back"><calendar /></div>
     </div>

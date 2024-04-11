@@ -116,13 +116,17 @@ $angleActive: 25deg;
 .container_pagination {
   position: fixed;
   top: 120px;
-  right: 130px;
+  right: 8em;
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   justify-content: center;
   align-items: center;
   gap: 2px;
   transition: all 0.3s ease;
+
+  @media screen and (max-width: 800px) {
+    right: 5em;
+  }
 
   .counter {
     text-align: center;
@@ -247,6 +251,9 @@ button {
         justify-content: center;
         .tip-title {
           font-size: 1em;
+          @media screen and (max-width: 800px) {
+            font-size: 1.2em;
+          }
           font-weight: bold;
           &:not(last-child) {
             border-bottom: 1px solid #e0e0e0;

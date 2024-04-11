@@ -197,6 +197,13 @@ const handleGoTo = (page) => {
       page: page
     }
   })
+  userStore.updateLocalUserDiaryStatus(
+    {
+      diaryId: diaryRef.value.id,
+      lastReadPage: page
+    },
+    false
+  )
   open.value = false
 }
 </script>

@@ -44,31 +44,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-const props = defineProps({
-  dates: {
-    type: Array,
-    default: () => [
-      {
-        timestamp: Date.now() - 86400012,
-        value: 23
-      },
-      {
-        timestamp: Date.now(),
-        value: 1
-      },
-      {
-        timestamp: Date.now() + 86400012,
-        value: 23000
-      },
-      {
-        timestamp: Date.now() + 86400000 * 2,
-        value: 1000000
-      }
-    ]
-  }
-})
+import { ref, onMounted, computed } from 'vue'
+import { useUserStore } from '@/stores'
+import { formatTimeToDate } from '@/composables/formatTime'
+const userStore = useUserStore()
+const userWordCount = computed(() => userStore.userWordCount)
 const months = ref([])
+const today = formatTimeToDate(new Date())
 // 根据值计算颜色
 function getColor(wordCount) {
   // 确保字数在0到100000之间
@@ -100,7 +82,6 @@ function getColor(wordCount) {
 const getDaysInMonth = (month, year) => {
   return new Date(year, month, 0).getDate()
 }
-
 const populateYear = () => {
   const year = new Date().getFullYear()
   const monthNames = [
@@ -117,22 +98,22 @@ const populateYear = () => {
     'November',
     'December'
   ]
-
   months.value = monthNames.map((name, index) => {
     const daysInMonth = getDaysInMonth(index + 1, year)
     const days = Array.from({ length: daysInMonth }, (_, i) => {
-      const dayDate = new Date(year, index, i + 1).getTime()
-      const dateValue = props.dates.find(
-        (dv) =>
-          new Date(dv.timestamp).toDateString() ===
-          new Date(dayDate).toDateString()
-      )
-      const isToday =
-        new Date().toDateString() === new Date(dayDate).toDateString()
+      const dayDate = formatTimeToDate(new Date(year, index, i + 1))
+      const index_ = userWordCount.value
+        ? userWordCount.value.findIndex((dv) => dv.date === dayDate)
+        : null
+
+      const isToday = today === dayDate
       return {
         day: i + 1,
-        value: dateValue ? dateValue.value : null, // 若找到匹配的日期，返回其 value 值；否则返回 null
-        color: dateValue ? getColor(dateValue.value) : null,
+        value: index_ !== -1 ? userWordCount.value[index_].wordCount : null, // 若找到匹配的日期，返回其 value 值；否则返回 null
+        color:
+          index_ !== -1
+            ? getColor(userWordCount.value[index_].wordCount)
+            : null,
         isToday
       }
     })

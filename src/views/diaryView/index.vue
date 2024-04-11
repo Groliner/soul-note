@@ -109,6 +109,19 @@ watch(
     diaryStore.savePage(oldLastReadDiaryId, oldLastReadPage)
   }
 )
+const handleSave = async () => {
+  const result = await diaryStore.savePage(
+    lastReadDiaryId.value,
+    userDiaryStatus.value.lastReadPage
+  )
+  if (result == 2) {
+    ElMessage({
+      message: 'Page has saved',
+      grouping: true,
+      type: 'info'
+    })
+  }
+}
 </script>
 <template>
   <div class="container_note">
@@ -169,6 +182,14 @@ watch(
       @add="handleAdd"
       @flip="handleFlip"
     />
+    <div class="update_time">
+      <p>Updated at: {{ diaryPage.updatedTime }}</p>
+    </div>
+    <div class="button_save">
+      <div class="mapper">
+        <button @click="handleSave" class="custom-btn btn-16">SAVE</button>
+      </div>
+    </div>
   </div>
 </template>
 <style lang="scss" scoped>
@@ -294,6 +315,75 @@ article {
     &.active p.sup__ {
       transform: translateX(6.6px);
     }
+  }
+}
+.update_time {
+  width: 88%;
+  margin: 0 auto;
+  display: flex;
+  height: 2em;
+  align-items: center;
+  justify-content: flex-end;
+  p {
+    font-size: 1.2em;
+    margin: 0;
+  }
+}
+
+.button_save {
+  .mapper {
+    margin: 0 auto;
+    width: fit-content;
+  }
+  .custom-btn {
+    width: 6.6em;
+    height: 2.7em;
+    border-radius: 5px;
+    font-family: inherit;
+    font-weight: 500;
+    font-size: 1em;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow:
+      inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5),
+      7px 7px 20px 0px rgba(0, 0, 0, 0.1),
+      4px 4px 5px 0px rgba(0, 0, 0, 0.1);
+    outline: none;
+  }
+  /* 16 */
+  .btn-16 {
+    border: none;
+    color: #000;
+  }
+  .btn-16:after {
+    position: absolute;
+    content: '';
+    width: 0;
+    height: 100%;
+    top: 0;
+    left: 0;
+    direction: rtl;
+    z-index: -1;
+    box-shadow:
+      -7px -7px 20px 0px #fff9,
+      -4px -4px 5px 0px #fff9,
+      7px 7px 20px 0px #0002,
+      4px 4px 5px 0px #0001;
+    transition: all 0.3s ease;
+  }
+  .btn-16:hover {
+    color: var(--primary-light);
+  }
+  .btn-16:hover:after {
+    left: auto;
+    right: 0;
+    width: 100%;
+  }
+  .btn-16:active {
+    top: 2px;
+    color: var(--primary);
   }
 }
 </style>

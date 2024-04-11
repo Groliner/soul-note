@@ -227,7 +227,10 @@ export const useDiaryStore = defineStore(
         ElMessage.info('Failed to save page')
         return
       }
-      if (!pageList[index].context.isEdited && !isMust) return true // 判断是否编辑过,未编辑过则不保存
+      if (!pageList[index].context.isEdited && !isMust) {
+        return 2 // 判断是否编辑过,未编辑过则不保存
+      }
+      pageList[index].updatedTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
       const res = await updateDiaryPageAPI({
         diaryPage: pageList[index],
         diaryPageContext: pageList[index].context

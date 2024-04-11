@@ -1,7 +1,12 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, reactive } from 'vue'
 import { useDiaryStore } from './diary'
-import { getUserInfoAPI, updateUserInfoAPI, logOutAPI } from '@/api/user'
+import {
+  getUserInfoAPI,
+  updateUserInfoAPI,
+  logOutAPI,
+  getUserWordCountAPI
+} from '@/api/user'
 import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
 import { ElMessage } from 'element-plus'
 import defaultIMG from '../../assets/images/logo.png'
@@ -45,6 +50,7 @@ const defaultDiary = [
     lastReadPage: 1
   }
 ]
+const defaultWordCount = []
 export const useUserStore = defineStore(
   'user',
   () => {
@@ -52,6 +58,7 @@ export const useUserStore = defineStore(
     const friends = ref(JSON.parse(JSON.stringify(defaultFriends)))
     const userInfo = ref(JSON.parse(defaultUserInfoString))
     const userDiary = ref(JSON.parse(JSON.stringify(defaultDiary)))
+    const userWordCount = ref(defaultWordCount)
     const diaryStore = useDiaryStore()
     // 清空用户关联信息
     const logout = async () => {
@@ -89,6 +96,7 @@ export const useUserStore = defineStore(
         if (userInfo.value.id === 0 || userInfo.value.id === undefined) return
         // 获取用户日记状态 UserDiaryStatusList
         await getUserDiaryStatus()
+        await getUserWordCount()
       } else ElMessage.error(res.data.msg)
     }
     const getUserDiaryStatus = async (userId = userInfo.value.id) => {
@@ -101,6 +109,15 @@ export const useUserStore = defineStore(
       }
       ElMessage.error(res.data.msg)
       userDiary.value = defaultDiary
+      return false
+    }
+    const getUserWordCount = async () => {
+      const res = await getUserWordCountAPI({ userId: userInfo.value.id })
+      if (res.data.code) {
+        userWordCount.value = res.data.data
+        return true
+      }
+      ElMessage.warning("can't get user word count")
       return false
     }
     const setUserInfo = (data) => {
@@ -126,15 +143,22 @@ export const useUserStore = defineStore(
         return false
       }
     }
-    const updateLocalUserDiaryStatus = ({ diaryId, lastReadPage }, record = true) => {
-      const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
+    const updateLocalUserDiaryStatus = (
+      { diaryId, lastReadPage },
+      record = true
+    ) => {
+      const index = userDiary.value.findIndex(
+        (item) => item.diaryId === diaryId
+      )
       if (index === -1) return false
       userDiary.value[index].lastReadPage = lastReadPage
       isNeedToUpdate.value = record
       return true
     }
     const getLocalUserDiaryStatus = (diaryId) => {
-      const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
+      const index = userDiary.value.findIndex(
+        (item) => item.diaryId === diaryId
+      )
       if (index === -1) return defaultDiary[0]
       return userDiary.value[index]
     }
@@ -151,14 +175,18 @@ export const useUserStore = defineStore(
       return diary_.id
     }
     const deleteLocalUserDiaryStatus = (diaryId) => {
-      const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
+      const index = userDiary.value.findIndex(
+        (item) => item.diaryId === diaryId
+      )
       if (index < 1) return false
       userInfo.value.lastReadDiaryId = userDiary.value[index - 1].diaryId
       userDiary.value.splice(index, 1)
       isNeedToUpdate.value = true
     }
     const setLocalLastReadDiaryId = (diaryId, record = true) => {
-      const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
+      const index = userDiary.value.findIndex(
+        (item) => item.diaryId === diaryId
+      )
       let isNeedToSave = userInfo.value.lastReadDiaryId === 0 ? record : false
       if (index !== -1) userInfo.value.lastReadDiaryId = diaryId
       else {
@@ -177,10 +205,12 @@ export const useUserStore = defineStore(
       userInfo,
       userDiary,
       friends,
+      userWordCount,
       isAuthenticated,
       setToken,
       updateUserInfo,
       getUserDiaryStatus,
+      getUserWordCount,
       saveUserInfo,
       setUserInfo,
       logout,
