@@ -23,7 +23,7 @@ export default defineConfig({
       resolvers: [ElementPlusResolver({ importStyle: 'sass' })]
     })
   ],
-  base: '/note',
+  //base: '/note',
   server: {
     port: 5173,
     host: '0.0.0.0',
