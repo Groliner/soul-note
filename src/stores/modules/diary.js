@@ -58,15 +58,13 @@ export const useDiaryStore = defineStore(
   () => {
     const diary = ref(JSON.parse(JSON.stringify(defaultDiary)))
     const diaryPages = ref(JSON.parse(defaultPages))
-    let notePlaceholder = `
-                        there are some tips for writing diary：
+    let notePlaceholder = `                 there are some tips for writing diary：
                         1. crtl + z  --> undo.
                         2. crtl + y --> redo.
                         3. tab --> write a new paragraph.
                         4. Please don't create a diary or a page at random.
                         5. all you write down will auto save in the area when you go away.
-                        6. Anytime there's a pop-up alert asking it's saved immediately.
-    `
+                        6. Anytime there's a pop-up alert asking it's saved immediately.`
     const initAll = ref(true) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
     const init = async () => {
       if (!initAll.value) return
@@ -76,6 +74,11 @@ export const useDiaryStore = defineStore(
         const diaryId = diary.value[i].id
         if (diaryId !== 0) await getDiaryPage(diaryId)
       }
+    }
+    const logout = () => {
+      initAll.value = true
+      setDiary()
+      setPages()
     }
     const setDiary = (diary_ = defaultDiary) => {
       diary.value = diary_
@@ -290,6 +293,7 @@ export const useDiaryStore = defineStore(
       diaryPages,
       notePlaceholder,
       init,
+      logout,
       setDiary,
       setPages,
       getDiary,

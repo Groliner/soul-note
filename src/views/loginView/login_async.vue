@@ -271,11 +271,10 @@ const handleLogIn = async (resetTween) => {
 
 // 异步请求
 import { useRouter } from 'vue-router'
-import { useUserStore, useDiaryStore } from '@/stores'
+import { useUserStore } from '@/stores'
 import { loginAPI, signUpAPI, getCaptchaAPI } from '@/api/user'
 import { ElMessage } from 'element-plus'
 const router = useRouter()
-const diaryStore = useDiaryStore()
 const userStore = useUserStore()
 const login = async (formData) => {
   const captcha = await getCaptchaAPI()
@@ -287,9 +286,7 @@ const login = async (formData) => {
   return await loginAPI(formData)
     .then((res) => {
       if (res.data.code) {
-        userStore.setToken(res.data.data.token)
-        userStore.updateUserInfo()
-        diaryStore.init()
+        userStore.login(res.data.data)
         ElMessage({ type: 'success', message: 'Login successfully' })
       } else {
         ElMessage({

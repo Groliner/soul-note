@@ -43,11 +43,11 @@ npm run lint
 
 ## z-index
 
-- fixed组件：100
-- 蒙版：301
-- nav:302
-- header:303
-- popup: 600
+- fixed组件：100  
+- 蒙版：301  
+- nav:302  
+- header:303  
+- popup: 600  
 
 ## logis
 
@@ -61,7 +61,7 @@ npm run lint
 
 ### logout逻辑中:
 
-```
+```js
 const logout = async () => {
   try {
     logOutAPI()
@@ -78,4 +78,3 @@ const logout = async () => {
     console.log('ok')
   }
 }
-```

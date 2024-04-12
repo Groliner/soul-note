@@ -80,7 +80,7 @@ const updateTime = setInterval(() => {
   .head-mask {
     position: fixed;
     width: calc(100% - 10px);
-    height: 70px;
+    height: 3em;
     top: 0;
     border-top: 5px solid black;
     background-color: var(--greyLight-1);

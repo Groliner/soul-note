@@ -9,6 +9,7 @@ import wolong from './SvgModules/Wolong.vue'
 import grozhi from './SvgModules/Grozhi.vue'
 import popup from './popup/Popup.vue'
 import flexInput from './FlexInput.vue'
+import send from './modules/SendEmail.vue'
 export const componentPlugin = {
   install(app) {
     app.component('ClockComponent', clock)
@@ -21,5 +22,6 @@ export const componentPlugin = {
     app.component('grozhi', grozhi)
     app.component('PopupComponent', popup)
     app.component('flexInput', flexInput)
+    app.component('sendButton', send)
   }
 }

@@ -16,6 +16,11 @@
       <div>E</div>
       <div>D</div>
     </div>
+    <!-- <section class="send-message">
+      <h1>发送消息</h1>
+      <input type="text" />
+      <sendButton />
+    </section> -->
   </div>
 </template>
 <style lang="scss" scoped>

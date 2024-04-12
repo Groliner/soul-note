@@ -99,6 +99,11 @@ const router = createRouter({
           path: 'calendar',
           name: 'calendar',
           component: () => import('@/components/modules/YearCalendar.vue')
+        },
+        {
+          path: 'sendMessage',
+          name: 'sendMessage',
+          component: () => import('@/components/modules/SendEmail.vue')
         }
       ]
     },

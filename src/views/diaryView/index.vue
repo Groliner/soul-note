@@ -278,6 +278,9 @@ const handleSave = async () => {
 article {
   margin: 0 auto;
   width: 86%;
+  @media screen and (max-width: 1000px) {
+    width: 72%;
+  }
 
   h2 {
     position: fixed;
@@ -286,6 +289,7 @@ article {
     width: max-content;
     transform: translateX(-50%);
     z-index: 100;
+    font-size: 1.8em;
     input {
       background-color: transparent;
       outline: none;

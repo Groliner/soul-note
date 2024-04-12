@@ -60,6 +60,11 @@ export const useUserStore = defineStore(
     const userDiary = ref(JSON.parse(JSON.stringify(defaultDiary)))
     const userWordCount = ref(defaultWordCount)
     const diaryStore = useDiaryStore()
+    const login = async (data) => {
+      setToken(data.token)
+      updateUserInfo()
+      diaryStore.init()
+    }
     // 清空用户关联信息
     const logout = async () => {
       try {
@@ -69,9 +74,11 @@ export const useUserStore = defineStore(
           ElMessage.success(res.data.data)
           friends.value = defaultFriends
           userDiary.value = defaultDiary
+          console.log(JSON.parse(defaultUserInfoString))
           userInfo.value = JSON.parse(defaultUserInfoString)
-          diaryStore.setDiary()
-          diaryStore.setPages()
+          initAll.value = true
+          isNeedToUpdate.value = true
+          diaryStore.logout()
         } else {
           ElMessage.error(res.data.msg || 'logout failed')
         }
@@ -138,6 +145,7 @@ export const useUserStore = defineStore(
         userInfo.value.isEdited = false
         return true
       } else {
+        initAll.value = true
         updateUserInfo()
         ElMessage.error(res.data.msg)
         return false
@@ -213,6 +221,7 @@ export const useUserStore = defineStore(
       getUserWordCount,
       saveUserInfo,
       setUserInfo,
+      login,
       logout,
       updateLocalUserDiaryStatus,
       getLocalUserDiaryStatus,

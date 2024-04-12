@@ -28,6 +28,7 @@ let startTime = 0
 import { gsap } from 'gsap'
 import { Draggable } from 'gsap/Draggable'
 import { onMounted } from 'vue'
+const cancel = true
 gsap.registerPlugin(Draggable)
 onMounted(() => {
   Draggable.create('.modal', {
@@ -56,7 +57,7 @@ onMounted(() => {
             @mousedown="startTime = Date.now()"
             @click="
               () => {
-                if (pressTime < Date.now() - startTime) {
+                if (pressTime < Date.now() - startTime || cancel) {
                   $emit('confirm')
                 }
               }
@@ -69,7 +70,8 @@ onMounted(() => {
             @mousedown="startTime = Date.now()"
             @click="
               () => {
-                if (pressTime < Date.now() - startTime) $emit('refuse')
+                if (pressTime < Date.now() - startTime || cancel)
+                  $emit('refuse')
               }
             "
           >

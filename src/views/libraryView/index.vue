@@ -1,27 +1,7 @@
-<script setup>
-import { useUserStore } from '@/stores'
-import { storeToRefs } from 'pinia'
-const userStore = useUserStore()
-const { userInfo } = storeToRefs(userStore)
-const handleGoTo = () => {
-  // router.push({
-  //   name: 'diary'
-  // })
-  userInfo.value.lastReadDiaryId = 110
-  userInfo.value.tt = 110
-  userStore.updateLocalUserDiaryStatus(
-    {
-      diaryId: 110,
-      lastReadPage: 1
-    },
-    false
-  )
-}
-</script>
+<script setup></script>
 <template>
   <div class="container">
     <section>there should be library</section>
-    <button @click="handleGoTo" class="goto">click</button>
   </div>
 </template>
 <style lang="scss" scoped>
