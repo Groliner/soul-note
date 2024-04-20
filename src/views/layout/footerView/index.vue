@@ -1,5 +1,12 @@
 <script setup>
+import { onMounted, ref } from 'vue'
 import logo from './logo.vue'
+const isAvailableToShow = ref(true)
+onMounted(() => {
+  if (window.innerWidth < 620) {
+    isAvailableToShow.value = false
+  }
+})
 </script>
 <template>
   <footer>
@@ -42,7 +49,7 @@ import logo from './logo.vue'
       </svg>
     </div>
     <div class="foot-container">
-      <logo class="logo" />
+      <logo class="logo" v-if="isAvailableToShow" />
       <div class="foot">
         <h1>
           Soul-Note<small style="color: #545454">.<sub>all</sub></small>

@@ -399,7 +399,9 @@ article {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
-      justify-content: center;
+      @media screen and (max-width: 630px) {
+        justify-content: center;
+      }
 
       .tile {
         align-self: center;
