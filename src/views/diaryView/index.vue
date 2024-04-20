@@ -207,6 +207,10 @@ const handleSave = async () => {
   z-index: 100;
   @media screen and (max-width: 1200px) {
     left: 40px;
+    top: 10vh;
+  }
+  @media screen and (max-width: 800px) {
+    left: 30px;
   }
 
   ul {

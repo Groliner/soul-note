@@ -20,15 +20,12 @@
           >
             <el-button
               :style="{
-                backgroundColor: day.color || 'rgb(50 180 0 / 0%)'
+                backgroundColor: day.color || 'rgb(50 180 0 / 0%)',
+                width: fontSize,
+                height: fontSize
               }"
-              style="
-                padding: 0;
-                width: 18px;
-                height: 18px;
-                border: none;
-                font-family: inherit;
-              "
+              style="padding: 0; border: none; font-family: inherit"
+              class="tips"
               >{{ day.day }}</el-button
             >
           </el-tooltip>
@@ -44,12 +41,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores'
 import { formatTimeToDate } from '@/composables/formatTime'
 const userStore = useUserStore()
 const userWordCount = computed(() => userStore.userWordCount)
-const months = ref([])
 const today = formatTimeToDate(new Date())
 // 根据值计算颜色
 function getColor(wordCount) {
@@ -82,34 +78,35 @@ function getColor(wordCount) {
 const getDaysInMonth = (month, year) => {
   return new Date(year, month, 0).getDate()
 }
-const populateYear = () => {
-  const year = new Date().getFullYear()
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ]
-  months.value = monthNames.map((name, index) => {
+const year = new Date().getFullYear()
+const monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+]
+
+const months = computed(() => {
+  return monthNames.map((name, index) => {
     const daysInMonth = getDaysInMonth(index + 1, year)
     const days = Array.from({ length: daysInMonth }, (_, i) => {
       const dayDate = formatTimeToDate(new Date(year, index, i + 1))
-      const index_ = userWordCount.value
+      const index_ = userWordCount.value.length
         ? userWordCount.value.findIndex((dv) => dv.date === dayDate)
-        : null
+        : -1
 
       const isToday = today === dayDate
       return {
         day: i + 1,
-        value: index_ !== -1 ? userWordCount.value[index_].wordCount : null, // 若找到匹配的日期，返回其 value 值；否则返回 null
+        value: index_ !== -1 ? userWordCount.value[index_].wordCount : null,
         color:
           index_ !== -1
             ? getColor(userWordCount.value[index_].wordCount)
@@ -119,10 +116,10 @@ const populateYear = () => {
     })
     return { name, days }
   })
-}
-
+})
+const fontSize = ref('18px')
 onMounted(() => {
-  populateYear()
+  if (window.innerWidth < 620) fontSize.value = '10px'
 })
 </script>
 
@@ -160,6 +157,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  @media screen and (max-width: 620px) {
+    width: 10px;
+    height: 10px;
+  }
 
   &.today {
     border: 1px solid #409eff;

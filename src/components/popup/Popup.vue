@@ -31,11 +31,18 @@ import { onMounted } from 'vue'
 const cancel = true
 gsap.registerPlugin(Draggable)
 onMounted(() => {
-  Draggable.create('.modal', {
-    type: 'x,y',
-    bounds: 'html',
-    cursor: 'pointer'
-  })
+  const userAgent = navigator.userAgent || navigator.vendor || window.opera
+  // 正则表达式检查是否为移动设备
+  if (
+    !/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+      userAgent.toLowerCase()
+    )
+  )
+    Draggable.create('.modal', {
+      type: 'x,y',
+      bounds: 'html',
+      cursor: 'pointer'
+    })
 })
 </script>
 <template>

@@ -48,6 +48,7 @@ npm run lint
 - nav:302  
 - header:303  
 - popup: 600  
+- around black line: 1000
 
 ## logis
 

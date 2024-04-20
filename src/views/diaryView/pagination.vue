@@ -51,28 +51,10 @@ function onLeave(el, done) {
     onComplete: done
   })
 }
+import { PhPlusSquare } from '@phosphor-icons/vue'
 </script>
 <template>
   <div class="container_pagination">
-    <button
-      class="paginate left"
-      :data-state="page === 1 ? 'disabled' : ''"
-      @click="handleAdd(-1)"
-    >
-      <i></i><i></i>
-    </button>
-    <div class="counter">
-      <p>{{ page }}</p>
-      <p>/</p>
-      <p>{{ total }}</p>
-    </div>
-    <button
-      class="paginate right"
-      :data-state="page === total ? 'add' : ''"
-      @click="handleAdd(1)"
-    >
-      <i></i><i></i>
-    </button>
     <div class="pages-container">
       <TransitionGroup
         tag="ul"
@@ -93,26 +75,13 @@ function onLeave(el, done) {
           </div>
         </li>
       </TransitionGroup>
+      <div class="suffix">
+        <ph-plus-square class="add" weight="bold" @click="handleAdd" />
+      </div>
     </div>
   </div>
 </template>
 <style lang="scss" scoped>
-$size: 20px;
-$thickness: 2px;
-$angle: 40deg;
-$angleHover: 30deg;
-$angleActive: 25deg;
-
-@mixin arrowTransform($angle, $x: 0, $y: 0) {
-  i:first-child {
-    transform: translate($x, $y) rotate($angle);
-  }
-
-  i:last-child {
-    transform: translate($x, -$y) rotate(-$angle);
-  }
-}
-
 .container_pagination {
   position: fixed;
   top: 120px;
@@ -127,99 +96,6 @@ $angleActive: 25deg;
   @media screen and (max-width: 800px) {
     right: 5em;
   }
-
-  .counter {
-    text-align: center;
-    font-size: 30px;
-    font-family: Helvetica, sans-serif;
-    text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.2);
-    color: #130303;
-    display: grid;
-    grid-template-columns: 1fr min-content 1fr;
-    justify-content: space-between;
-    align-items: center;
-  }
-}
-
-button {
-  -webkit-appearance: none;
-  background: transparent;
-  border: 0;
-  outline: 0;
-}
-
-.paginate {
-  position: relative;
-  margin: 10px;
-  width: $size;
-  height: $size;
-  cursor: pointer;
-  transform: translate3d(0, 0, 0); // fixes flicker in webkit
-
-  top: 50%;
-  margin-top: -20px;
-  -webkit-filter: drop-shadow(0 2px 0px rgba(0, 0, 0, 0.2));
-
-  i {
-    position: absolute;
-    top: 40%;
-    left: 0;
-    width: $size;
-    height: $thickness;
-    border-radius: calc($thickness / 2);
-    background: #131212;
-
-    transition: all 0.15s ease;
-  }
-
-  &.left {
-    i {
-      transform-origin: 0% 50%;
-    }
-
-    @include arrowTransform($angle, 0, -1px);
-
-    &:hover {
-      @include arrowTransform($angleHover, 0, -1px);
-    }
-
-    &:active {
-      @include arrowTransform($angleActive, 1px, -1px);
-    }
-
-    &[data-state='disabled'] {
-      @include arrowTransform(0deg, -5px, 0);
-
-      &:hover {
-        @include arrowTransform(0deg, -5px, 0);
-      }
-    }
-  }
-
-  &.right {
-    i {
-      transform-origin: 100% 50%;
-    }
-
-    @include arrowTransform($angle, 0, 1px);
-
-    &:hover {
-      @include arrowTransform($angleHover, 0, 1px);
-    }
-
-    &:active {
-      @include arrowTransform($angleActive, 1px, 1px);
-    }
-  }
-
-  &[data-state='add'] i {
-    background-color: var(--c-green-500);
-    cursor: default;
-  }
-  &[data-state='disabled'] {
-    opacity: 0.3;
-    cursor: default;
-  }
 }
 
 .pages-container {
@@ -229,6 +105,22 @@ button {
   font-family: inherit;
   border-radius: 5%;
   overflow: hidden;
+  .suffix {
+    text-align: center;
+    width: auto;
+    margin-top: 1rem;
+    .add {
+      font-size: 1.5rem;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--c-green-300);
+      }
+      &:active {
+        color: black;
+      }
+    }
+  }
 
   .pages {
     max-height: 33vh;

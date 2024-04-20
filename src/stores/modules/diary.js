@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import dayjs from 'dayjs'
+import { formatTimeToDate } from '@/composables/formatTime'
 import { useUserStore } from './user'
 import { ElMessage } from 'element-plus'
 import {
@@ -65,18 +66,18 @@ export const useDiaryStore = defineStore(
                         4. Please don't create a diary or a page at random.
                         5. all you write down will auto save in the area when you go away.
                         6. Anytime there's a pop-up alert asking it's saved immediately.`
-    const initAll = ref(true) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
+    const initAll = ref(false) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
     const init = async () => {
-      if (!initAll.value) return
+      if (initAll.value) return
       await getDiary()
-      initAll.value = false
+      initAll.value = true
       for (let i = 0; i < diary.value.length; i++) {
         const diaryId = diary.value[i].id
         if (diaryId !== 0) await getDiaryPage(diaryId)
       }
     }
     const logout = () => {
-      initAll.value = true
+      initAll.value = false
       setDiary()
       setPages()
     }
@@ -241,6 +242,8 @@ export const useDiaryStore = defineStore(
       if (res.data.code) {
         pageList[index].context.isEdited = false
         ElMessage.success('Page saved successfully')
+        const userStore = useUserStore()
+        userStore.getUserWordCount(formatTimeToDate(new Date()))
         return true
       }
       ElMessage.error('Failed to save page')

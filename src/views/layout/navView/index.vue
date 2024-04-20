@@ -208,7 +208,7 @@ a {
   position: fixed;
   background-color: rgb(255 255 255 / 84%);
   width: 23vw;
-  min-width: 500px;
+  min-width: 30rem;
   height: 100vh;
   z-index: 302;
   box-shadow: 0 30px 80px 0 rgba(97, 45, 45, 0.25);

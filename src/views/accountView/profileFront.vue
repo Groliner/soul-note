@@ -256,6 +256,9 @@ article {
       z-index: 100;
       cursor: pointer;
       transition: all 0.25s;
+      @media screen and (max-width: 800px) {
+        font-size: 2em;
+      }
       &:hover {
         color: var(--primary);
       }
@@ -306,6 +309,11 @@ article {
     gap: 1rem;
     border-top: 2px solid var(--primary-light);
     justify-content: space-around;
+
+    @media screen and (max-width: 630px) {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
 
     .friend-list {
       width: 90%;
@@ -391,6 +399,7 @@ article {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
+      justify-content: center;
 
       .tile {
         align-self: center;

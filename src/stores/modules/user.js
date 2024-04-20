@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref, reactive } from 'vue'
+import { computed, ref } from 'vue'
 import { useDiaryStore } from './diary'
 import {
   getUserInfoAPI,
@@ -61,6 +61,7 @@ export const useUserStore = defineStore(
     const userWordCount = ref(defaultWordCount)
     const diaryStore = useDiaryStore()
     const login = async (data) => {
+      initAll.value = false
       setToken(data.token)
       updateUserInfo()
       diaryStore.init()
@@ -76,7 +77,8 @@ export const useUserStore = defineStore(
           userDiary.value = defaultDiary
           console.log(JSON.parse(defaultUserInfoString))
           userInfo.value = JSON.parse(defaultUserInfoString)
-          initAll.value = true
+          userWordCount.value = []
+          initAll.value = false
           isNeedToUpdate.value = true
           diaryStore.logout()
         } else {
@@ -86,7 +88,7 @@ export const useUserStore = defineStore(
         console.log(e)
       }
     }
-    const initAll = ref(true)
+    const initAll = ref(false)
     const isNeedToUpdate = ref(true) // 减少请求次数
     // 设置token
     const setToken = (token) => {
@@ -94,9 +96,9 @@ export const useUserStore = defineStore(
     }
     const updateUserInfo = async () => {
       // 如果已经初始化过了，就不再初始化
-      if (!initAll.value) return
+      if (initAll.value) return
       const res = await getUserInfoAPI()
-      initAll.value = false
+      initAll.value = true
       if (res.data.code) {
         setUserInfo(res.data.data)
         userInfo.value.isEdited = false
@@ -118,10 +120,15 @@ export const useUserStore = defineStore(
       userDiary.value = defaultDiary
       return false
     }
-    const getUserWordCount = async () => {
-      const res = await getUserWordCountAPI({ userId: userInfo.value.id })
+    const getUserWordCount = async (date) => {
+      const res = await getUserWordCountAPI({ userId: userInfo.value.id, date })
       if (res.data.code) {
-        userWordCount.value = res.data.data
+        if (date) {
+          const index = userWordCount.value.findIndex(
+            (item) => item.date === date
+          )
+          if (index !== -1) userWordCount.value[index] = res.data.data
+        } else userWordCount.value = res.data.data
         return true
       }
       ElMessage.warning("can't get user word count")

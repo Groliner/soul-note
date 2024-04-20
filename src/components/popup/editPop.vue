@@ -315,7 +315,7 @@ const handleGoTo = (page) => {
                 >
 
                 <span>words:{{ item.context.words }}</span>
-                <span>{{ formatTime(item.create_time) }}</span>
+                <span>{{ formatTime(item.createdTime) }}</span>
                 <ph-backspace
                   v-if="
                     item.page === diaryRef.pages && item.status !== 'disable'
@@ -468,7 +468,12 @@ button {
   background-color: #fff;
   @include absCenter;
   z-index: 302;
-
+  @media screen and (max-width: 700px) {
+    width: 100vw;
+    box-shadow:
+      0 0 0 2px var(--c-gray-300),
+      0 0 0 2px var(--c-gray-200);
+  }
   .mirror {
     position: absolute;
     top: 0;

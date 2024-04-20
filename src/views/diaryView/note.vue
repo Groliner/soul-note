@@ -113,13 +113,13 @@ function autoExpand(event, scroll_distance = -1) {
         : 0
       // 检查是否需要滚动以保持视线
       const viewBottom =
-        textarea.getBoundingClientRect().bottom + window.innerHeight * 0.28
+        textarea.getBoundingClientRect().bottom + window.innerHeight * 0.17
       scroll_distance =
         remaining_lines < 5
           ? window.scrollY + viewBottom - window.innerHeight
           : -1
     }
-    if (scroll_distance > -1) {
+    if (scroll_distance > -1 && textareaRef.value.value) {
       gsap.to(window, {
         scrollTo: {
           y: scroll_distance,
