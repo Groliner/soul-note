@@ -1,6 +1,6 @@
 <script setup>
 import { messageManager } from '@/directives/index'
-const props = defineProps({
+defineProps({
   total: {
     type: Number,
     required: true
@@ -11,21 +11,17 @@ const page = defineModel('page', {
   required: true
 })
 const emit = defineEmits(['add', 'flip'])
-const handleAdd = (m) => {
-  if (page.value < props.total || m === -1) {
-    emit('flip', m)
-  } else {
-    messageManager
-      .showConfirmModal('Do you want to add a new page?', {
-        mask: false,
-        pressTime: 100
-      })
-      .then((res) => {
-        if (res) {
-          emit('add')
-        }
-      })
-  }
+const handleAdd = () => {
+  messageManager
+    .showConfirmModal('Do you want to add a new page?', {
+      mask: false,
+      pressTime: 100
+    })
+    .then((res) => {
+      if (res) {
+        emit('add')
+      }
+    })
 }
 
 import { gsap } from 'gsap'

@@ -46,9 +46,12 @@ const updateTime = setInterval(() => {
   time.value.minute = t.getMinutes().toString().padStart(2, '0')
   time.value.second = t.getSeconds().toString().padStart(2, '0')
 }, 3000)
+import logo from '@/assets/images/logo.png'
+//背景图片,需要修改其他配件的透明度,否则会有不协调感.
 </script>
 <template>
   <div class="mapper">
+    <!-- <img class="back" :src="logo" /> -->
     <section class="head-mask"></section>
     <section class="timer">
       <span class="timer__left"
@@ -75,7 +78,16 @@ const updateTime = setInterval(() => {
 .mapper {
   overflow: hidden;
   border: 5px solid black;
-  z-index: 1000;
+  .back {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.4;
+    z-index: -1;
+  }
 
   .head-mask {
     position: fixed;

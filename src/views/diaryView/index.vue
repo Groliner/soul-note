@@ -288,7 +288,7 @@ article {
 
   h2 {
     position: fixed;
-    top: 100px;
+    top: 80px;
     left: 50%;
     width: max-content;
     transform: translateX(-50%);

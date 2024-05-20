@@ -7,7 +7,10 @@ import {
   logOutAPI,
   getUserWordCountAPI
 } from '@/api/user'
-import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
+import {
+  getUserDiaryStatusAPI,
+  updateUserDiaryStatusAPI
+} from '@/api/userDiaryStatus'
 import { ElMessage } from 'element-plus'
 import defaultIMG from '../../assets/images/logo.png'
 const defaultUserInfoString = JSON.stringify({
@@ -167,6 +170,7 @@ export const useUserStore = defineStore(
       )
       if (index === -1) return false
       userDiary.value[index].lastReadPage = lastReadPage
+      // 此处添加异步请求updateUserDiaryStatusAPI
       isNeedToUpdate.value = record
       return true
     }
