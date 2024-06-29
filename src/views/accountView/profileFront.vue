@@ -14,7 +14,12 @@ import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
 const { userInfo, friends } = storeToRefs(userStore)
-let originalUserInfo = JSON.stringify(userInfo.value)
+let originalUserInfo = JSON.stringify({
+  username: userInfo.value.username,
+  email: userInfo.value.email,
+  description: userInfo.value.description,
+  avatar: userInfo.value.avatar
+})
 const diaries = computed(() =>
   diaryStore.getLocalDiariesByUserId(userInfo.value.id)
 )

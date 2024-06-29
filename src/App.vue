@@ -6,9 +6,23 @@
 -->
 <script setup>
 import zh from 'element-plus/es/locale/lang/zh-cn.mjs'
-import { ref, provide } from 'vue'
+import { ref, provide, watch } from 'vue'
+
 const pop = ref(false)
 provide('pressTime', 123)
+
+// import { useUserStore } from './stores'
+// import { storeToRefs } from 'pinia'
+// const userStore = useUserStore()
+// const { userInfo } = storeToRefs(userStore)
+
+// watch(userInfo.value, (newVal, oldVal) => {
+//   console.log(
+//     'backgroundImg change',
+//     newVal.backgroundImg,
+//     oldVal.backgroundImg
+//   )
+// })
 </script>
 <template>
   <div>

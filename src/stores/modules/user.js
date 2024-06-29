@@ -12,7 +12,6 @@ import {
 import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
 import { ElMessage } from 'element-plus'
 import defaultIMG from '../../assets/images/logo.png'
-import router from '@/router'
 const defaultUserInfoString = JSON.stringify({
   token: '',
   avatar: defaultIMG,
@@ -77,7 +76,11 @@ export const useUserStore = defineStore(
         await saveUserInfo()
         const res = await logOutAPI()
         if (res.data.code) {
-          ElMessage.success(res.data.data)
+          ElMessage({
+            message: res.data.data,
+            grouping: true,
+            type: 'success'
+          })
           friends.value = defaultFriends
           userDiary.value = defaultDiary
           console.log(JSON.parse(defaultUserInfoString))
@@ -232,9 +235,6 @@ export const useUserStore = defineStore(
     }
 
     // 背景图片
-    const backgroundImg = computed(() => {
-      return userInfo.value.backgroundImg
-    })
     const setBackgroundImg = (img) => {
       // 实时更新
       userInfo.value.backgroundImg = img
@@ -268,7 +268,6 @@ export const useUserStore = defineStore(
       deleteLocalUserDiaryStatus,
       setLocalLastReadDiaryId,
       getUsernameById,
-      backgroundImg,
       setBackgroundImg
     }
   },

@@ -146,7 +146,7 @@ const checkInput = (el) => {
 }
 watch(stepNumber, (new_step, old_step) => {
   if (new_step < 0 || new_step > totalSteps.value) return
-  console.log(new_step, old_step)
+  // console.log(new_step, old_step)
   checkInput(refArray[new_step - 1])
   nextTick(() => {
     refArray[new_step - 1].value.focus()

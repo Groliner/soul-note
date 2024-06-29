@@ -1,7 +1,7 @@
 <script setup>
 import foot from './footerView/index.vue'
 import leftNav from './navView/index.vue'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
@@ -52,7 +52,8 @@ const updateTime = setInterval(() => {
 import { useUserStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
-const { backgroundImg } = storeToRefs(userStore)
+const { userInfo } = storeToRefs(userStore)
+const backgroundImg = computed(() => userInfo.value.backgroundImg)
 </script>
 <template>
   <div class="mapper">

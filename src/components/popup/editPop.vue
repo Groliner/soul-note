@@ -36,6 +36,7 @@ const diaryInfo = computed(() => {
     author: userStore.getUsernameById(diaryRef.value.userId),
     lastReadPage: userStore.getLocalUserDiaryStatus(diaryId.value).lastReadPage,
     totalPages: diaryRef.value.pages,
+    words: diaryRef.value.words,
     createdTime: formatTime(diaryRef.value.createdTime),
     updatedTime: formatTime(diaryRef.value.updatedTime)
   }
