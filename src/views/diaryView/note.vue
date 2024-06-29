@@ -225,7 +225,7 @@ textarea {
   text-indent: 2em; /* 段首缩进 */
   font-size: 2rem; /* 字体大小 */
   width: 100%;
-  background-color: #fffbe7; /* 保留日记本背景色 */
+  background-color: $diaryPageColor; /* 保留日记本背景色 */
   background-image: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.1) 1.2px,

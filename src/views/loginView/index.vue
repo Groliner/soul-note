@@ -22,14 +22,12 @@ onBeforeMount(async () => {
   <div class="container">
     <div class="backImg"></div>
     <login v-bind="template" />
-    <transition name="fade">
-      <ClockComponent
-        class="clock"
-        :showtime="false"
-        seconds_color="#7c8a97"
-        point_color="#7c8a97"
-      />
-    </transition>
+    <ClockComponent
+      class="clock"
+      :showtime="false"
+      seconds_color="#7c8a97"
+      point_color="#7c8a97"
+    />
   </div>
 </template>
 <style lang="scss" scoped>

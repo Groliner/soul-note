@@ -5,14 +5,14 @@ import {
   getUserInfoAPI,
   updateUserInfoAPI,
   logOutAPI,
-  getUserWordCountAPI
+  getUserWordCountAPI,
+  updateBackgroundImg,
+  updateLastReadDiaryId
 } from '@/api/user'
-import {
-  getUserDiaryStatusAPI,
-  updateUserDiaryStatusAPI
-} from '@/api/userDiaryStatus'
+import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
 import { ElMessage } from 'element-plus'
 import defaultIMG from '../../assets/images/logo.png'
+import router from '@/router'
 const defaultUserInfoString = JSON.stringify({
   token: '',
   avatar: defaultIMG,
@@ -20,6 +20,8 @@ const defaultUserInfoString = JSON.stringify({
   id: 0,
   email: '123@qwe.com',
   description: "there is nothing here, it's empty",
+  backgroundImg:
+    'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/ae727f0a-5660-4e59-872c-901b285351f2.jpg',
   status: 'active',
   isEdited: false,
   updatedTime: '',
@@ -120,7 +122,7 @@ export const useUserStore = defineStore(
         return true
       }
       ElMessage.error(res.data.msg)
-      userDiary.value = defaultDiary
+      //userDiary.value = defaultDiary
       return false
     }
     const getUserWordCount = async (date) => {
@@ -170,7 +172,6 @@ export const useUserStore = defineStore(
       )
       if (index === -1) return false
       userDiary.value[index].lastReadPage = lastReadPage
-      // 此处添加异步请求updateUserDiaryStatusAPI
       isNeedToUpdate.value = record
       return true
     }
@@ -178,8 +179,9 @@ export const useUserStore = defineStore(
       const index = userDiary.value.findIndex(
         (item) => item.diaryId === diaryId
       )
-      if (index === -1) return defaultDiary[0]
-      return userDiary.value[index]
+      return userDiary.value
+        ? userDiary.value[index > -1 ? index : 0]
+        : defaultDiary[0]
     }
     const addLocalUserDiaryStatus = (diaryId) => {
       // 设置默认的日记状态,id为任意
@@ -202,23 +204,49 @@ export const useUserStore = defineStore(
       userDiary.value.splice(index, 1)
       isNeedToUpdate.value = true
     }
-    const setLocalLastReadDiaryId = (diaryId, record = true) => {
+    const setLocalLastReadDiaryId = (diaryId) => {
       const index = userDiary.value.findIndex(
         (item) => item.diaryId === diaryId
       )
-      let isNeedToSave = userInfo.value.lastReadDiaryId === 0 ? record : false
       if (index !== -1) userInfo.value.lastReadDiaryId = diaryId
       else {
         userInfo.value.lastReadDiaryId = userDiary.value[0].diaryId
-        isNeedToSave = true
       }
-      saveUserInfo(isNeedToSave)
+      saveLastReadDiaryId(diaryId)
+    }
+    const saveLastReadDiaryId = async (diaryId) => {
+      const res = await updateLastReadDiaryId({
+        id: userInfo.value.id,
+        lastReadDiaryId: diaryId
+      })
+      if (res.data.code) {
+        userInfo.value.lastReadDiaryId = diaryId
+        return true
+      }
     }
     const isAuthenticated = computed(() => !!userInfo.value.token)
     const getUsernameById = (id) => {
       if (userInfo.value.id === id) return userInfo.value.username
       const user = friends.value.find((item) => item.id === id)
       return user ? user.username : ''
+    }
+
+    // 背景图片
+    const backgroundImg = computed(() => {
+      return userInfo.value.backgroundImg
+    })
+    const setBackgroundImg = (img) => {
+      // 实时更新
+      userInfo.value.backgroundImg = img
+      updateBackgroundImg({ id: userInfo.value.id, backgroundImg: img }).then(
+        (res) => {
+          if (res.data.code) {
+            ElMessage.success('background image updated successfully!')
+          } else {
+            ElMessage.error(res.data.msg)
+          }
+        }
+      )
     }
     return {
       userInfo,
@@ -239,7 +267,9 @@ export const useUserStore = defineStore(
       addLocalUserDiaryStatus,
       deleteLocalUserDiaryStatus,
       setLocalLastReadDiaryId,
-      getUsernameById
+      getUsernameById,
+      backgroundImg,
+      setBackgroundImg
     }
   },
   {

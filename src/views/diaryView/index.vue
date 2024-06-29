@@ -24,15 +24,16 @@ const diaryPage = computed(() =>
 import { useRoute } from 'vue-router'
 const route = useRoute()
 import { gsap } from 'gsap'
-const mirror = ref(null)
-const pageTitleInput = ref(null)
+const originalTitle = ref('')
+const pageTitleInputMirrorRef = ref(null)
+const pageTitleInputRef = ref(null)
 const isEditPageTitle = ref(false)
 // 创建一个ResizeObserver来监听尺寸变化
 const observer = new ResizeObserver((entries) => {
   for (let entry of entries) {
     if (entry.contentRect.width)
       // 更新<span>元素的宽度
-      gsap.to(pageTitleInput.value, {
+      gsap.to(pageTitleInputRef.value, {
         width: entry.contentRect.width + 8,
         ease: 'power4.Out',
         duration: 0.3
@@ -41,7 +42,7 @@ const observer = new ResizeObserver((entries) => {
 })
 onMounted(() => {
   // 开始观察<span>元素
-  observer.observe(mirror.value)
+  observer.observe(pageTitleInputMirrorRef.value)
   if (route.query.diaryId && route.query.page) {
     const diaryId = parseInt(route.query.diaryId)
     const lastReadPage = parseInt(route.query.page)
@@ -61,23 +62,29 @@ onUnmounted(() => {
   diaryStore.savePage(lastReadDiaryId.value, userDiaryStatus.value.lastReadPage)
   userInfo.value.tt = 10
 })
-const isAbleToEdit = computed(() =>
-  diaryPage.value ? !!(diaryPage.value.status === 'active') : false
+const isAbleToEdit = computed(
+  () => (diaryPage.value ? diaryPage.value.status === 'private' : false)
+  //diaryPage.value ? diaryPage.value.status === 'active' : false
 )
-const handleEdit = (m) => {
+const handlePageTitleEdit = () => {
   if (!isAbleToEdit.value) return
-  isEditPageTitle.value = m
-  if (!isEditPageTitle.value) return
-  pageTitleInput.value.style.width = mirror.value.offsetWidth + 8 + 'px'
+  originalTitle.value = diaryPage.value.title
+  isEditPageTitle.value = true
+  pageTitleInputRef.value.style.width =
+    pageTitleInputMirrorRef.value.offsetWidth + 8 + 'px'
   // 此处聚焦要延时,否则无法聚焦,但是会引入魔法延迟
   // setTimeout(() => {
-  //   pageTitleInput.value.focus()
+  //   pageTitleInputRef.value.focus()
   // }, 100)
   //nextTick允许在下一个“tick”执行代码，确保所有的DOM更新都已经完成。完美解决
   nextTick(() => {
-    pageTitleInput.value.focus()
+    pageTitleInputRef.value.focus()
   })
-  diaryPage.value.context.isEdited = true // 记录编辑状态
+}
+const handlePageTitleSave = () => {
+  isEditPageTitle.value = false
+  if (diaryPage.value.title !== originalTitle.value)
+    diaryPage.value.context.isEdited = true // 记录编辑状态
 }
 
 //编辑日记本
@@ -96,7 +103,7 @@ const handleFlip = (m) => {
   })
 }
 
-const handClick = (diaryId) => {
+const handDiaryEditClick = (diaryId) => {
   diaryStore.savePage(lastReadDiaryId.value, userDiaryStatus.value.lastReadPage)
   messageManager.showDiaryEditModal(diaryId)
 }
@@ -107,6 +114,9 @@ watch(
     [oldLastReadPage, oldLastReadDiaryId]
   ) => {
     diaryStore.savePage(oldLastReadDiaryId, oldLastReadPage)
+    if (newLastReadDiaryId !== oldLastReadDiaryId) {
+      userStore.setLocalLastReadDiaryId(newLastReadDiaryId)
+    }
   }
 )
 const handleSave = async () => {
@@ -143,24 +153,29 @@ const handleSave = async () => {
           <ph-pencil-line
             class="icon_pencil"
             weight="duotone"
-            @click="handClick(item.diaryId)"
+            @click="handDiaryEditClick(item.diaryId)"
           />
         </li>
       </ul>
     </div>
     <article>
-      <h2 @mouseenter="handleEdit(true)" :class="{ active: isEditPageTitle }">
+      <h2
+        @mouseenter="handlePageTitleEdit()"
+        :class="{ active: isEditPageTitle }"
+      >
         <p v-show="isAbleToEdit" class="sub__">--</p>
         <input
-          ref="pageTitleInput"
+          ref="pageTitleInputRef"
           v-model="diaryPage.title"
-          @blur="handleEdit(false)"
+          @blur="handlePageTitleSave()"
           :class="{ hidden: !isEditPageTitle }"
           :disabled="!isAbleToEdit"
         />
-        <span ref="mirror" :class="{ hidden: isEditPageTitle }">{{
-          diaryPage.title || '"Untitled"'
-        }}</span>
+        <span
+          ref="pageTitleInputMirrorRef"
+          :class="{ hidden: isEditPageTitle }"
+          >{{ diaryPage.title || '"Untitled"' }}</span
+        >
         <p v-show="isAbleToEdit" class="sup__">--</p>
       </h2>
 

@@ -463,12 +463,12 @@ button {
   overflow: hidden;
   padding: 2rem;
   box-shadow:
-    0 0 0 10px var(--c-gray-300),
-    0 0 0 11px var(--c-gray-200);
+    0 0 0 8px var(--c-gray-300),
+    0 0 0 7px var(--c-gray-200);
   background-color: #fff;
   @include absCenter;
   z-index: 302;
-  @media screen and (max-width: 700px) {
+  @media screen and (max-width: 900px) {
     width: 100vw;
     box-shadow:
       0 0 0 2px var(--c-gray-300),

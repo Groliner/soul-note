@@ -59,11 +59,13 @@ onMounted(() => {
 
 import { ElMessage } from 'element-plus'
 import { messageManager } from '@/directives/index'
+import router from '@/router'
 // 检查是否登录
 const userStore = useUserStore()
 const logout = () => {
   if (userStore.userInfo.token) {
     userStore.logout()
+    router.push('/home')
   } else {
     ElMessage.error('You are not logged in')
   }
@@ -102,6 +104,11 @@ const handleLogout = () => {
         <li>
           <RouterLink class="nav_link" active-class="active" to="/topic">
             Topics
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink class="nav_link" active-class="active" to="/chats">
+            Chats
           </RouterLink>
         </li>
       </ul>

@@ -1,4 +1,13 @@
 <script setup>
+/*
+用户中心简要概述:
+个人信息的查看和修改
+好友列表
+日记本列表
+
+自定义背景
+**/
+
 import { useUserStore, useDiaryStore } from '@/stores'
 import { ref, onUnmounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -18,11 +27,11 @@ const avatarInput = ref(null)
 const isEdit = ref(false)
 import { uploadImgAPI } from '@/api/fundamental'
 // 触发文件选择
-const triggerUpload = () => {
-  if (!isEdit.value) return
-  avatarInput.value.click() // 打开文件选择对话框
+const triggerUpload = (target, value = true) => {
+  if (!value) return
+  target.click() // 打开文件选择对话框
   // 使用GSAP添加一些动画，例如按钮点击反馈
-  gsap.to(avatarInput.value, {
+  gsap.to(target, {
     opacity: 0.7,
     yoyo: true,
     repeat: 1,
@@ -51,14 +60,17 @@ const handleCancel = () => {
   userStore.setUserInfo(JSON.parse(originalUserInfo))
   userInfo.value.isEdited = false
 }
-// friends system
+
 import {
   PhNotePencil,
   PhCheckCircle,
   PhReceiptX,
-  PhSlidersHorizontal
+  PhSlidersHorizontal,
+  PhFadersHorizontal
 } from '@phosphor-icons/vue'
 import { messageManager } from '@/directives/index'
+
+// 好友列表动画
 const handleFriends = () => {
   messageManager.showConfirmModal('The friend system is developing ...', {
     mask: false,
@@ -72,6 +84,8 @@ const handleClick = (diaryId) => {
 
 import { Flip } from 'gsap/all'
 gsap.registerPlugin(Flip) // 后续可以添加删除后的移动动画
+
+// 日记本列表动画
 function onLeave(el, done) {
   gsap.to(el, {
     opacity: 0,
@@ -90,14 +104,46 @@ function onEnter(el, done) {
     onComplete: done
   })
 }
+
+// 背景图片设置
+const backgroundImgInput = ref(null)
+const backImgSettingSize = ref('1.5em')
+const backImgSettingType = ref('light')
+const handleBackgroundImgChange = async (event) => {
+  const files = event.target.files
+  if (files.length > 0) {
+    const formData = new FormData()
+    formData.append('image', files[0])
+    const res = await uploadImgAPI(formData)
+    userStore.setBackgroundImg(res.data.data)
+  }
+}
 </script>
 <template>
   <div class="pfl-wrapper">
+    <div
+      class="background-settings"
+      @mouseover="backImgSettingType = 'bold'"
+      @mouseleave="backImgSettingType = 'light'"
+    >
+      <a class="icon-wrapper" @click="triggerUpload(backgroundImgInput)"
+        ><PhFadersHorizontal
+          class="icon"
+          :size="backImgSettingSize"
+          :weight="backImgSettingType"
+      /></a>
+      <input
+        type="file"
+        ref="backgroundImgInput"
+        @change="handleBackgroundImgChange"
+        style="display: none"
+      />
+    </div>
     <article>
       <div class="profile-photo">
         <button
           class="avatar"
-          @click="triggerUpload"
+          @click="triggerUpload(avatarInput, isEdit)"
           :class="{ active: isEdit }"
         >
           <img :src="userInfo.avatar" />
@@ -152,6 +198,7 @@ function onEnter(el, done) {
         </p>
       </div>
       <div class="profile-content">
+        <!-- 好友列表 -->
         <div class="friend-list">
           <TransitionGroup tag="ul">
             <li v-for="friend in friends" :key="friend.id">
@@ -168,6 +215,8 @@ function onEnter(el, done) {
             </li>
           </TransitionGroup>
         </div>
+
+        <!-- 日记本列表 -->
         <TransitionGroup
           tag="div"
           @leave="onLeave"
@@ -200,8 +249,37 @@ function onEnter(el, done) {
   width: 100%;
   height: 100%;
   padding: 40px;
-  background-color: var(--c-gray-100);
+  background-color: rgb(251 248 242 / 42%);
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.background-settings {
+  position: absolute;
+  top: 1.3em;
+  right: 1.2em;
+  cursor: pointer;
+  width: 3rem;
+  height: 3rem;
+
+  .icon-wrapper {
+    .icon {
+      transition: font-size 0.25s ease;
+      font-size: 1.4em;
+      color: var(--c-gray-500);
+    }
+    &:active .icon {
+      color: $sucColor;
+    }
+  }
+
+  &:hover {
+    .icon-wrapper {
+      .icon {
+        font-size: 1.55em;
+      }
+    }
+  }
 }
 
 article {
@@ -235,6 +313,7 @@ article {
         object-position: center;
         transition: transform 0.25s;
         transform: scale(1.1);
+        user-select: none;
       }
       &:hover {
         box-shadow:
@@ -252,12 +331,12 @@ article {
       position: absolute;
       right: -2em;
       bottom: -1.2em;
-      font-size: 1.3em;
+      font-size: 1.5em;
       z-index: 100;
       cursor: pointer;
       transition: all 0.25s;
       @media screen and (max-width: 800px) {
-        font-size: 2em;
+        font-size: 2.1em;
       }
       &:hover {
         color: var(--primary);

@@ -17,11 +17,12 @@ const resizeObserver = new ResizeObserver((entries) => {
   ScrollTrigger.refresh()
 })
 onMounted(() => {
+  // 设置footer的动画
   tl.to('.footer', {
     keyframes: {
       '0%': { opacity: 0 },
       '70%': { opacity: 0.34 },
-      '100%': { opacity: 1, y: 0 }
+      '100%': { opacity: 0.91, y: 0 }
     }
   })
   ScrollTrigger.create({
@@ -31,7 +32,7 @@ onMounted(() => {
     end: 'bottom bottom',
     scrub: 2.7
   })
-  resizeObserver.observe(document.querySelector('.mapper'))
+  resizeObserver.observe(document.querySelector('.mapper')) // 当页面大小变化时，更新ScrollTrigger的配置
 })
 onUnmounted(() => {
   clearInterval(updateTime)
@@ -46,12 +47,18 @@ const updateTime = setInterval(() => {
   time.value.minute = t.getMinutes().toString().padStart(2, '0')
   time.value.second = t.getSeconds().toString().padStart(2, '0')
 }, 3000)
-import logo from '@/assets/images/logo.png'
+
 //背景图片,需要修改其他配件的透明度,否则会有不协调感.
+import { useUserStore } from '@/stores'
+import { storeToRefs } from 'pinia'
+const userStore = useUserStore()
+const { backgroundImg } = storeToRefs(userStore)
 </script>
 <template>
   <div class="mapper">
-    <!-- <img class="back" :src="logo" /> -->
+    <img class="background-img" :src="backgroundImg" />
+
+    <!-- head-mask 暂定透明 -->
     <section class="head-mask"></section>
     <section class="timer">
       <span class="timer__left"
@@ -78,14 +85,14 @@ import logo from '@/assets/images/logo.png'
 .mapper {
   overflow: hidden;
   border: 5px solid black;
-  .back {
+  .background-img {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.4;
+    opacity: 0.21;
     z-index: -1;
   }
 
@@ -95,22 +102,22 @@ import logo from '@/assets/images/logo.png'
     height: 3em;
     top: 0;
     border-top: 5px solid black;
-    background-color: var(--greyLight-1);
+    background-color: transparent;
     z-index: 100;
   }
 
   .timer {
     position: fixed;
-    top: 40px;
-    right: 50px;
+    top: 2rem;
+    right: 2.6rem;
     padding: 0.2rem 0.5rem;
-    background-color: var(--greyLight-1);
+    background-color: transparent;
     z-index: 100;
     &__left {
-      font-size: 1.9rem;
+      font-size: 1.8rem;
     }
     &__right {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
     }
   }
 

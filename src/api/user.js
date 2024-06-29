@@ -16,3 +16,9 @@ export const updateUserInfoAPI = (data) => request.put('user', data)
 
 export const getUserWordCountAPI = (data) =>
   request.get('userWordCounts', { params: data })
+
+export const updateBackgroundImg = (data) =>
+  request.put('user/backgroundImg', data)
+
+export const updateLastReadDiaryId = (data) =>
+  request.put('user/lastReadDiaryId', data)

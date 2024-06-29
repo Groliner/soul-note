@@ -7,7 +7,9 @@
           v-for="day in month.days"
           :key="day"
           class="day"
-          :style="{ backgroundColor: day.color || 'rgb(50 180 0 / 0%)' }"
+          :style="{
+            backgroundColor: day.value ? day.color : 'rgb(50 180 0 / 0%)'
+          }"
           style="border-radius: 2px"
           :class="{ today: day.isToday }"
         >
@@ -29,11 +31,7 @@
               >{{ day.day }}</el-button
             >
           </el-tooltip>
-          <span
-            v-else
-            :style="{ color: day.value === 0 ? '#6d5dfc' : '#9baacf' }"
-            >{{ day.day }}</span
-          >
+          <span v-else style="color: #9baacf">{{ day.day }}</span>
         </div>
       </div>
     </div>
@@ -54,17 +52,17 @@ function getColor(wordCount) {
 
   let red, green, blue
 
-  if (wordCount <= 50000) {
+  if (wordCount <= 1000) {
     // 从白色到青色的渐变
-    // 字数在0到50000之间，红色从255渐变到0，绿色和蓝色保持在255
-    const ratio = wordCount / 50000
+    // 字数在0到1000之间，红色从255渐变到0，绿色和蓝色保持在255
+    const ratio = wordCount / 1000
     red = 255 * (1 - ratio)
     green = 255
     blue = 255
   } else {
     // 从青色到绿色的渐变
-    // 字数在50001到100000之间，绿色保持255，蓝色从255渐变到0
-    const ratio = (wordCount - 50000) / 50000
+    // 字数在1001到2000之间，绿色保持255，蓝色从255渐变到0
+    const ratio = (wordCount - 1000) / 1000
     red = 0
     green = 255
     blue = 255 * (1 - ratio)

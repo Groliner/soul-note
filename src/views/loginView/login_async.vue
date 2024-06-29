@@ -7,7 +7,7 @@ logIn 登录设置数组(props)
 TODO:
 添加邮箱验证功能
 */
-import { toRef, ref, computed, watch } from 'vue'
+import { toRef, ref, computed, watch, nextTick } from 'vue'
 import {
   PhArrowCircleRight,
   PhArrowCircleLeft,
@@ -33,7 +33,7 @@ const props = defineProps({
         placeholder: 'Your username',
         spellcheck: 'false',
         autocomplete: 'off',
-        regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
+        regex: '^[\\u4e00-\\u9fa5\\w.-]{2,}$'
       },
       {
         id: 'password',
@@ -53,7 +53,7 @@ const props = defineProps({
         placeholder: 'Your username',
         spellcheck: 'false',
         autocomplete: 'off',
-        regex: '^[\\u4e00-\\u9fa5\\w.-]{3,}$'
+        regex: '^[\\u4e00-\\u9fa5\\w.-]{2,}$'
       },
       {
         id: 'password',
@@ -101,6 +101,8 @@ const progress = ref(null)
 const isFinished = ref(false)
 const nextStep = ref(false)
 const isHover = ref(false)
+const preAction = ref(null)
+const nextAction = ref(null)
 const handleHover = (el) => {
   if (isHover.value) return
   if (el.target.classList.contains('up')) {
@@ -113,15 +115,15 @@ const handleHover = (el) => {
   }
   isHover.value = true
   if (finishedStep.value < totalSteps.value)
-    setTimeout(function () {
+    nextTick(() => {
       refArray[0].value.focus()
-      // refArray[stepNumber.value - 1].value.focus()
-    }, 410)
+    })
 }
 const handleOut = () => {
   // console.log(responseData.value.data)
   isHover.value =
     stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
+
   if (responseData.value?.data && !isFinished.value) {
     responseData.value.data = undefined
   }
@@ -142,29 +144,43 @@ const checkInput = (el) => {
     }
   })
 }
+watch(stepNumber, (new_step, old_step) => {
+  if (new_step < 0 || new_step > totalSteps.value) return
+  console.log(new_step, old_step)
+  checkInput(refArray[new_step - 1])
+  nextTick(() => {
+    refArray[new_step - 1].value.focus()
+  })
+})
 const moveToNextStep = () => {
+  if (!nextAction.value.classList.contains('active')) return
   stepNumber.value =
     finishedStep.value >= stepNumber.value
       ? stepNumber.value + 1
       : finishedStep.value + 1
   progress.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
   if (
-    finishedStep.value < totalSteps.value ||
-    stepNumber.value <= totalSteps.value
-  )
-    return checkInput(refArray[stepNumber.value - 1])
-  isFinished.value = true
-  setTimeout(handleFinished, 500)
+    finishedStep.value >= totalSteps.value &&
+    stepNumber.value > totalSteps.value
+  ) {
+    isFinished.value = true
+    setTimeout(handleFinished, 500)
+  }
 }
 const moveToPreviousStep = () => {
+  if (!preAction.value.classList.contains('active')) return
   if (stepNumber.value > 1) stepNumber.value--
   progress.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
-  checkInput(refArray[stepNumber.value - 1])
+}
+
+const handleKeyDownEnter = () => {
+  if (nextAction.value.classList.contains('active')) moveToNextStep()
+  else if (preAction.value.classList.contains('active')) moveToPreviousStep()
 }
 
 // 定义结束以及异步动画
 const load = ref(true)
-const responseData = ref({})
+const responseData = ref({}) // 用于用户注册后的快速登录
 const reset = (change = true, toStep = '1') => {
   load.value = true
   progress.value.parentElement.classList.remove('hide-form')
@@ -173,7 +189,10 @@ const reset = (change = true, toStep = '1') => {
   stepNumber.value =
     toStep === '1'
       ? 1
-      : inputArray.value.findIndex((el) => toStep.includes(el.id)) + 1
+      : Math.max(
+          inputArray.value.findIndex((item) => item.id === toStep) + 1,
+          1
+        )
   if (change) {
     inputArray.value = props.logIn
     isSignUp.value = false
@@ -183,7 +202,7 @@ const reset = (change = true, toStep = '1') => {
   // nextStep.value = false
   // 由于setRefArray执行时机比较晚,所以当change=true时下面check由于refArray更新较慢
   // 也就是在注册后转入登录input时的第一次checkInput不会影响nextStep.value,保持为true,除非上面设置为false
-  checkInput(refArray[stepNumber.value - 1])
+  // checkInput(refArray[stepNumber.value - 1])
 }
 const handleFinished = () => {
   load.value = true
@@ -353,6 +372,7 @@ const signup = async (formData) => {
               :spellcheck="inp?.spellcheck"
               :autocomplete="inp?.autocomplete"
               @keyup="checkInput(refArray[index])"
+              @keydown.enter.prevent="handleKeyDownEnter"
             />
           </div>
           <div

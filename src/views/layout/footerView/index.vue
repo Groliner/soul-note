@@ -9,7 +9,7 @@ onMounted(() => {
 })
 </script>
 <template>
-  <footer>
+  <footer style="opacity: 0.92">
     <div class="wave-container">
       <svg
         class="waves"
@@ -121,7 +121,7 @@ onMounted(() => {
       height: 30vh;
     }
     h1 {
-      font-size: 24px;
+      font-size: 20px;
     }
   }
 }
@@ -142,7 +142,7 @@ onMounted(() => {
   .foot {
     text-align: center;
     h1 {
-      font-size: 3.4rem;
+      font-size: 2.88rem;
       text-align: center;
       font-weight: 300;
       padding: 0.5em;
@@ -150,7 +150,7 @@ onMounted(() => {
     }
 
     h2 {
-      font-size: 1.6rem;
+      font-size: 1.31rem;
       text-align: center;
       font-weight: 300;
       margin: 0;

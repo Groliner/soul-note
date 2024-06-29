@@ -32,13 +32,14 @@ provide('pressTime', 123)
   </div>
 </template>
 <style lang="scss">
+$times: 0.54s;
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.54s ease-in;
+  transition: all $times ease-in;
   width: 100%;
 }
 .fade-leave-active {
-  transition: all 0.34s ease-out;
+  transition: all $times * 0.63 ease-out;
   position: absolute;
 }
 .fade-enter-from,
@@ -52,9 +53,9 @@ provide('pressTime', 123)
 }
 
 .popup-enter-active {
-  transition: opacity 0.46s cubic-bezier(0.5, 1, 0.89, 1);
+  transition: opacity $times * 0.85 cubic-bezier(0.5, 1, 0.89, 1);
 }
 .popup-leave-active {
-  transition: opacity 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+  transition: opacity $times * 0.6 cubic-bezier(0.5, 1, 0.89, 1);
 }
 </style>
