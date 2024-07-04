@@ -6,3 +6,4 @@
  */
 export * from './modules/user'
 export * from './modules/diary'
+export * from './modules/message'

@@ -7,6 +7,10 @@ onMounted(() => {
     isAvailableToShow.value = false
   }
 })
+
+import { useUserStore } from '@/stores'
+import { storeToRefs } from 'pinia'
+const { userPreferences } = storeToRefs(useUserStore())
 </script>
 <template>
   <footer style="opacity: 0.92">
@@ -54,14 +58,24 @@ onMounted(() => {
         <h1>
           Soul-Note<small style="color: #545454">.<sub>all</sub></small>
         </h1>
-        <h2>"Always searching and experiencing every story"</h2>
+        <h2>
+          {{
+            userPreferences.languageSelectNum === 1
+              ? 'Always searching and experiencing every story'
+              : '寻 找 和 体 验 每 一 个 故 事'
+          }}
+        </h2>
         <br />
         <div>
           <small style="font-size: 0.83rem"
             >&copy; 2024-,
             <a href="https://github.com/Groliner/soul-note.git">soul-note</a>,
-            the source of everything.</small
-          >
+            {{
+              userPreferences.languageSelectNum === 1
+                ? 'the source of everything.'
+                : '网页源码'
+            }}
+          </small>
         </div>
       </div>
     </div>

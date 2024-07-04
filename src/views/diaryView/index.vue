@@ -2,11 +2,12 @@
 import { ref, nextTick, onMounted, onUnmounted, computed, watch } from 'vue'
 import notePage from './note.vue'
 import pagination from './pagination.vue'
-import { useDiaryStore, useUserStore } from '@/stores'
+import { useDiaryStore, useUserStore, useMessageStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { PhPencilLine } from '@phosphor-icons/vue'
 const userStore = useUserStore()
-const { userDiary, userInfo } = storeToRefs(userStore)
+const messageStore = useMessageStore()
+const { userDiary, userInfo, userPreferences } = storeToRefs(userStore)
 const lastReadDiaryId = computed(() => userInfo.value.lastReadDiaryId)
 const diaryStore = useDiaryStore()
 const userDiaryStatus = computed(() =>
@@ -126,7 +127,7 @@ const handleSave = async () => {
   )
   if (result == 2) {
     ElMessage({
-      message: 'Page has saved',
+      message: messageStore.diaryPageConstant['SAVED'],
       grouping: true,
       type: 'info'
     })
@@ -202,7 +203,9 @@ const handleSave = async () => {
     </div>
     <div class="button_save">
       <div class="mapper">
-        <button @click="handleSave" class="custom-btn btn-16">SAVE</button>
+        <button @click="handleSave" class="custom-btn btn-16">
+          {{ userPreferences.languageSelectNum === 1 ? 'SAVE' : '保存' }}
+        </button>
       </div>
     </div>
   </div>

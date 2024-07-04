@@ -1,7 +1,7 @@
 <script setup>
 import { gsap } from 'gsap'
 import { useUserStore } from '@/stores'
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 const show = ref(false)
 gsap.defaults({ duration: 0.5 })
 // ===== Open Nav =====
@@ -60,6 +60,7 @@ onMounted(() => {
 import { ElMessage } from 'element-plus'
 import { messageManager } from '@/directives/index'
 import router from '@/router'
+
 // 检查是否登录
 const userStore = useUserStore()
 const logout = () => {
@@ -75,6 +76,8 @@ const handleLogout = () => {
     if (res) logout()
   })
 }
+
+console.log()
 </script>
 <template>
   <section class="wrapper">
@@ -88,27 +91,27 @@ const handleLogout = () => {
       <ul class="nav_main">
         <li>
           <RouterLink class="nav_link" active-class="active" to="/home">
-            Home
+            {{ userStore.selectLanguage === 'en-US' ? 'Home' : '主页' }}
           </RouterLink>
         </li>
         <li>
           <RouterLink class="nav_link" active-class="active" to="/diary">
-            Diary
+            {{ userStore.selectLanguage === 'en-US' ? 'Diary' : '日记' }}
           </RouterLink>
         </li>
         <li>
           <RouterLink class="nav_link" active-class="active" to="/library">
-            Library
+            {{ userStore.selectLanguage === 'en-US' ? 'Library' : '图书馆' }}
           </RouterLink>
         </li>
         <li>
           <RouterLink class="nav_link" active-class="active" to="/topic">
-            Topics
+            {{ userStore.selectLanguage === 'en-US' ? 'Topic' : '话题' }}
           </RouterLink>
         </li>
         <li>
           <RouterLink class="nav_link" active-class="active" to="/chats">
-            Chats
+            {{ userStore.selectLanguage === 'en-US' ? 'Chats' : '聊天' }}
           </RouterLink>
         </li>
       </ul>
@@ -116,18 +119,42 @@ const handleLogout = () => {
       <ul class="nav_sub" v-if="userStore.userInfo.token">
         <li>
           <RouterLink class="nav_link" active-class="active" to="/account">
-            Account
+            {{ userStore.selectLanguage === 'en-US' ? 'Account' : '账户' }}
           </RouterLink>
         </li>
         <li>
-          <a class="nav_link" @click="handleLogout"> Log out </a>
+          <a class="nav_link" @click="handleLogout">
+            {{ userStore.selectLanguage === 'en-US' ? 'log out' : '登出' }}
+          </a>
         </li>
       </ul>
       <ul class="nav_sub" v-else>
         <li>
-          <RouterLink class="nav_link" to="/login"> Log in </RouterLink>
+          <RouterLink class="nav_link" to="/login">
+            {{ userStore.selectLanguage === 'en-US' ? 'Login' : '登录' }}
+          </RouterLink>
         </li>
       </ul>
+      <div
+        class="container-radio"
+        :style="`grid-template-columns: repeat(${userStore.userPreferences.languageList.length}, min-content)`"
+      >
+        <!-- 语言选择,此处为测试,预计放到用户的个性化设置中 -->
+        <div
+          :class="`radio radio__${index}`"
+          v-for="(content, index) in userStore.userPreferences.languageList"
+          :key="index"
+        >
+          <input
+            :id="`radio-${index}`"
+            type="radio"
+            name="radio"
+            :value="index"
+            v-model="userStore.userPreferences.languageSelectNum"
+          />
+          <label :for="`radio-${index}`">{{ content }}</label>
+        </div>
+      </div>
     </div>
     <div class="dim" @click="show = false"></div>
   </section>
@@ -286,5 +313,54 @@ a {
   display: none;
   z-index: 301;
   opacity: 0;
+}
+
+.container-radio {
+  width: fit-content;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  input {
+    display: none;
+  }
+
+  .radio {
+    & input:checked {
+      & ~ label {
+        box-shadow: $inner-shadow;
+        color: var(--primary);
+      }
+    }
+    label {
+      transition: color 0.2s ease;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      width: 3rem;
+      height: 2.8rem;
+      border-radius: 50%;
+      font-size: 1rem;
+      &:hover {
+        color: var(--primary);
+      }
+
+      // &::after {
+      //   content: '';
+      //   position: absolute;
+      //   width: 1.4rem;
+      //   height: 1.4rem;
+      //   background: var(--greyDark);
+      //   border-radius: 50%;
+      //   transition: 0.3s ease;
+      // }
+    }
+  }
 }
 </style>

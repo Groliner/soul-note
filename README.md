@@ -55,7 +55,7 @@ npm run lint
 - 前端的数据都为及时存储,设计保存为向后端请求,所以前端不需要做save与temporary区分
 - store 中的const常量,比如字典defaultPages,defaultUserInfo,会同步改变,尽管有JSON序列化.....
 - 变量的相等判断用的全等,注意数字与字符的区别,route.query获得的为字符.
-
+- 设置独立的Message Store用来规范提示信息
 ## BUG
 
 ### logout逻辑中:

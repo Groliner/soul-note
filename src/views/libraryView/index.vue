@@ -1,7 +1,17 @@
-<script setup></script>
+<script setup>
+import { useUserStore } from '@/stores'
+import { storeToRefs } from 'pinia'
+const { userPreferences } = storeToRefs(useUserStore())
+</script>
 <template>
   <div class="container">
-    <section>there should be library</section>
+    <section>
+      {{
+        userPreferences.languageSelectNum === 1
+          ? 'there should be library'
+          : '这里将会是图书馆系统'
+      }}
+    </section>
   </div>
 </template>
 <style lang="scss" scoped>

@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import dayjs from 'dayjs'
 import { formatTimeToDate } from '@/composables/formatTime'
 import { useUserStore } from './user'
+import { useMessageStore } from './message'
 import { ElMessage } from 'element-plus'
 import {
   addDiaryAPI,
@@ -57,15 +58,9 @@ const defaultPages = JSON.stringify({
 export const useDiaryStore = defineStore(
   'diary',
   () => {
+    const messageStore = useMessageStore()
     const diary = ref(JSON.parse(JSON.stringify(defaultDiary)))
     const diaryPages = ref(JSON.parse(defaultPages))
-    let notePlaceholder = `                 there are some tips for writing diary：
-                        1. crtl + z  --> undo.
-                        2. crtl + y --> redo.
-                        3. tab --> write a new paragraph.
-                        4. Please don't create a diary or a page at random.
-                        5. all you write down will auto save in the area when you go away.
-                        6. Anytime there's a pop-up alert asking it's saved immediately.`
     const initAll = ref(false) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
     const init = async () => {
       if (initAll.value) return
@@ -95,10 +90,10 @@ export const useDiaryStore = defineStore(
           return item
         })
         diary.value.unshift(defaultDiary[0])
-        ElMessage.success('Diary loaded successfully')
+        ElMessage.success(messageStore.diaryConstant['LOAD_SUCCESS'])
         return true
       }
-      ElMessage.error('Failed to load diary')
+      ElMessage.error(messageStore.diaryConstant['LOAD_ERROR'])
       setDiary()
       return false
     }
@@ -129,11 +124,11 @@ export const useDiaryStore = defineStore(
           context: diaryPage_.diaryPageContext
         })
 
-        ElMessage.success('Page added successfully')
+        ElMessage.success(messageStore.diaryPageConstant['ADD_SUCCESS'])
         return true
       }
       diary.value[index].pages--
-      ElMessage.error('Failed to add page')
+      ElMessage.error(messageStore.diaryPageConstant['ADD_ERROR'])
       return false
     }
     const addDiary = async () => {
@@ -147,22 +142,24 @@ export const useDiaryStore = defineStore(
           diary.value.push(diary_)
           userStore.addLocalUserDiaryStatus(diary_.id)
           userStore.setLocalLastReadDiaryId(diary_.id)
-          ElMessage.success('Diary added successfully')
+          ElMessage.success(messageStore.diaryConstant['ADD_SUCCESS'])
 
           return diary_.id
         }
       }
-      ElMessage.error('Failed to add diary')
+      ElMessage.error(messageStore.diaryConstant['ADD_ERROR'])
       return false
     }
     const deletePage = async (id, page) => {
       const pageList = diaryPages.value[id]
       const index = pageList.findIndex((item) => item.page === page)
       if (index === 0) {
-        ElMessage.error('Failed to delete the first page')
+        ElMessage.error(messageStore.diaryPageConstant['DELETE_FIRST_ERROR'])
         return false
       } else if (index !== -1 && pageList[index].context.words) {
-        ElMessage.error('Failed to delete the page with content')
+        ElMessage.error(
+          messageStore.diaryPageConstant['DELETE_WITH_CONTENT_ERROR']
+        )
         return false
       } else {
         const res = await deleteDiaryPageAPI(pageList[index].id)
@@ -179,10 +176,10 @@ export const useDiaryStore = defineStore(
             })
           diaryPages.value[id].splice(index, 1)
 
-          ElMessage.success('Page deleted successfully')
+          ElMessage.success(messageStore.diaryPageConstant['DELETE_SUCCESS'])
           return true
         }
-        ElMessage.error('Failed to delete page')
+        ElMessage.error(messageStore.diaryPageConstant['DELETE_ERROR'])
       }
       return false
     }
@@ -197,11 +194,13 @@ export const useDiaryStore = defineStore(
           diary.value.splice(index, 1)
           diaryPages.value[id] = []
 
-          ElMessage.success(`Diary ${title} deleted successfully`)
+          ElMessage.success(
+            title + messageStore.diaryConstant['DELETE_SUCCESS']
+          )
           return true
         }
       }
-      ElMessage.error('Failed to delete diary')
+      ElMessage.error(messageStore.diaryConstant['DELETE_ERROR'])
       return false
     }
     const saveDiary = async (diaryId, isMust = false) => {
@@ -210,25 +209,24 @@ export const useDiaryStore = defineStore(
         const res = await updateDiaryAPI(diary.value[index])
         if (res.data.code) {
           diary.value[index].isEdited = false
-          ElMessage.success('Diary saved successfully')
+          ElMessage.success(messageStore.diaryConstant['SAVE_SUCCESS'])
           return true
         }
       }
-      ElMessage.error('Failed to save diary')
+      ElMessage.error(messageStore.diaryConstant['SAVE_ERROR'])
     }
     const savePage = async (diaryId, page, isMust = false) => {
       const pageList = diaryPages.value[diaryId]
       if (pageList.length === 0) return // 判断是否页面列表为空,为空则不保存
       if (pageList === undefined) {
-        ElMessage.info('Failed to find diary')
+        ElMessage.info(messageStore.diaryConstant['FIND_ERROR'])
         return
       }
       const index = pageList.findIndex(
         (item) => item.diaryId == diaryId && item.page == page
       )
       if (index === -1) {
-        // 要保存的页面不存在
-        ElMessage.info('Failed to save page')
+        // 要保存的页面已经删除
         return
       }
       if (!pageList[index].context.isEdited && !isMust) {
@@ -241,12 +239,12 @@ export const useDiaryStore = defineStore(
       })
       if (res.data.code) {
         pageList[index].context.isEdited = false
-        ElMessage.success('Page saved successfully')
+        ElMessage.success(messageStore.diaryPageConstant['SAVE_SUCCESS'])
         const userStore = useUserStore()
         userStore.getUserWordCount(formatTimeToDate(new Date()))
         return true
       }
-      ElMessage.error('Failed to save page')
+      ElMessage.error(messageStore.diaryPageConstant['SAVE_ERROR'])
     }
     const getLocalDiaryById = (id) => {
       const index = diary.value.findIndex((item) => item.id === id && id !== 0)
@@ -294,7 +292,6 @@ export const useDiaryStore = defineStore(
     return {
       diary,
       diaryPages,
-      notePlaceholder,
       init,
       logout,
       setDiary,

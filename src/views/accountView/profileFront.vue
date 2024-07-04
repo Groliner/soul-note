@@ -8,11 +8,12 @@
 自定义背景
 **/
 
-import { useUserStore, useDiaryStore } from '@/stores'
+import { useUserStore, useDiaryStore, useMessageStore } from '@/stores'
 import { ref, onUnmounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
+const messageStore = useMessageStore()
 const { userInfo, friends } = storeToRefs(userStore)
 let originalUserInfo = JSON.stringify({
   username: userInfo.value.username,
@@ -77,7 +78,8 @@ import { messageManager } from '@/directives/index'
 
 // 好友列表动画
 const handleFriends = () => {
-  messageManager.showConfirmModal('The friend system is developing ...', {
+  const text = messageStore.accountConstant['DEVELOP_FRIEND_SYSTEM']
+  messageManager.showConfirmModal(text, {
     mask: false,
     pressTime: 60,
     draggable: true

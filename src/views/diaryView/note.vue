@@ -41,8 +41,7 @@ const props = defineProps({
     default: false
   },
   placeholder: {
-    type: String,
-    default: 'write down your past or thinking'
+    type: String
   }
 })
 const textareaRef = ref(null)

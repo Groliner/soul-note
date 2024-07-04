@@ -109,6 +109,11 @@ const router = createRouter({
           path: 'sendMessage',
           name: 'sendMessage',
           component: () => import('@/components/modules/SendEmail.vue')
+        },
+        {
+          path: 'tt',
+          name: 'tt',
+          component: () => import('@/components/modules/PrettyDesign.vue')
         }
       ]
     },
@@ -132,10 +137,11 @@ const router = createRouter({
   }
 })
 
-import { useUserStore, useDiaryStore } from '@/stores'
+import { useUserStore, useDiaryStore, useMessageStore } from '@/stores'
 
 router.beforeEach((to, from) => {
   const userStore = useUserStore()
+  const messageStore = useMessageStore()
   const diaryStore = useDiaryStore()
   if (!['home', 'login'].includes(to.name) && !userStore.isAuthenticated) {
     userStore.logout()

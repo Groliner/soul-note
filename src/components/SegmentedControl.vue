@@ -30,7 +30,7 @@ const props = defineProps({
       <input
         type="radio"
         name="radio2"
-        :value="i"
+        :value="i - 1"
         :id="`tab-${i}`"
         v-model="picked"
       />

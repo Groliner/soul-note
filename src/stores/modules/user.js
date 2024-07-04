@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useDiaryStore } from './diary'
+import { useMessageStore } from './message'
 import {
   getUserInfoAPI,
   updateUserInfoAPI,
@@ -63,6 +64,12 @@ export const useUserStore = defineStore(
     const userInfo = ref(JSON.parse(defaultUserInfoString))
     const userDiary = ref(JSON.parse(JSON.stringify(defaultDiary)))
     const userWordCount = ref(defaultWordCount)
+    const userPreferences = ref({
+      languageSelectNum: 0,
+      theme: 'default',
+      languageList: ['zh-CN', 'en-US']
+    })
+    const messageStore = useMessageStore()
     const diaryStore = useDiaryStore()
     const login = async (data) => {
       initAll.value = false
@@ -77,7 +84,7 @@ export const useUserStore = defineStore(
         const res = await logOutAPI()
         if (res.data.code) {
           ElMessage({
-            message: res.data.data,
+            message: messageStore.accountConstant['LOG_OUT_SUCCESS'],
             grouping: true,
             type: 'success'
           })
@@ -90,7 +97,9 @@ export const useUserStore = defineStore(
           isNeedToUpdate.value = true
           diaryStore.logout()
         } else {
-          ElMessage.error(res.data.msg || 'logout failed')
+          ElMessage.error(
+            res.data.msg || messageStore.accountConstant['LOG_OUT_ERROR']
+          )
         }
       } catch (e) {
         console.log(e)
@@ -139,7 +148,9 @@ export const useUserStore = defineStore(
         } else userWordCount.value = res.data.data
         return true
       }
-      ElMessage.warning("can't get user word count")
+      ElMessage.warning(
+        messageStore.accountConstant['ACCOUNT_WORDS_LOAD_ERROR']
+      )
       return false
     }
     const setUserInfo = (data) => {
@@ -156,7 +167,7 @@ export const useUserStore = defineStore(
         ...userInfo.value
       })
       if (res.data.code) {
-        ElMessage.success('保存成功')
+        ElMessage.success(messageStore.accountConstant['SAVE_SUCCESS'])
         userInfo.value.isEdited = false
         return true
       } else {
@@ -241,19 +252,29 @@ export const useUserStore = defineStore(
       updateBackgroundImg({ id: userInfo.value.id, backgroundImg: img }).then(
         (res) => {
           if (res.data.code) {
-            ElMessage.success('background image updated successfully!')
+            ElMessage.success(
+              messageStore.accountConstant['BACKGROUND_IMG_UPLOAD_SUCCESS']
+            )
           } else {
             ElMessage.error(res.data.msg)
           }
         }
       )
     }
+    const selectLanguage = computed(
+      () =>
+        userPreferences.value.languageList[
+          userPreferences.value.languageSelectNum
+        ]
+    )
     return {
       userInfo,
       userDiary,
       friends,
       userWordCount,
       isAuthenticated,
+      userPreferences,
+      selectLanguage,
       setToken,
       updateUserInfo,
       getUserDiaryStatus,
