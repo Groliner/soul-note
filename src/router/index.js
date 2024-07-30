@@ -48,8 +48,19 @@ const router = createRouter({
     },
     {
       path: '/test',
+      name: 'test',
       component: () => import('@/views/testView.vue'),
       children: [
+        {
+          path: 'oauth',
+          name: 'oauth',
+          component: () => import('@/views/testView/oauthApi.vue')
+        },
+        {
+          path: 'audio',
+          name: 'audio',
+          component: () => import('@/views/testView/audioPlay.vue')
+        },
         {
           path: 'slider',
           name: 'slider',
@@ -114,6 +125,16 @@ const router = createRouter({
           path: 'tt',
           name: 'tt',
           component: () => import('@/components/modules/PrettyDesign.vue')
+        },
+        {
+          path: 'set',
+          name: 'set',
+          component: () => import('@/components/popup/AccountSettings.vue')
+        },
+        {
+          path: 'music',
+          name: 'music',
+          component: () => import('@/components/modules/Music.vue')
         }
       ]
     },
@@ -143,12 +164,15 @@ router.beforeEach((to, from) => {
   const userStore = useUserStore()
   const messageStore = useMessageStore()
   const diaryStore = useDiaryStore()
-  if (!['home', 'login'].includes(to.name) && !userStore.isAuthenticated) {
-    userStore.logout()
-    return { name: 'login' }
-  }
+  // if (
+  //   !['home', 'login', 'test'].includes(to.name) &&
+  //   !userStore.isAuthenticated
+  // ) {
+  //   userStore.logout()
+  //   return { name: 'login' }
+  // }
   if (['account', 'diary'].includes(to.name)) {
-    console.log('刷新页面可从数据库更新数据')
+    console.log(messageStore.tips['REFRESH_TIPS'])
     userStore.getUserDiaryStatus()
     diaryStore.init()
   }

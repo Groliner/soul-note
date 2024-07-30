@@ -133,12 +133,14 @@ const handleBackgroundImgChange = async (event) => {
       @mouseover="backImgSettingType = 'bold'"
       @mouseleave="backImgSettingType = 'light'"
     >
-      <a class="icon-wrapper" @click="triggerUpload(backgroundImgInput)"
-        ><PhFadersHorizontal
+      <a class="_">
+        <PhFadersHorizontal
           class="icon"
           :size="backImgSettingSize"
           :weight="backImgSettingType"
-      /></a>
+          @click="triggerUpload(backgroundImgInput)"
+        />
+      </a>
       <input
         type="file"
         ref="backgroundImgInput"
@@ -146,6 +148,7 @@ const handleBackgroundImgChange = async (event) => {
         style="display: none"
       />
     </div>
+
     <article>
       <div class="profile-photo">
         <button
@@ -266,26 +269,26 @@ const handleBackgroundImgChange = async (event) => {
   top: 1.3em;
   right: 1.2em;
   cursor: pointer;
-  width: 3rem;
-  height: 3rem;
+  border-right: 3px solid transparent;
+  border-radius: 30%;
+  transition: border-color 0.2s ease;
 
-  .icon-wrapper {
-    .icon {
-      transition: font-size 0.25s ease;
-      font-size: 1.4em;
-      color: var(--c-gray-500);
-    }
+  .icon {
+    transition: font-size 0.25s ease;
+    font-size: 1.4em;
+    color: var(--c-gray-500);
+  }
+  ._ {
     &:active .icon {
-      color: $sucColor;
+      color: #8fd8b6;
     }
   }
 
   &:hover {
-    .icon-wrapper {
-      .icon {
-        font-size: 1.55em;
-      }
+    .icon {
+      font-size: 1.55em;
     }
+    border-color: #1dc779ad;
   }
 }
 

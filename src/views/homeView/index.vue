@@ -1,11 +1,36 @@
+<script setup>
+import audioPlay from '../testView/audioPlay.vue'
+
+import { ref } from 'vue'
+const theme = ref('birthday')
+</script>
 <template>
   <div class="container_home">
-    <section class="section_home">
+    <section class="section_home" v-if="theme === 'birthday'">
+      <h1>Happy Birthday ! Grozhi</h1>
+      <p>
+        Moving forward and Handling your worries correctly, then catching the
+        future
+      </p>
+    </section>
+    <section class="section_home" v-else>
       <h1>主页-----home</h1>
       <p>testing: diary, account</p>
     </section>
     <section class="section_loading">
-      <div id="load">
+      <div id="load" v-if="theme === 'birthday'" class="birthday">
+        <div>H</div>
+        <div>T</div>
+        <div>R</div>
+        <div>I</div>
+        <div>B</div>
+        <div>Y</div>
+        <div>P</div>
+        <div>P</div>
+        <div>A</div>
+        <div>H</div>
+      </div>
+      <div id="load" v-else>
         <div>G</div>
         <div>N</div>
         <div>I</div>
@@ -23,6 +48,9 @@
       <input type="text" />
       <sendButton />
     </section> -->
+    <section class="section_audio" v-if="theme === 'birthday'">
+      <audioPlay :allBackground="false" />
+    </section>
   </div>
 </template>
 <style lang="scss" scoped>
@@ -40,9 +68,13 @@
     }
   }
 
+  .section_audio {
+    position: relative;
+  }
+
   .section_loading {
     position: relative;
-    height: 70vh;
+    height: 50vh;
     #load {
       width: 50rem;
       height: 36px;
@@ -54,6 +86,15 @@
       -ms-user-select: none;
       user-select: none;
       cursor: default;
+
+      &.birthday > div {
+        color: #f00;
+      }
+
+      & > div {
+        color: #10a0f3;
+      }
+
       div {
         position: absolute;
         width: 20px;
@@ -69,7 +110,6 @@
         -o-transform: rotate(180deg);
         -moz-transform: rotate(180deg);
         -webkit-transform: rotate(180deg);
-        color: #35c4f0;
 
         @for $i from 2 through 10 {
           &:nth-child(#{$i}) {

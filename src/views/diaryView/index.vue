@@ -136,8 +136,10 @@ const handleSave = async () => {
 </script>
 <template>
   <div class="container_note">
+    <!-- 日记本的列表 -->
     <div class="diaryNav">
       <ul class="diaryNav_main">
+        <!--  -->
         <li
           v-for="(item, index) in userDiary"
           :key="item.id"
@@ -159,7 +161,9 @@ const handleSave = async () => {
         </li>
       </ul>
     </div>
+    <!-- 日记本区域 -->
     <article>
+      <!-- 日记本的标题，具有快速编辑功能 -->
       <h2
         @mouseenter="handlePageTitleEdit()"
         :class="{ active: isEditPageTitle }"
@@ -186,7 +190,7 @@ const handleSave = async () => {
           v-model:content="diaryPage.content"
           :page="diaryPage.page"
           :diaryId="diary.id"
-          :placeholder="diaryStore.notePlaceholder"
+          :placeholder="messageStore.diaryPageConstant['HINTS']"
           :status="isAbleToEdit"
         />
       </Transition>

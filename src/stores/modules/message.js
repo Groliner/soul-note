@@ -27,14 +27,7 @@ export const useMessageStore = defineStore(
           LOAD_ERROR: '日记本 加载 失败',
           FIND_ERROR: '未日记本 找到 ',
 
-          DIARY_DESC_PLACEHOLDER: '请输入日记描述',
-          HINTS: `写日记的一些技巧： 1.
-                          crtl + z --> 撤销。
-                          crtl + y --> 重做。
-                          tab --> 写新段落。
-                          4. 请不要随意创建日记或页面。
-                          5. 当你离开时，你写下的所有内容都会自动保存在该区域。
-                          6. 只要有弹出提示，就会立即保存。`
+          DIARY_DESC_PLACEHOLDER: '请输入日记描述'
         },
         'en-US': {
           SAVE_SUCCESS: 'diary save success',
@@ -48,14 +41,7 @@ export const useMessageStore = defineStore(
           ADD_ERROR: 'diary add error',
           FIND_ERROR: 'diary not found',
 
-          DIARY_DESC_PLACEHOLDER: 'Please enter the diary description',
-          HINTS: `                 there are some tips for writing diary：
-                          1. crtl + z  --> undo.
-                          2. crtl + y --> redo.
-                          3. tab --> write a new paragraph.
-                          4. Please don't create a diary or a page at random.
-                          5. all you write down will auto save in the area when you go away.
-                          6. Anytime there's a pop-up alert asking it's saved immediately.`
+          DIARY_DESC_PLACEHOLDER: 'Please enter the diary description'
         }
       }
       return msg[userStore.selectLanguage]
@@ -77,7 +63,14 @@ export const useMessageStore = defineStore(
 
           DESC_PLACEHOLDER: '写你所想',
 
-          SAVED: '页 已保存'
+          SAVED: '页 已保存',
+          HINTS: `                 写日记的一些技巧： 
+                          1. crtl + z --> 撤销。
+                          2. crtl + y --> 重做。
+                          3. tab --> 写新段落。
+                          4. 请不要随意创建日记或页面。
+                          5. 当你离开时，你写下的所有内容都会自动保存在该区域。
+                          6. 只要有弹出提示，就会立即保存。`
         },
         'en-US': {
           SAVE_SUCCESS: 'diary page save success',
@@ -94,7 +87,14 @@ export const useMessageStore = defineStore(
 
           DESC_PLACEHOLDER: 'write down your past or thinking',
 
-          SAVED: 'page saved'
+          SAVED: 'page saved',
+          HINTS: `                 there are some tips for writing diary：
+                          1. crtl + z  --> undo.
+                          2. crtl + y --> redo.
+                          3. tab --> write a new paragraph.
+                          4. Please don't create a diary or a page at random.
+                          5. all you write down will auto save in the area when you go away.
+                          6. Anytime there's a pop-up alert asking it's saved immediately.`
         }
       }
       return msg[userStore.selectLanguage]
@@ -131,8 +131,20 @@ export const useMessageStore = defineStore(
       }
       return msg[userStore.selectLanguage]
     })
+    const tips = computed(() => {
+      const msg = {
+        'zh-CN': {
+          REFRESH_TIPS: '刷新页面可从数据库更新数据'
+        },
+        'en-US': {
+          REFRESH_TIPS: 'Refresh the page to update data from the database'
+        }
+      }
+      return msg[userStore.selectLanguage]
+    })
     return {
       message,
+      tips,
       homeConstant,
       diaryConstant,
       diaryPageConstant,

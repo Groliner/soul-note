@@ -22,3 +22,5 @@ export const updateBackgroundImg = (data) =>
 
 export const updateLastReadDiaryId = (data) =>
   request.put('user/lastReadDiaryId', data)
+
+export const getOnlineUsers = () => request.get('online-users')
