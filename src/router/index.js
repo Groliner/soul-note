@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-03-11 22:25:32
+ * @LastEditTime: 2024-08-12 18:02:16
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -164,13 +164,13 @@ router.beforeEach((to, from) => {
   const userStore = useUserStore()
   const messageStore = useMessageStore()
   const diaryStore = useDiaryStore()
-  // if (
-  //   !['home', 'login', 'test'].includes(to.name) &&
-  //   !userStore.isAuthenticated
-  // ) {
-  //   userStore.logout()
-  //   return { name: 'login' }
-  // }
+  if (
+    !['home', 'login', 'test', '404 not found', 'oauth'].includes(to.name) &&
+    !userStore.isAuthenticated
+  ) {
+    // userStore.logout()
+    return { name: 'login' }
+  }
   if (['account', 'diary'].includes(to.name)) {
     console.log(messageStore.tips['REFRESH_TIPS'])
     userStore.getUserDiaryStatus()

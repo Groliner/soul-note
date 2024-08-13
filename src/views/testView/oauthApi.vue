@@ -4,7 +4,7 @@ import {
   getAccessToken,
   login,
   introspectToken,
-  logout,
+  logout_,
   revokeToken,
   refreshToken,
   register,
@@ -31,35 +31,39 @@ const register_ = async () => {
 }
 
 const login_ = async () => {
-  const res = await login(username.value, password.value, remember.value)
+  const formData = new FormData()
+  formData.append('username', username.value)
+  formData.append('password', password.value)
+  formData.append('remember-me', remember.value)
+  const res = await login(formData)
 }
-const logout_ = async () => {
-  const res_ = await revokeToken(token.value.access_token)
-  const res__ = await revokeToken(token.value.refresh_token, 'refresh_token')
-  const res___ = await logout()
+const logout = async () => {
+  const res_ = revokeToken(token.value.access_token)
+  const res__ = revokeToken(token.value.refresh_token, 'refresh_token')
+  const res___ = await logout_()
 }
 const authorize_ = async () => {
   const res = await getAuthorizationCode()
-  if (res.data.code) {
+  if (res.data.code == 1) {
     code.value = res.data.data.code
   }
 }
 const getAccessToken_ = async () => {
   const res = await getAccessToken(code.value)
-  if (res.data.code) {
+  if (res.data.code == 1) {
     token.value = res.data.data
   }
 }
 
 const introspectToken_ = async () => {
   const res = await introspectToken(token.value.access_token)
-  if (res.data.code) {
+  if (res.data.code == 1) {
     introspect_.value = res.data.data
   }
 }
 const refreshToken_ = async () => {
   const res = await refreshToken(token.value.refresh_token)
-  if (res.data.code) {
+  if (res.data.code == 1) {
     token.value = res.data.data
   }
 }
@@ -95,7 +99,7 @@ const getOnlineUsers_ = async () => {
     <p>{{ introspect_ }}</p>
     <button @click="refreshToken_">refreshToken</button>
     <p>{{ token.refresh_token }}</p>
-    <button @click="logout_">logout</button>
+    <button @click="logout">logout</button>
     <button @click="getUserInfo_">getUserInfo</button>
     <button @click="getOnlineUsers_">getOnlineUsers</button>
   </div>

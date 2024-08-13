@@ -44,6 +44,7 @@ const props = defineProps({
     type: String
   }
 })
+const emit = defineEmits(['save'])
 const textareaRef = ref(null)
 let undoStack = [
   {
@@ -85,6 +86,9 @@ const pretty = () => {
 }
 onMounted(() => {
   pretty()
+  // window.addEventListener('scroll', (event) => {
+  //   console.log(window.scrollY)
+  // })
 })
 watch(
   () => [props.diaryId, props.page],
@@ -101,22 +105,15 @@ function autoExpand(event, scroll_distance = -1) {
   // 然后设置为scrollHeight以适应内容
   textarea.style.height = textarea.scrollHeight + 'px'
   window.scrollTo(0, y)
-
   nextTick(() => {
     if (scroll_distance === -1) {
       const remaining_lines_match = textareaRef.value.value
         .substring(diaryContext.value.selectionEnd)
         .match(/\n/g)
-      const remaining_lines = remaining_lines_match
-        ? remaining_lines_match.length
-        : 0
+      const remaining_lines = remaining_lines_match ? remaining_lines_match.length : 0
       // 检查是否需要滚动以保持视线
-      const viewBottom =
-        textarea.getBoundingClientRect().bottom + window.innerHeight * 0.17
-      scroll_distance =
-        remaining_lines < 5
-          ? window.scrollY + viewBottom - window.innerHeight
-          : -1
+      const viewBottom = textarea.getBoundingClientRect().bottom + window.innerHeight * 0.17
+      scroll_distance = remaining_lines <= 3 ? window.scrollY + viewBottom - window.innerHeight : -1
     }
     if (scroll_distance > -1 && textareaRef.value.value) {
       gsap.to(window, {
@@ -128,19 +125,16 @@ function autoExpand(event, scroll_distance = -1) {
     }
   })
   diaryContext.value.height = textarea.scrollHeight
-  diaryContext.value.words = diaryContent.value
-    .replace(/\s+/g, '')
-    .trim().length
+  diaryContext.value.words = event.target.value.replace(/\s+/g, '').trim().length
   diaryContext.value.isEdited = true
 }
 
 function handleInput(event) {
   if (event.isComposing) return // 处理中文输入法,取消输入法输入时的事件
+
   const text = event.target.value
-  const selectionStart = (diaryContext.value.selectionStart =
-    event.target.selectionStart)
-  const selectionEnd = (diaryContext.value.selectionEnd =
-    event.target.selectionEnd)
+  const selectionStart = (diaryContext.value.selectionStart = event.target.selectionStart)
+  const selectionEnd = (diaryContext.value.selectionEnd = event.target.selectionEnd)
   const scrollY = (diaryContext.value.scrollY = window.scrollY)
   if (currentIndex < undoStack.length - 1) {
     undoStack.splice(currentIndex + 1)
@@ -152,11 +146,11 @@ function handleInput(event) {
 }
 
 function handleKeyDown(event) {
-  if (event.ctrlKey && event.key === 'z') {
+  if (event.ctrlKey && event.key.toLowerCase() === 'z') {
     // 撤销 (Ctrl + Z)
     event.preventDefault()
     undo(event)
-  } else if (event.ctrlKey && event.key === 'y') {
+  } else if (event.ctrlKey && event.key.toLowerCase() === 'y') {
     // 重做 (Ctrl + Y)
     event.preventDefault()
     redo(event)
@@ -164,20 +158,28 @@ function handleKeyDown(event) {
     // 插入9空格作为新段落的段首缩进，并扩展高度
     event.preventDefault()
     insertTabAndExpand(event)
+  } else if (event.ctrlKey && event.key.toLowerCase() === 's') {
+    // 保存 (Ctrl + S)
+    event.preventDefault()
+    emit('save')
+  } else if (event.key === 'Enter') {
+    // 换行 (Enter)
+    event.preventDefault()
+    insertTabAndExpand(event, '\n')
   }
   textareaRef.value.focus()
 }
 // 插入9空格作为新段落的段首缩进，并扩展高度
-function insertTabAndExpand(event) {
+function insertTabAndExpand(event, space = '\n         ') {
   const start = event.target.selectionStart
   const end = event.target.selectionEnd
   const beforeText = diaryContent.value.substring(0, start)
   const afterText = diaryContent.value.substring(end)
 
-  diaryContent.value = beforeText + '\n         ' + afterText
+  diaryContent.value = beforeText + space + afterText
   handleInput(event)
   // 更新光标位置
-  const newPos = start + 10 // 跳过换行符和两个空格
+  const newPos = start + space.length // 跳过换行符和两个空格
   nextTick(() => {
     event.target.selectionStart = event.target.selectionEnd = newPos
     autoExpand(event)
@@ -225,11 +227,7 @@ textarea {
   font-size: 2rem; /* 字体大小 */
   width: 100%;
   background-color: $diaryPageColor; /* 保留日记本背景色 */
-  background-image: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.1) 1.2px,
-    transparent 1.6px
-  );
+  background-image: linear-gradient(to top, rgba(0, 0, 0, 0.1) 1.2px, transparent 1.6px);
   background-size: 100% 2em; /* 调整这里以匹配你的行高 */
   border: none; /* 无边框 */
   outline: none; /* 点击时不显示轮廓线 */
@@ -241,6 +239,8 @@ textarea {
   word-wrap: break-word; /* 自动换行 */
   line-height: 2em; /* 调整行高以匹配背景横线 */
   overflow: hidden;
+
+  caret-color: red; /* 光标颜色 */
 
   @media screen and (max-width: 1200px) {
     padding: 12px;

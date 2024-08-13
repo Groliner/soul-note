@@ -115,8 +115,7 @@ const updateCurrTime = () => {
   if (durMinutes.value < 10) durMinutes.value = '0' + durMinutes.value
   if (durSeconds.value < 10) durSeconds.value = '0' + durSeconds.value
 
-  if (isNaN(curMinutes.value) || isNaN(curSeconds.value))
-    tProgress.value = '00:00'
+  if (isNaN(curMinutes.value) || isNaN(curSeconds.value)) tProgress.value = '00:00'
   else tProgress.value = `${curMinutes.value}:${curSeconds.value}`
 
   if (isNaN(durMinutes.value) || isNaN(durSeconds.value)) tTime.value = '00:00'
@@ -185,9 +184,7 @@ const selectTrack = (flag) => {
       checkBuffering()
     }
 
-    document
-      .getElementById(albumArtworks[currIndex.value])
-      .classList.add('active')
+    document.getElementById(albumArtworks[currIndex.value]).classList.add('active')
   } else {
     if (flag === 0 || flag === 1) {
       currIndex.value = -1
@@ -234,12 +231,7 @@ const volumeClickedPos = () => {
   volumeHideHover()
 }
 
-import {
-  PhPause,
-  PhPlay,
-  PhCaretLineLeft,
-  PhCaretLineRight
-} from '@phosphor-icons/vue'
+import { PhPause, PhPlay, PhCaretLineLeft, PhCaretLineRight } from '@phosphor-icons/vue'
 
 const props = defineProps({
   allBackground: {
@@ -276,16 +268,8 @@ const props = defineProps({
             <div id="ins-time" ref="insTime" :style="{ left: `${seekT}px` }">
               {{ hoverTime }}
             </div>
-            <div
-              id="s-hover"
-              ref="sHover"
-              :style="{ width: `${seekT}px` }"
-            ></div>
-            <div
-              id="seek-bar"
-              ref="seekBar"
-              :style="{ width: `${playProgress}%` }"
-            ></div>
+            <div id="s-hover" ref="sHover" :style="{ width: `${seekT}px` }"></div>
+            <div id="seek-bar" ref="seekBar" :style="{ width: `${playProgress}%` }"></div>
           </div>
         </div>
       </div>
@@ -297,16 +281,8 @@ const props = defineProps({
           @mouseleave="volumeHideHover"
           @click="volumeClickedPos"
         >
-          <div
-            id="volume-hover"
-            ref="volumeHover"
-            :style="{ height: `${seekVolume}px` }"
-          ></div>
-          <div
-            id="volume-bar"
-            ref="volumeBar"
-            :style="{ height: `${volume * 100}%` }"
-          ></div>
+          <div id="volume-hover" ref="volumeHover" :style="{ height: `${seekVolume}px` }"></div>
+          <div id="volume-bar" ref="volumeBar" :style="{ height: `${volume * 100}%` }"></div>
         </div>
         <div id="album-art" ref="albumArt">
           <img

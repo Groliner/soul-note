@@ -12,11 +12,7 @@ watch(show, (newVal, oldVal) => {
       display: 'block',
       ease: 'Power2.easeInOut'
     })
-    gsap.fromTo(
-      '.nav',
-      { xPercent: -100 },
-      { xPercent: 0, display: 'block', ease: 'Expo.easeOut' }
-    )
+    gsap.fromTo('.nav', { xPercent: -100 }, { xPercent: 0, display: 'block', ease: 'Expo.easeOut' })
     gsap.from('.nav li', {
       opacity: 0,
       y: 20,
@@ -59,14 +55,13 @@ onMounted(() => {
 
 import { ElMessage } from 'element-plus'
 import { messageManager } from '@/directives/index'
-import router from '@/router'
 
 // 检查是否登录
 const userStore = useUserStore()
 const logout = () => {
-  if (userStore.userInfo.token) {
+  // console.log(userStore.isAuthenticated)
+  if (userStore.isAuthenticated) {
     userStore.logout()
-    router.push('/home')
   } else {
     ElMessage.error('You are not logged in')
   }
@@ -116,7 +111,7 @@ console.log()
         </li>
       </ul>
       <div class="nav_divider"></div>
-      <ul class="nav_sub" v-if="userStore.userInfo.token">
+      <ul class="nav_sub" v-if="userStore.isAuthenticated === true">
         <li>
           <RouterLink class="nav_link" active-class="active" to="/account">
             {{ userStore.selectLanguage === 'en-US' ? 'Account' : '账户' }}

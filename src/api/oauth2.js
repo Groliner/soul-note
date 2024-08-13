@@ -1,15 +1,16 @@
+/*
+ * @Author: Gro lin
+ * @Date: 2024-08-09 12:19:25
+ * @LastEditors: Gro lin
+ * @LastEditTime: 2024-08-11 20:27:33
+ */
 import oauth2Request from '@/utils/oauth2Request'
 
-export const login = (username, password, remember) =>
-  oauth2Request.post('login', {
-    username,
-    password,
-    'remember-me': remember
-  })
+export const login = (data) => oauth2Request.post('login', data)
 
 export const register = (data) => oauth2Request.put('user/register', data)
 
-export const logout = () => oauth2Request.post('logout')
+export const logout_ = () => oauth2Request.post('logout')
 
 export const getAuthorizationCode = () =>
   oauth2Request.get(
@@ -31,12 +32,12 @@ export const getAccessToken = (code) =>
     }
   )
 
-export const refreshToken = (refreshToken) =>
+export const refreshToken = (reToken) =>
   oauth2Request.post(
     'oauth2/token',
     {
       grant_type: 'refresh_token',
-      refresh_token: refreshToken
+      refresh_token: reToken
     },
     {
       headers: {

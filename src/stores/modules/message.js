@@ -23,6 +23,7 @@ export const useMessageStore = defineStore(
 
           SAVE_ERROR: '日记本 保存 失败',
           DELETE_ERROR: '日记本 删除 失败',
+          DELETE_WARNING: '第一个日记本 无法 删除 ',
           ADD_ERROR: '日记本 添加 失败',
           LOAD_ERROR: '日记本 加载 失败',
           FIND_ERROR: '未日记本 找到 ',
@@ -37,6 +38,7 @@ export const useMessageStore = defineStore(
 
           SAVE_ERROR: 'diary save error',
           DELETE_ERROR: 'diary delete error',
+          DELETE_WARNING: 'The first diary cannot be deleted',
           LOAD_ERROR: 'diary load error',
           ADD_ERROR: 'diary add error',
           FIND_ERROR: 'diary not found',
@@ -111,22 +113,28 @@ export const useMessageStore = defineStore(
           LOG_OUT_ERROR: '退出失败',
           SAVE_ERROR: '账号 保存 失败',
           LOAD_ERROR: '账号信息 加载 失败',
+          AUTHORIZE_ERROR: '授权失败，请重新登录',
 
           ACCOUNT_WORDS_LOAD_ERROR: '字数记录 加载 失败',
-          BACKGROUND_IMG_LOAD_ERROR: '背景 加载 失败'
+          BACKGROUND_IMG_LOAD_ERROR: '背景 加载 失败',
+
+          SESSION_EXPIRED: '会话过期，请重新登录'
         },
         'en-US': {
           DEVELOP_FRIEND_SYSTEM: 'The friend system is developing ...',
           LOG_OUT_SUCCESS: 'Log out success',
           SAVE_SUCCESS: 'account save success',
+          LOAD_SUCCESS: 'account load success',
           BACKGROUND_IMG_UPLOAD_SUCCESS: 'background set success',
 
           LOG_OUT_ERROR: 'Log out error',
           SAVE_ERROR: 'account save error',
           LOAD_ERROR: 'account load error',
+          AUTHORIZE_ERROR: 'Authorize error, please login again',
 
           ACCOUNT_WORDS_LOAD_ERROR: 'word count load error',
-          BACKGROUND_IMG_LOAD_ERROR: 'background image load error'
+          BACKGROUND_IMG_LOAD_ERROR: 'background image load error',
+          SESSION_EXPIRED: 'Session expired, please login again'
         }
       }
       return msg[userStore.selectLanguage]

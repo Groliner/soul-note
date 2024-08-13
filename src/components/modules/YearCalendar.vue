@@ -97,7 +97,7 @@ const months = computed(() => {
     const daysInMonth = getDaysInMonth(index + 1, year)
     const days = Array.from({ length: daysInMonth }, (_, i) => {
       const dayDate = formatTimeToDate(new Date(year, index, i + 1))
-      const index_ = userWordCount.value.length
+      const index_ = userWordCount.value?.length
         ? userWordCount.value.findIndex((dv) => dv.date === dayDate)
         : -1
 
@@ -105,10 +105,7 @@ const months = computed(() => {
       return {
         day: i + 1,
         value: index_ !== -1 ? userWordCount.value[index_].wordCount : null,
-        color:
-          index_ !== -1
-            ? getColor(userWordCount.value[index_].wordCount)
-            : null,
+        color: index_ !== -1 ? getColor(userWordCount.value[index_].wordCount) : null,
         isToday
       }
     })

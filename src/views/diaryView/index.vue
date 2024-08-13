@@ -10,17 +10,10 @@ const messageStore = useMessageStore()
 const { userDiary, userInfo, userPreferences } = storeToRefs(userStore)
 const lastReadDiaryId = computed(() => userInfo.value.lastReadDiaryId)
 const diaryStore = useDiaryStore()
-const userDiaryStatus = computed(() =>
-  userStore.getLocalUserDiaryStatus(lastReadDiaryId.value)
-)
-const diary = computed(() =>
-  diaryStore.getLocalDiaryById(lastReadDiaryId.value)
-)
+const userDiaryStatus = computed(() => userStore.getLocalUserDiaryStatus(lastReadDiaryId.value))
+const diary = computed(() => diaryStore.getLocalDiaryById(lastReadDiaryId.value))
 const diaryPage = computed(() =>
-  diaryStore.getLocalPageByDiaryId(
-    lastReadDiaryId.value,
-    userDiaryStatus.value.lastReadPage
-  )
+  diaryStore.getLocalPageByDiaryId(lastReadDiaryId.value, userDiaryStatus.value.lastReadPage)
 )
 import { useRoute } from 'vue-router'
 const route = useRoute()
@@ -44,18 +37,20 @@ const observer = new ResizeObserver((entries) => {
 onMounted(() => {
   // 开始观察<span>元素
   observer.observe(pageTitleInputMirrorRef.value)
-  if (route.query.diaryId && route.query.page) {
-    const diaryId = parseInt(route.query.diaryId)
-    const lastReadPage = parseInt(route.query.page)
-    userStore.setLocalLastReadDiaryId(diaryId)
-    userStore.updateLocalUserDiaryStatus(
-      {
-        diaryId,
-        lastReadPage
-      },
-      false
-    )
-  }
+
+  // 直接在跳转前设置相关状态，这里不再需要
+  // if (route.query.diaryId && route.query.page) {
+  //   const diaryId = parseInt(route.query.diaryId)
+  //   const lastReadPage = parseInt(route.query.page)
+  //   userStore.setLocalLastReadDiaryId(diaryId)
+  //   userStore.updateLocalUserDiaryStatus(
+  //     {
+  //       diaryId,
+  //       lastReadPage
+  //     },
+  //     false
+  //   )
+  // }
 })
 // 记得在组件卸载时停止观察
 onUnmounted(() => {
@@ -71,8 +66,7 @@ const handlePageTitleEdit = () => {
   if (!isAbleToEdit.value) return
   originalTitle.value = diaryPage.value.title
   isEditPageTitle.value = true
-  pageTitleInputRef.value.style.width =
-    pageTitleInputMirrorRef.value.offsetWidth + 8 + 'px'
+  pageTitleInputRef.value.style.width = pageTitleInputMirrorRef.value.offsetWidth + 8 + 'px'
   // 此处聚焦要延时,否则无法聚焦,但是会引入魔法延迟
   // setTimeout(() => {
   //   pageTitleInputRef.value.focus()
@@ -84,8 +78,7 @@ const handlePageTitleEdit = () => {
 }
 const handlePageTitleSave = () => {
   isEditPageTitle.value = false
-  if (diaryPage.value.title !== originalTitle.value)
-    diaryPage.value.context.isEdited = true // 记录编辑状态
+  if (diaryPage.value.title !== originalTitle.value) diaryPage.value.context.isEdited = true // 记录编辑状态
 }
 
 //编辑日记本
@@ -110,10 +103,7 @@ const handDiaryEditClick = (diaryId) => {
 }
 watch(
   [() => userDiaryStatus.value.lastReadPage, lastReadDiaryId],
-  (
-    [newLastReadPage, newLastReadDiaryId],
-    [oldLastReadPage, oldLastReadDiaryId]
-  ) => {
+  ([newLastReadPage, newLastReadDiaryId], [oldLastReadPage, oldLastReadDiaryId]) => {
     diaryStore.savePage(oldLastReadDiaryId, oldLastReadPage)
     if (newLastReadDiaryId !== oldLastReadDiaryId) {
       userStore.setLocalLastReadDiaryId(newLastReadDiaryId)
@@ -140,11 +130,7 @@ const handleSave = async () => {
     <div class="diaryNav">
       <ul class="diaryNav_main">
         <!--  -->
-        <li
-          v-for="(item, index) in userDiary"
-          :key="item.id"
-          :data-index="index"
-        >
+        <li v-for="(item, index) in userDiary" :key="item.id" :data-index="index">
           <a
             class="nav_link"
             :class="{
@@ -164,10 +150,7 @@ const handleSave = async () => {
     <!-- 日记本区域 -->
     <article>
       <!-- 日记本的标题，具有快速编辑功能 -->
-      <h2
-        @mouseenter="handlePageTitleEdit()"
-        :class="{ active: isEditPageTitle }"
-      >
+      <h2 @mouseenter="handlePageTitleEdit()" :class="{ active: isEditPageTitle }">
         <p v-show="isAbleToEdit" class="sub__">--</p>
         <input
           ref="pageTitleInputRef"
@@ -176,11 +159,9 @@ const handleSave = async () => {
           :class="{ hidden: !isEditPageTitle }"
           :disabled="!isAbleToEdit"
         />
-        <span
-          ref="pageTitleInputMirrorRef"
-          :class="{ hidden: isEditPageTitle }"
-          >{{ diaryPage.title || '"Untitled"' }}</span
-        >
+        <span ref="pageTitleInputMirrorRef" :class="{ hidden: isEditPageTitle }">{{
+          diaryPage.title || '"Untitled"'
+        }}</span>
         <p v-show="isAbleToEdit" class="sup__">--</p>
       </h2>
 
@@ -192,6 +173,7 @@ const handleSave = async () => {
           :diaryId="diary.id"
           :placeholder="messageStore.diaryPageConstant['HINTS']"
           :status="isAbleToEdit"
+          @save="handleSave"
         />
       </Transition>
     </article>

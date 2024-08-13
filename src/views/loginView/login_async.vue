@@ -41,6 +41,13 @@ const props = defineProps({
         placeholder: 'Password (More than 5 characters)',
         autocomplete: 'off',
         regex: '^\\S{6,}$'
+      },
+      {
+        id: 'captcha',
+        type: 'text',
+        placeholder: 'captcha (Only 4 characters)',
+        autocomplete: 'off',
+        regex: '^\\S{4}$'
       }
     ]
   },
@@ -61,13 +68,6 @@ const props = defineProps({
         placeholder: 'Password ',
         autocomplete: 'off',
         regex: '^\\S{6,}$'
-      },
-      {
-        id: 'captcha',
-        type: 'text',
-        placeholder: 'captcha (Only 4 characters)',
-        autocomplete: 'off',
-        regex: '^\\S{4}$'
       }
     ]
   }
@@ -87,12 +87,11 @@ const setRefArray = (el, index) => {
 watch(inputArray, () => {
   // 由于refArray绑定的input取决于位置,并且setRefArray执行时机比较晚,所以此处更新input.value根据最新的inputArray
   // console.log('侦测到模式转换,开始规则refArray', totalSteps.value)
+  refArray.length = totalSteps.value
   refArray.forEach((inner, index) => {
     const key = inputArray.value[index].id
     inner.value.value =
-      responseData.value?.data && key in responseData.value.data
-        ? responseData.value.data[key]
-        : ''
+      responseData.value?.data && key in responseData.value.data ? responseData.value.data[key] : ''
   })
 })
 const finishedStep = ref(0)
@@ -108,6 +107,7 @@ const handleHover = (el) => {
   if (el.target.classList.contains('up')) {
     inputArray.value = props.signUp
     isSignUp.value = true
+    remember.value = false
   }
   if (el.target.classList.contains('down')) {
     inputArray.value = props.logIn
@@ -121,8 +121,7 @@ const handleHover = (el) => {
 }
 const handleOut = () => {
   // console.log(responseData.value.data)
-  isHover.value =
-    stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
+  isHover.value = stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
 
   if (responseData.value?.data && !isFinished.value) {
     responseData.value.data = undefined
@@ -155,14 +154,9 @@ watch(stepNumber, (new_step, old_step) => {
 const moveToNextStep = () => {
   if (!nextAction.value.classList.contains('active')) return
   stepNumber.value =
-    finishedStep.value >= stepNumber.value
-      ? stepNumber.value + 1
-      : finishedStep.value + 1
+    finishedStep.value >= stepNumber.value ? stepNumber.value + 1 : finishedStep.value + 1
   progress.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
-  if (
-    finishedStep.value >= totalSteps.value &&
-    stepNumber.value > totalSteps.value
-  ) {
+  if (finishedStep.value >= totalSteps.value && stepNumber.value > totalSteps.value) {
     isFinished.value = true
     setTimeout(handleFinished, 500)
   }
@@ -189,10 +183,7 @@ const reset = (change = true, toStep = '1') => {
   stepNumber.value =
     toStep === '1'
       ? 1
-      : Math.max(
-          inputArray.value.findIndex((item) => item.id === toStep) + 1,
-          1
-        )
+      : Math.max(inputArray.value.findIndex((item) => toStep.contains(item.id)) + 1, 1)
   if (change) {
     inputArray.value = props.logIn
     isSignUp.value = false
@@ -211,6 +202,10 @@ const handleFinished = () => {
   if (isSignUp.value) handleSignUp(resetTween)
   else handleLogIn(resetTween)
 }
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
 const handleAnimation = () => {
   const tl = gsap.timeline()
   gsap.set('#working', {
@@ -243,11 +238,11 @@ const handleAnimation = () => {
     }
   })
 
-  return function (result = false, latency = 2) {
+  return function (result = 0, latency = 2) {
     // console.log('是否注册', isSignup, '是否成功', result, '延迟', latency)
     setTimeout(() => {
       tween.play()
-      if (!result.code) {
+      if (result !== 1) {
         reset(false, result.msg)
       } else {
         if (isSignUp.value)
@@ -266,6 +261,13 @@ const handleAnimation = () => {
     }, latency * 1000)
   }
 }
+
+import { useUserStore } from '@/stores'
+const userStore = useUserStore()
+import { login, register } from '@/api/oauth2'
+
+const remember = ref(false)
+// 异步请求
 const handleSignUp = async (resetTween) => {
   const formData = new FormData()
   refArray.forEach((item) => {
@@ -273,56 +275,9 @@ const handleSignUp = async (resetTween) => {
   })
   responseData.value.data = Object.fromEntries(formData)
   //发送数据等待返回
-  const res = await signup(formData)
-  // console.log('handleSignUp:res', res)
-  // 将formData数据存入responseData对象
-  resetTween(res, 0.5)
-}
-const handleLogIn = async (resetTween) => {
-  const formData = new FormData()
-  refArray.forEach((item) => {
-    formData.append(item.value.name, item.value.value)
-  })
-  const res = await login(formData)
-  // console.log('handleLogIn:res', res)
-  resetTween(res, 0.5)
-}
-
-// 异步请求
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores'
-import { loginAPI, signUpAPI, getCaptchaAPI } from '@/api/user'
-import { ElMessage } from 'element-plus'
-const router = useRouter()
-const userStore = useUserStore()
-const login = async (formData) => {
-  const captcha = await getCaptchaAPI()
-    .then((res) => res.data.data.captchaCode)
-    .catch((err) => {
-      ElMessage.error(err.data?.msg || err.message)
-    })
-  console.log(captcha)
-  return await loginAPI(formData)
+  const code = await register(formData)
     .then((res) => {
-      if (res.data.code) {
-        userStore.login(res.data.data)
-        ElMessage({ type: 'success', message: 'Login successfully' })
-      } else {
-        ElMessage({
-          type: 'warning',
-          message: res.data.msg || 'Incorrect username or password'
-        })
-      }
-      return res.data
-    })
-    .catch((err) => {
-      ElMessage.error(err.data?.msg || err.message)
-    })
-}
-const signup = async (formData) => {
-  return await signUpAPI(formData)
-    .then((res) => {
-      if (res.data.code) {
+      if (res.data.code == 1) {
         ElMessage({ type: 'success', message: 'Signup successfully' })
       } else {
         ElMessage({
@@ -330,11 +285,45 @@ const signup = async (formData) => {
           message: res.data.msg || 'User creation failed'
         })
       }
-      return res.data
+      return res.data.code
     })
     .catch((err) => {
-      ElMessage.error(err.data?.msg || err.data.message)
+      ElMessage.error(err.response.data?.msg || err.data.message)
     })
+    .finally(() => {
+      return 0
+    })
+  // console.log('handleSignUp:res', res)
+  // 将formData数据存入responseData对象
+  resetTween(code, 0.5)
+}
+const handleLogIn = async (resetTween) => {
+  const formData = new FormData()
+  refArray.forEach((item) => {
+    formData.append(item.value.name, item.value.value)
+  })
+  formData.append('remember-me', remember.value)
+  const code = await login(formData)
+    .then((res) => {
+      if (res.data.code === 1) {
+        userStore.login(remember.value)
+        ElMessage({ type: 'success', message: 'Login successfully' })
+      } else {
+        ElMessage({
+          type: 'warning',
+          message: res.data.msg || 'Incorrect username or password'
+        })
+      }
+      return res.data.code
+    })
+    .catch((err) => {
+      ElMessage.error(err.response?.data?.msg || err.message)
+    })
+    .finally(() => {
+      return 0
+    })
+  // console.log('handleLogIn:res', res)
+  resetTween(code, 0.5)
 }
 </script>
 <template>
@@ -345,13 +334,11 @@ const signup = async (formData) => {
     @mouseover="handleHover"
     @mouseleave="handleOut"
   >
-    <h1 id="heading" class="up" :class="{ inactive: !isSignUp && isHover }">
-      Sign Up
-    </h1>
+    <h1 id="heading" class="up" :class="{ inactive: !isSignUp && isHover }">Sign Up</h1>
 
     <form method="post" action="" autocomplete="off">
       <div id="inp-box-cover">
-        <div id="inp-padd">
+        <div id="inp-padd" :class="{ rememberMe: remember }">
           <div
             class="inp-box"
             :class="{
@@ -398,9 +385,7 @@ const signup = async (formData) => {
               Working<ph-arrows-clockwise class="loading" weight="bold" />
             </div>
             <div id="acc-success" v-show="!load">
-              <p>
-                Account Created<ph-check-fat class="checkout" weight="fill" />
-              </p>
+              <p>Account Created<ph-check-fat class="checkout" weight="fill" /></p>
               <span id="init-login" @click="reset">Login now</span>
             </div>
           </div>
@@ -410,6 +395,13 @@ const signup = async (formData) => {
 
     <h1 id="heading" class="down" :class="{ inactive: isHover && isSignUp }">
       Log In
+      <div
+        class="remember-box"
+        :class="{ active: isHover && stepNumber > 1 && totalSteps >= stepNumber }"
+      >
+        <input id="remember-me" type="checkbox" v-model="remember" />
+        <label for="remember-me">Remember me</label>
+      </div>
     </h1>
   </div>
 </template>
@@ -460,6 +452,32 @@ input {
   transition: 0.5s cubic-bezier(0.65, 0.05, 0.36, 1) all;
   &.down {
     padding-top: 1rem;
+    position: relative;
+
+    .remember-box {
+      position: absolute;
+      top: 8%;
+      left: 48%;
+      font-size: 1.4rem;
+      height: 1rem;
+      color: #3c5259;
+      display: none;
+
+      label {
+        cursor: pointer;
+        transition: color 0.3s ease;
+        white-space: nowrap;
+        margin-right: 1rem;
+        line-height: 50%;
+        &:hover {
+          color: chocolate;
+        }
+      }
+      &.active {
+        display: flex;
+        flex-flow: row-reverse;
+      }
+    }
   }
   &.inactive {
     opacity: 0;
@@ -491,6 +509,10 @@ input {
   left: 0;
   width: 100%;
   height: 100%;
+  transition: background-color 0.4s ease;
+  &.rememberMe {
+    background-color: #f8eed7;
+  }
 }
 .inp-box {
   height: fit-content;

@@ -5,12 +5,7 @@ import { formatTimeToDate } from '@/composables/formatTime'
 import { useUserStore } from './user'
 import { useMessageStore } from './message'
 import { ElMessage } from 'element-plus'
-import {
-  addDiaryAPI,
-  deleteDiaryAPI,
-  getDiaryListAPI,
-  updateDiaryAPI
-} from '@/api/diary'
+import { addDiaryAPI, deleteDiaryAPI, getDiaryListAPI, updateDiaryAPI } from '@/api/diary'
 import {
   getDiaryPageListAPI,
   addDiaryPageAPI,
@@ -84,7 +79,7 @@ export const useDiaryStore = defineStore(
     }
     const getDiary = async () => {
       const res = await getDiaryListAPI()
-      if (res.data.data) {
+      if (res.data.code == 1) {
         diary.value = res.data.data.map((item) => {
           item.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
           return item
@@ -99,7 +94,7 @@ export const useDiaryStore = defineStore(
     }
     const getDiaryPage = async (diaryId) => {
       const res = await getDiaryPageListAPI({ diaryId })
-      if (res.data.data.length > 0) {
+      if (res.data.data.length > 0 && res.data.code == 1) {
         diaryPages.value[diaryId] = res.data.data.map((item) => {
           item.diaryPageContext.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
           return { ...item.diaryPage, context: item.diaryPageContext }
@@ -112,11 +107,10 @@ export const useDiaryStore = defineStore(
 
     const addPage = async (diaryId) => {
       const index = diary.value.findIndex((item) => item.id === diaryId)
-      const res = await addDiaryPageAPI({
-        diaryId,
+      const res = await addDiaryPageAPI(diaryId, {
         page: ++diary.value[index].pages
       })
-      if (res.data.data) {
+      if (res.data.code == 1) {
         const diaryPage_ = res.data.data
         diaryPage_.diaryPageContext.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
         diaryPages.value[diaryId].push({
@@ -134,7 +128,7 @@ export const useDiaryStore = defineStore(
     const addDiary = async () => {
       const userStore = useUserStore()
       const res = await addDiaryAPI()
-      if (res.data.data) {
+      if (res.data.code == 1) {
         const diary_ = res.data.data
         diary_.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
         const res_ = await getDiaryPage(diary_.id)
@@ -146,8 +140,10 @@ export const useDiaryStore = defineStore(
 
           return diary_.id
         }
+      } else {
+        ElMessage.error(messageStore.diaryConstant['ADD_ERROR'])
       }
-      ElMessage.error(messageStore.diaryConstant['ADD_ERROR'])
+
       return false
     }
     const deletePage = async (id, page) => {
@@ -157,17 +153,16 @@ export const useDiaryStore = defineStore(
         ElMessage.error(messageStore.diaryPageConstant['DELETE_FIRST_ERROR'])
         return false
       } else if (index !== -1 && pageList[index].context.words) {
-        ElMessage.error(
-          messageStore.diaryPageConstant['DELETE_WITH_CONTENT_ERROR']
-        )
+        ElMessage.error(messageStore.diaryPageConstant['DELETE_WITH_CONTENT_ERROR'])
         return false
       } else {
-        const res = await deleteDiaryPageAPI(pageList[index].id)
-        if (res.data.code) {
+        const res = await deleteDiaryPageAPI(pageList[index].diaryId, {
+          ids: [pageList[index].id]
+        })
+        if (res.data.code == 1) {
           // 保持最后阅读页码不会超过删除的页码,与后端同步
           const userStore = useUserStore()
-          const lastReadPage =
-            userStore.getLocalUserDiaryStatus(id).lastReadPage
+          const lastReadPage = userStore.getLocalUserDiaryStatus(id).lastReadPage
           const maxPage = --diary.value.find((item) => item.id === id).pages
           if (maxPage < lastReadPage)
             userStore.updateLocalUserDiaryStatus({
@@ -187,28 +182,32 @@ export const useDiaryStore = defineStore(
       const index = diary.value.findIndex((item) => item.id === id)
       if (index !== -1 && index !== 1) {
         const res = await deleteDiaryAPI(id)
-        if (res.data.code) {
+        if (res.data.code == 1) {
           const title = diary.value[index].title
           const userStore = useUserStore()
           userStore.deleteLocalUserDiaryStatus(id)
           diary.value.splice(index, 1)
           diaryPages.value[id] = []
 
-          ElMessage.success(
-            title + messageStore.diaryConstant['DELETE_SUCCESS']
-          )
+          ElMessage.success(title + messageStore.diaryConstant['DELETE_SUCCESS'])
           return true
         }
+        ElMessage.error(messageStore.diaryConstant['DELETE_ERROR'])
+      } else {
+        ElMessage.error(messageStore.diaryConstant['DELETE_WARNING'])
       }
-      ElMessage.error(messageStore.diaryConstant['DELETE_ERROR'])
+
       return false
     }
     const saveDiary = async (diaryId, isMust = false) => {
       const index = diary.value.findIndex((item) => item.id == diaryId)
-      if ((index !== -1 && diary.value[index].isEdited) || isMust) {
-        const res = await updateDiaryAPI(diary.value[index])
-        if (res.data.code) {
+      const diary_ = diary.value[index]
+      if ((index !== -1 && diary_.isEdited) || isMust) {
+        const res = await updateDiaryAPI(diary_.id, diary_)
+        if (res.data.code == 1) {
           diary.value[index].isEdited = false
+          const userStore = useUserStore()
+          userStore.setLocalLastReadDiaryId(diaryId)
           ElMessage.success(messageStore.diaryConstant['SAVE_SUCCESS'])
           return true
         }
@@ -217,14 +216,12 @@ export const useDiaryStore = defineStore(
     }
     const savePage = async (diaryId, page, isMust = false) => {
       const pageList = diaryPages.value[diaryId]
-      if (pageList.length === 0) return // 判断是否页面列表为空,为空则不保存
+      if (!pageList) return // 判断是否页面列表为空,为空则不保存
       if (pageList === undefined) {
         ElMessage.info(messageStore.diaryConstant['FIND_ERROR'])
         return
       }
-      const index = pageList.findIndex(
-        (item) => item.diaryId == diaryId && item.page == page
-      )
+      const index = pageList.findIndex((item) => item.diaryId == diaryId && item.page == page)
       if (index === -1) {
         // 要保存的页面已经删除
         return
@@ -233,18 +230,28 @@ export const useDiaryStore = defineStore(
         return 2 // 判断是否编辑过,未编辑过则不保存
       }
       pageList[index].updatedTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
-      const res = await updateDiaryPageAPI({
+      const res = await updateDiaryPageAPI(pageList[index].diaryId, {
         diaryPage: pageList[index],
         diaryPageContext: pageList[index].context
       })
-      if (res.data.code) {
+      if (res.data.code == 1) {
         pageList[index].context.isEdited = false
         ElMessage.success(messageStore.diaryPageConstant['SAVE_SUCCESS'])
         const userStore = useUserStore()
         userStore.getUserWordCount(formatTimeToDate(new Date()))
+        correctDiaryWord(diaryId)
         return true
       }
       ElMessage.error(messageStore.diaryPageConstant['SAVE_ERROR'])
+    }
+    const correctDiaryWord = (diaryId) => {
+      const pageList = diaryPages.value[diaryId]
+      if (!pageList) return
+      const index = diary.value.findIndex((item) => item.id === diaryId)
+      if (index !== -1) {
+        const words = pageList.reduce((acc, cur) => acc + cur.context.words, 0)
+        diary.value[index].words = words
+      }
     }
     const getLocalDiaryById = (id) => {
       const index = diary.value.findIndex((item) => item.id === id && id !== 0)
@@ -252,8 +259,7 @@ export const useDiaryStore = defineStore(
       if (index !== -1) return diary.value[index]
       return diary.value[0]
     }
-    const getLocalDiariesByUserId = (userId) =>
-      diary.value.filter((item) => item.userId == userId)
+    const getLocalDiariesByUserId = (userId) => diary.value.filter((item) => item.userId == userId)
 
     const getLocalPageByDiaryId = (diaryId, page) => {
       const pageList = diaryPages.value[diaryId]
@@ -266,7 +272,9 @@ export const useDiaryStore = defineStore(
       return diaryPages.value[0][0]
     }
     const getLocalPagesByDiaryId = (diaryId) => {
-      return diaryPages.value[diaryId]
+      const pageList = diaryPages.value[diaryId]
+      if (pageList) return diaryPages.value[diaryId]
+      return diaryPages.value[0]
     }
     const updateLocalDiary = ({ id, title, description, height }) => {
       // 根据 id 更新 diary

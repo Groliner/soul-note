@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-03-11 22:09:45
+ * @LastEditTime: 2024-08-11 20:25:16
 -->
 <script setup>
 import zh from 'element-plus/es/locale/lang/zh-cn.mjs'
@@ -14,14 +14,10 @@ provide('pressTime', 123)
 // import { useUserStore } from './stores'
 // import { storeToRefs } from 'pinia'
 // const userStore = useUserStore()
-// const { userInfo } = storeToRefs(userStore)
+// const { userDiary } = storeToRefs(userStore)
 
-// watch(userInfo.value, (newVal, oldVal) => {
-//   console.log(
-//     'backgroundImg change',
-//     newVal.backgroundImg,
-//     oldVal.backgroundImg
-//   )
+// watch(userDiary, (newVal, oldVal) => {
+//   console.log('userDiary change', newVal, oldVal)
 // })
 </script>
 <template>

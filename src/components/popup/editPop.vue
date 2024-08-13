@@ -28,9 +28,7 @@ onMounted(() => {
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
 const diaryRef = ref(diaryStore.getLocalDiaryById(diaryId.value))
-const diaryPagesRef = computed(() =>
-  diaryStore.getLocalPagesByDiaryId(diaryId.value)
-)
+const diaryPagesRef = computed(() => diaryStore.getLocalPagesByDiaryId(diaryId.value))
 const diaryInfo = computed(() => {
   return {
     author: userStore.getUsernameById(diaryRef.value.userId),
@@ -43,9 +41,7 @@ const diaryInfo = computed(() => {
 })
 const diaryPageInfo = computed(() =>
   diaryPagesRef.value
-    .filter((page) =>
-      (page.page + page.title).toLowerCase().includes(query.value.toLowerCase())
-    )
+    .filter((page) => (page.page + page.title).toLowerCase().includes(query.value.toLowerCase()))
     .toSorted((a, b) => -a.page + b.page)
 )
 const textareaDesc = ref(null)
@@ -65,6 +61,7 @@ const pretty = () => {
   query.value = ''
   select.value = 0
 }
+const isSaveButtonActive = ref(false)
 watch(diaryRef, () => {
   pretty()
 })
@@ -93,7 +90,7 @@ const handleDelete = () => {
       draggable: true
     })
     .then((res) => {
-      open.value = false
+      open.value = !res
       if (res) {
         diaryStore.deleteDiary(diaryId.value)
       }
@@ -113,9 +110,11 @@ const handleDeletePage = () => {
     })
 }
 const handleSave = async () => {
+  isSaveButtonActive.value = true
   // 保存日记信息
   const res = await diaryStore.saveDiary(diaryId.value, true)
   open.value = res ? false : true
+  isSaveButtonActive.value = false
   // 添加动画
 }
 
@@ -191,13 +190,7 @@ const handleCoverChange = async (event) => {
 import router from '@/router'
 // 添加页面跳转
 const handleGoTo = (page) => {
-  router.push({
-    name: 'diary',
-    query: {
-      diaryId: diaryRef.value.id,
-      page: page
-    }
-  })
+  userStore.setLocalLastReadDiaryId(diaryRef.value.id)
   userStore.updateLocalUserDiaryStatus(
     {
       diaryId: diaryRef.value.id,
@@ -205,15 +198,20 @@ const handleGoTo = (page) => {
     },
     false
   )
+  router.push({
+    name: 'diary'
+    // query: {
+    //   diaryId: diaryRef.value.id,
+    //   page: page
+    // }
+  })
+
   open.value = false
 }
 </script>
 <template>
   <Transition name="popup">
-    <div
-      v-if="open"
-      style="position: fixed; top: 0; z-index: 600; width: 100%; height: 100%"
-    >
+    <div v-if="open" style="position: fixed; top: 0; z-index: 600; width: 100%; height: 100%">
       <div class="mask"></div>
       <div class="edit-pop">
         <div
@@ -239,28 +237,16 @@ const handleGoTo = (page) => {
             <button class="cover" @click="triggerUpload">
               <img :src="diaryRef.cover" />
             </button>
-            <input
-              type="file"
-              ref="coverInput"
-              @change="handleCoverChange"
-              style="display: none"
-            />
+            <input type="file" ref="coverInput" @change="handleCoverChange" style="display: none" />
           </div>
         </header>
         <section class="title">
           <h3>
-            <flexInput
-              v-model:text="diaryRef.title"
-              placeholder="diary title"
-            />
+            <flexInput v-model:text="diaryRef.title" placeholder="diary title" />
           </h3>
           <p>
             <textarea
-              style="
-                max-height: 180px;
-                overflow: auto;
-                background-attachment: local;
-              "
+              style="max-height: 180px; overflow: auto; background-attachment: local"
               ref="textareaDesc"
               v-model="diaryRef.description"
               placeholder="diary description"
@@ -273,12 +259,7 @@ const handleGoTo = (page) => {
             <button class="search-button">
               <ph-magnifying-glass class="search_icon" />
             </button>
-            <input
-              v-model="query"
-              type="text"
-              class="search-input"
-              placeholder="Search Pages"
-            />
+            <input v-model="query" type="text" class="search-input" placeholder="Search Pages" />
           </div>
         </section>
         <nav class="navigation">
@@ -291,11 +272,7 @@ const handleGoTo = (page) => {
           >
         </nav>
         <section class="profile">
-          <Transition
-            @before-enter="onBeforeEnter"
-            @enter="onEnter"
-            @leave="onLeave"
-          >
+          <Transition @before-enter="onBeforeEnter" @enter="onEnter" @leave="onLeave">
             <TransitionGroup
               tag="ul"
               v-show="select === 0"
@@ -304,11 +281,7 @@ const handleGoTo = (page) => {
               @enter="onEnter"
               @leave="onLeave"
             >
-              <li
-                v-for="(item, index) in diaryPageInfo"
-                :key="item.title"
-                :data-index="index"
-              >
+              <li v-for="(item, index) in diaryPageInfo" :key="item.title" :data-index="index">
                 <span
                   @click="handleGoTo(item.page)"
                   :class="{ active: item.page === diaryInfo.lastReadPage }"
@@ -318,9 +291,7 @@ const handleGoTo = (page) => {
                 <span>words:{{ item.context.words }}</span>
                 <span>{{ formatTime(item.createdTime) }}</span>
                 <ph-backspace
-                  v-if="
-                    item.page === diaryRef.pages && item.status !== 'disable'
-                  "
+                  v-if="item.page === diaryRef.pages && item.status !== 'disable'"
                   weight="bold"
                   @click="handleDeletePage"
                   class="icon del"
@@ -334,17 +305,9 @@ const handleGoTo = (page) => {
                 />
               </li> </TransitionGroup
           ></Transition>
-          <Transition
-            @before-enter="onBeforeEnter"
-            @enter="onEnter"
-            @leave="onLeave"
-          >
+          <Transition @before-enter="onBeforeEnter" @enter="onEnter" @leave="onLeave">
             <ul v-show="select === 1" :class="menu[1]">
-              <li
-                v-for="(value, key, index) in diaryInfo"
-                :key="key"
-                :data-index="index"
-              >
+              <li v-for="(value, key, index) in diaryInfo" :key="key" :data-index="index">
                 <span>{{ key }}</span>
                 <span>{{ value }}</span>
               </li>
@@ -352,7 +315,9 @@ const handleGoTo = (page) => {
           >
         </section>
         <footer class="selection">
-          <button class="selection-item" @click="handleSave">Save</button>
+          <button class="selection-item" @click="handleSave" :disabled="isSaveButtonActive">
+            {{ isSaveButtonActive ? 'Saving...' : 'Save' }}
+          </button>
           <button class="selection-item" @click="open = false">Cancel</button>
         </footer>
       </div>
