@@ -8,15 +8,19 @@ import { PhPencilLine } from '@phosphor-icons/vue'
 const userStore = useUserStore()
 const messageStore = useMessageStore()
 const { userDiary, userInfo, userPreferences } = storeToRefs(userStore)
-const lastReadDiaryId = computed(() => userInfo.value.lastReadDiaryId)
+const lastReadDiaryId = computed(() => {
+  const diaryId = userPreferences.value.lastReadDiaryId
+  if (diaryId === 0) {
+    userStore.setLocalLastReadDiaryId(userDiary.value[0].diaryId)
+  }
+  return userPreferences.value.lastReadDiaryId
+})
 const diaryStore = useDiaryStore()
 const userDiaryStatus = computed(() => userStore.getLocalUserDiaryStatus(lastReadDiaryId.value))
 const diary = computed(() => diaryStore.getLocalDiaryById(lastReadDiaryId.value))
 const diaryPage = computed(() =>
   diaryStore.getLocalPageByDiaryId(lastReadDiaryId.value, userDiaryStatus.value.lastReadPage)
 )
-import { useRoute } from 'vue-router'
-const route = useRoute()
 import { gsap } from 'gsap'
 const originalTitle = ref('')
 const pageTitleInputMirrorRef = ref(null)
@@ -123,20 +127,49 @@ const handleSave = async () => {
     })
   }
 }
+
+function onBeforeEnter(el) {
+  el.style.opacity = 0
+  el.style.height = 0
+}
+
+function onEnter(el, done) {
+  gsap.to(el, {
+    opacity: 1,
+    height: 'auto',
+    delay: 0.15,
+    onComplete: done
+  })
+}
+
+function onLeave(el, done) {
+  gsap.to(el, {
+    opacity: 0,
+    height: 0,
+    delay: 0.14,
+    onComplete: done
+  })
+}
 </script>
 <template>
   <div class="container_note">
     <!-- 日记本的列表 -->
     <div class="diaryNav">
-      <ul class="diaryNav_main">
+      <TransitionGroup
+        tag="ul"
+        @before-enter="onBeforeEnter"
+        @enter="onEnter"
+        @leave="onLeave"
+        class="diaryNav_main"
+      >
         <!--  -->
         <li v-for="(item, index) in userDiary" :key="item.id" :data-index="index">
           <a
             class="nav_link"
             :class="{
-              active: userInfo.lastReadDiaryId === item.diaryId ? true : false
+              active: lastReadDiaryId === item.diaryId ? true : false
             }"
-            @click="userInfo.lastReadDiaryId = item.diaryId"
+            @click="userPreferences.lastReadDiaryId = item.diaryId"
             ><p>{{ diaryStore.getLocalDiaryById(item.diaryId).title }}</p></a
           >
           <ph-pencil-line
@@ -145,7 +178,7 @@ const handleSave = async () => {
             @click="handDiaryEditClick(item.diaryId)"
           />
         </li>
-      </ul>
+      </TransitionGroup>
     </div>
     <!-- 日记本区域 -->
     <article>
@@ -190,7 +223,7 @@ const handleSave = async () => {
     <div class="button_save">
       <div class="mapper">
         <button @click="handleSave" class="custom-btn btn-16">
-          {{ userPreferences.languageSelectNum === 1 ? 'SAVE' : '保存' }}
+          {{ userPreferences.language === 1 ? 'SAVE' : '保存' }}
         </button>
       </div>
     </div>
@@ -207,7 +240,7 @@ const handleSave = async () => {
 .diaryNav {
   will-change: transform;
   position: fixed;
-  left: 50px;
+  left: 0;
   z-index: 100;
   @media screen and (max-width: 1200px) {
     left: 40px;
@@ -219,8 +252,15 @@ const handleSave = async () => {
 
   ul {
     color: rgb(68, 68, 68);
-    padding: 0;
-
+    padding-left: 50px;
+    height: 70vh;
+    overflow-y: scroll;
+    user-select: none;
+    width: 150%;
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 2px;
+    }
     &.diaryNav_main {
       a {
         font-size: 1.6rem;

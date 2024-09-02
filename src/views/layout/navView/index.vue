@@ -55,9 +55,11 @@ onMounted(() => {
 
 import { ElMessage } from 'element-plus'
 import { messageManager } from '@/directives/index'
+import { storeToRefs } from 'pinia'
 
 // 检查是否登录
 const userStore = useUserStore()
+const { userPreferences } = storeToRefs(userStore)
 const logout = () => {
   // console.log(userStore.isAuthenticated)
   if (userStore.isAuthenticated) {
@@ -76,8 +78,8 @@ console.log()
 </script>
 <template>
   <section class="wrapper">
-    <div class="header">
-      <div class="burger-wrapper" ref="burgerWrapper" @click="show = !show">
+    <div class="header" @click="show = !show">
+      <div class="burger-wrapper" ref="burgerWrapper">
         <div class="burger"></div>
       </div>
       <div class="logo-text" ref="logoText">Soul Note</div>
@@ -132,12 +134,12 @@ console.log()
       </ul>
       <div
         class="container-radio"
-        :style="`grid-template-columns: repeat(${userStore.userPreferences.languageList.length}, min-content)`"
+        :style="`grid-template-columns: repeat(${userPreferences.languageList.length}, min-content)`"
       >
         <!-- 语言选择,此处为测试,预计放到用户的个性化设置中 -->
         <div
           :class="`radio radio__${index}`"
-          v-for="(content, index) in userStore.userPreferences.languageList"
+          v-for="(content, index) in userPreferences.languageList"
           :key="index"
         >
           <input
@@ -145,7 +147,7 @@ console.log()
             type="radio"
             name="radio"
             :value="index"
-            v-model="userStore.userPreferences.languageSelectNum"
+            v-model="userPreferences.language"
           />
           <label :for="`radio-${index}`">{{ content }}</label>
         </div>
@@ -302,7 +304,6 @@ a {
   will-change: opacity;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(37, 33, 32, 0.2);
   position: fixed;
   background-color: rgba(224, 221, 209, 0.701961);
   display: none;

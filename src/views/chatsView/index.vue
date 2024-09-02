@@ -1,14 +1,13 @@
+<!--
+ * @Author: Gro lin
+ * @Date: 2024-08-09 12:19:25
+ * @LastEditors: Gro lin
+ * @LastEditTime: 2024-09-02 21:17:15
+-->
+<script setup></script>
 <template>
   <div class="container">
-    <h2>功能说明</h2>
-    <ul>
-      <li>
-        视频会议
-        <p>根据WebRTC技术实现</p>
-      </li>
-      <li>聊天室</li>
-      <li>...</li>
-    </ul>
+    <p>测试中</p>
   </div>
 </template>
 <style lang="scss" scoped>

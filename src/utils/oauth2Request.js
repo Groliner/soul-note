@@ -9,7 +9,7 @@ import axios from 'axios'
 
 const instance = axios.create({
   baseURL: '/api/sn_auth',
-  timeout: 10000,
+  timeout: 60000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded'

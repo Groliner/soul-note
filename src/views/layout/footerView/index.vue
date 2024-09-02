@@ -9,8 +9,7 @@ onMounted(() => {
 })
 
 import { useUserStore } from '@/stores'
-import { storeToRefs } from 'pinia'
-const { userPreferences } = storeToRefs(useUserStore())
+const userStore = useUserStore()
 </script>
 <template>
   <footer style="opacity: 0.92">
@@ -30,24 +29,9 @@ const { userPreferences } = storeToRefs(useUserStore())
           />
         </defs>
         <g class="parallax">
-          <use
-            xlink:href="#gentle-wave"
-            x="48"
-            y="0"
-            fill="rgba(255,255,255,0.7)"
-          />
-          <use
-            xlink:href="#gentle-wave"
-            x="48"
-            y="3"
-            fill="rgba(255,255,255,0.5)"
-          />
-          <use
-            xlink:href="#gentle-wave"
-            x="48"
-            y="5"
-            fill="rgba(255,255,255,0.3)"
-          />
+          <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7)" />
+          <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+          <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
           <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
         </g>
       </svg>
@@ -60,7 +44,7 @@ const { userPreferences } = storeToRefs(useUserStore())
         </h1>
         <h2>
           {{
-            userPreferences.languageSelectNum === 1
+            userStore.selectLanguage === 'en-US'
               ? 'Always searching and experiencing every story'
               : '寻 找 和 体 验 每 一 个 故 事'
           }}
@@ -68,13 +52,8 @@ const { userPreferences } = storeToRefs(useUserStore())
         <br />
         <div>
           <small style="font-size: 0.83rem"
-            >&copy; 2024-,
-            <a href="https://github.com/Groliner/soul-note.git">soul-note</a>,
-            {{
-              userPreferences.languageSelectNum === 1
-                ? 'the source of everything.'
-                : '网页源码'
-            }}
+            >&copy; 2024-, <a href="https://github.com/Groliner/soul-note.git">soul-note</a>,
+            {{ userStore.selectLanguage === 'en-US' ? 'the source of everything.' : '网页源码' }}
           </small>
         </div>
       </div>

@@ -69,10 +69,11 @@ export const useMessageStore = defineStore(
           HINTS: `                 写日记的一些技巧： 
                           1. crtl + z --> 撤销。
                           2. crtl + y --> 重做。
-                          3. tab --> 写新段落。
-                          4. 请不要随意创建日记或页面。
-                          5. 当你离开时，你写下的所有内容都会自动保存在该区域。
-                          6. 只要有弹出提示，就会立即保存。`
+                          3. crtl + s --> 保存。
+                          4. tab --> 写新段落。
+                          5. 请不要随意创建日记或页面。
+                          6. 当你离开时，你写下的所有内容都会自动保存在该区域。
+                          7. 只要有弹出提示，就会立即保存。`
         },
         'en-US': {
           SAVE_SUCCESS: 'diary page save success',
@@ -93,10 +94,11 @@ export const useMessageStore = defineStore(
           HINTS: `                 there are some tips for writing diary：
                           1. crtl + z  --> undo.
                           2. crtl + y --> redo.
-                          3. tab --> write a new paragraph.
-                          4. Please don't create a diary or a page at random.
-                          5. all you write down will auto save in the area when you go away.
-                          6. Anytime there's a pop-up alert asking it's saved immediately.`
+                          3. crtl + s --> save.
+                          4. tab --> write a new paragraph.
+                          5. Please don't create a diary or a page at random.
+                          6. all you write down will auto save in the area when you go away.
+                          7. Anytime there's a pop-up alert asking it's saved immediately.`
         }
       }
       return msg[userStore.selectLanguage]
@@ -105,6 +107,7 @@ export const useMessageStore = defineStore(
       const msg = {
         'zh-CN': {
           DEVELOP_FRIEND_SYSTEM: '好友系统正在开发...',
+          LOGIN_SUCCESS: '登录成功',
           LOG_OUT_SUCCESS: '退出成功',
           SAVE_SUCCESS: '账号 保存 成功',
           LOAD_SUCCESS: '账号信息 加载 成功',
@@ -122,6 +125,7 @@ export const useMessageStore = defineStore(
         },
         'en-US': {
           DEVELOP_FRIEND_SYSTEM: 'The friend system is developing ...',
+          LOGIN_SUCCESS: 'Login success',
           LOG_OUT_SUCCESS: 'Log out success',
           SAVE_SUCCESS: 'account save success',
           LOAD_SUCCESS: 'account load success',

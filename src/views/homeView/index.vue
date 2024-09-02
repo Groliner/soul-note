@@ -1,46 +1,49 @@
 <script setup>
+import { useUserStore } from '@/stores'
 import audioPlay from '../testView/audioPlay.vue'
 
 import { ref } from 'vue'
-const theme = ref('birthday')
+const userStore = useUserStore()
+const theme = ref('')
 </script>
 <template>
   <div class="container_home">
     <section class="section_home" v-if="theme === 'birthday'">
       <h1>Happy Birthday ! Grozhi</h1>
-      <p>
-        Moving forward and Handling your worries correctly, then catching the
-        future
-      </p>
+      <p>Moving forward and Handling your worries correctly, then catching the future</p>
     </section>
     <section class="section_home" v-else>
       <h1>主页-----home</h1>
-      <p>testing: diary, account</p>
+      <p>
+        {{
+          userStore.selectLanguage === 'en-US' ? 'testing: diary, account' : '测试功能：日记，用户'
+        }}
+      </p>
     </section>
     <section class="section_loading">
       <div id="load" v-if="theme === 'birthday'" class="birthday">
         <div>H</div>
-        <div>T</div>
-        <div>R</div>
-        <div>I</div>
-        <div>B</div>
-        <div>Y</div>
-        <div>P</div>
-        <div>P</div>
         <div>A</div>
+        <div>P</div>
+        <div>P</div>
+        <div>Y</div>
+        <div>B</div>
+        <div>I</div>
+        <div>R</div>
+        <div>T</div>
         <div>H</div>
       </div>
       <div id="load" v-else>
-        <div>G</div>
-        <div>N</div>
-        <div>I</div>
-        <div>P</div>
-        <div>O</div>
-        <div>L</div>
+        <div>D</div>
         <div>E</div>
         <div>V</div>
         <div>E</div>
-        <div>D</div>
+        <div>L</div>
+        <div>O</div>
+        <div>P</div>
+        <div>I</div>
+        <div>N</div>
+        <div>G</div>
       </div>
     </section>
     <!-- <section class="send-message">
@@ -48,8 +51,8 @@ const theme = ref('birthday')
       <input type="text" />
       <sendButton />
     </section> -->
-    <section class="section_audio" v-if="theme === 'birthday'">
-      <audioPlay :allBackground="false" />
+    <section class="section_audio">
+      <audioPlay :allBackground="false" :theme="theme" />
     </section>
   </div>
 </template>
@@ -123,18 +126,10 @@ const theme = ref('birthday')
 
         @keyframes move {
           0% {
-            left: 0;
+            left: 100%;
             opacity: 0;
           }
           35% {
-            left: 41%;
-            -moz-transform: rotate(0deg);
-            -webkit-transform: rotate(0deg);
-            -o-transform: rotate(0deg);
-            transform: rotate(0deg);
-            opacity: 1;
-          }
-          65% {
             left: 59%;
             -moz-transform: rotate(0deg);
             -webkit-transform: rotate(0deg);
@@ -142,87 +137,112 @@ const theme = ref('birthday')
             transform: rotate(0deg);
             opacity: 1;
           }
+          65% {
+            left: 41%;
+            -moz-transform: rotate(0deg);
+            -webkit-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
+            transform: rotate(0deg);
+            opacity: 1;
+          }
           100% {
-            left: 100%;
-            -moz-transform: rotate(-180deg);
-            -webkit-transform: rotate(-180deg);
-            -o-transform: rotate(-180deg);
-            transform: rotate(-180deg);
+            left: 0%;
+            -moz-transform: rotate(180deg);
+            -webkit-transform: rotate(180deg);
+            -o-transform: rotate(180deg);
+            transform: rotate(180deg);
             opacity: 0;
           }
         }
-
         @-moz-keyframes move {
           0% {
-            left: 0;
+            left: 100%;
             opacity: 0;
           }
           35% {
-            left: 41%;
+            left: 59%;
             -moz-transform: rotate(0deg);
+            -webkit-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           65% {
-            left: 59%;
+            left: 41%;
             -moz-transform: rotate(0deg);
+            -webkit-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           100% {
-            left: 100%;
-            -moz-transform: rotate(-180deg);
-            transform: rotate(-180deg);
+            left: 0%;
+            -moz-transform: rotate(180deg);
+            -webkit-transform: rotate(180deg);
+            -o-transform: rotate(180deg);
+            transform: rotate(180deg);
             opacity: 0;
           }
         }
 
         @-webkit-keyframes move {
           0% {
-            left: 0;
+            left: 100%;
             opacity: 0;
           }
           35% {
-            left: 41%;
+            left: 59%;
+            -moz-transform: rotate(0deg);
             -webkit-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           65% {
-            left: 59%;
+            left: 41%;
+            -moz-transform: rotate(0deg);
             -webkit-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           100% {
-            left: 100%;
-            -webkit-transform: rotate(-180deg);
-            transform: rotate(-180deg);
+            left: 0%;
+            -moz-transform: rotate(180deg);
+            -webkit-transform: rotate(180deg);
+            -o-transform: rotate(180deg);
+            transform: rotate(180deg);
             opacity: 0;
           }
         }
 
         @-o-keyframes move {
           0% {
-            left: 0;
+            left: 100%;
             opacity: 0;
           }
           35% {
-            left: 41%;
+            left: 59%;
+            -moz-transform: rotate(0deg);
+            -webkit-transform: rotate(0deg);
             -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           65% {
-            left: 59%;
+            left: 41%;
+            -moz-transform: rotate(0deg);
+            -webkit-transform: rotate(0deg);
             -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           100% {
-            left: 100%;
-            -o-transform: rotate(-180deg);
-            transform: rotate(-180deg);
+            left: 0%;
+            -moz-transform: rotate(180deg);
+            -webkit-transform: rotate(180deg);
+            -o-transform: rotate(180deg);
+            transform: rotate(180deg);
             opacity: 0;
           }
         }

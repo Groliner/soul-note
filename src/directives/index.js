@@ -17,8 +17,8 @@ export const lazyLoad = {
 
 import { h, render, createApp } from 'vue'
 import Popup from '@/components/popup/Popup.vue'
-
 import editPop from '@/components/popup/editPop.vue'
+import AccountSettings from '@/components/popup/AccountSettings.vue'
 export const messageManager = {
   showDiaryEditModal(diaryId) {
     return new Promise((resolve) => {
@@ -49,7 +49,7 @@ export const messageManager = {
           // 动画完成，清理Vue实例和容器
           setTimeout(() => {
             container.remove()
-          }, 600) // 这里的延时应与退出动画的持续时间匹配
+          }, 1000) // 这里的延时应与退出动画的持续时间匹配
         }
       })
     })
@@ -84,6 +84,41 @@ export const messageManager = {
                   resolve(false)
                 },
                 onClose: () => {}
+              })
+            : null
+        }
+      }).mount(container)
+
+      // 监听动画完成并清理
+      popupApp.$watch('isOpen', (newVal) => {
+        if (!newVal) {
+          // 动画完成，清理Vue实例和容器
+          setTimeout(() => {
+            container.remove()
+          }, 600) // 这里的延时应与退出动画的持续时间匹配
+        }
+      })
+    })
+  },
+  showAccountSettingsModal() {
+    return new Promise((resolve) => {
+      // 创建一个Vue实例来挂载Popup组件
+      const container = document.createElement('div')
+      document.body.appendChild(container)
+
+      const popupApp = createApp({
+        data() {
+          return {
+            // 控制Popup显示的状态
+            isOpen: true
+          }
+        },
+        render() {
+          return this.isOpen
+            ? h(AccountSettings, {
+                onClose: () => {
+                  this.isOpen = false
+                }
               })
             : null
         }

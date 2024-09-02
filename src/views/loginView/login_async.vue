@@ -265,6 +265,7 @@ const handleAnimation = () => {
 import { useUserStore } from '@/stores'
 const userStore = useUserStore()
 import { login, register } from '@/api/oauth2'
+import { generateAESKey, encryptPassword } from '@/composables/IOAESKey'
 
 const remember = ref(false)
 // 异步请求
@@ -274,6 +275,8 @@ const handleSignUp = async (resetTween) => {
     formData.append(item.value.name, item.value.value)
   })
   responseData.value.data = Object.fromEntries(formData)
+  const pwd = formData.get('password')
+  formData.set('password', await encryptPassword(pwd))
   //发送数据等待返回
   const code = await register(formData)
     .then((res) => {
@@ -303,11 +306,13 @@ const handleLogIn = async (resetTween) => {
     formData.append(item.value.name, item.value.value)
   })
   formData.append('remember-me', remember.value)
+  const pwd = formData.get('password')
+  formData.set('password', await encryptPassword(pwd))
   const code = await login(formData)
     .then((res) => {
       if (res.data.code === 1) {
         userStore.login(remember.value)
-        ElMessage({ type: 'success', message: 'Login successfully' })
+        generateAESKey(pwd, 'diaryAccessKey', '')
       } else {
         ElMessage({
           type: 'warning',

@@ -7,8 +7,11 @@ import {
   getUserInfoAPI,
   updateUserInfoAPI,
   getUserWordCountAPI,
-  updateBackgroundImg,
-  updateLastReadDiaryId
+  updateLastReadDiaryId,
+  getFriendsAPI,
+  getOnlineUsers,
+  getUserPreferencesAPI,
+  updateUserPreferencesAPI
 } from '@/api/user'
 import {
   getAuthorizationCode,
@@ -23,41 +26,21 @@ import {
 } from '@/api/oauth2'
 import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
 import { ElMessage } from 'element-plus'
+
 import defaultIMG from '../../assets/images/logo.png'
+
 const defaultUserInfoString = JSON.stringify({
   avatar: defaultIMG,
   username: 'grolin',
   id: 0,
   email: '123@qwe.com',
   description: "there is nothing here, it's empty",
-  backgroundImg:
-    'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/ae727f0a-5660-4e59-872c-901b285351f2.jpg',
   status: 'active',
   isEdited: false,
   updatedTime: '',
-  lastReadDiaryId: 0,
   isRememberMe: false
 })
-const defaultFriends = [
-  {
-    id: 1,
-    username: 'friend_1',
-    avatar: defaultIMG,
-    description: 'friend_1 is a good friend'
-  },
-  {
-    id: 2,
-    username: 'friend_2',
-    avatar: defaultIMG,
-    description: 'friend_2 is a good friend'
-  },
-  {
-    id: 3,
-    username: 'friend_3',
-    avatar: defaultIMG,
-    description: 'friend_3 is a good friend'
-  }
-]
+const defaultFriends = []
 const defaultUserDiary = [
   {
     id: 1,
@@ -67,6 +50,41 @@ const defaultUserDiary = [
   }
 ]
 const defaultWordCount = []
+const defaultUserPreferences = {
+  id: 1,
+  userId: 0,
+  language: 0,
+  theme: 0,
+  background:
+    'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/23289fc9-a0ce-4b04-8ee2-d72f701b6b97.png',
+  avatar:
+    'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/782ada3e-2ba7-4c6c-a38d-a5e796546ef8.jpg',
+  lastReadDiaryId: 99,
+  backgroundList: [
+    {
+      id: 1,
+      userId: 107,
+      type: 'background',
+      imgUrl:
+        'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/23289fc9-a0ce-4b04-8ee2-d72f701b6b97.png',
+      createdTime: '2024-08-18T18:44:58',
+      updatedTime: '2024-08-18T18:44:58'
+    }
+  ],
+  avatarList: [
+    {
+      id: 2,
+      userId: 107,
+      type: 'avatar',
+      imgUrl:
+        'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/782ada3e-2ba7-4c6c-a38d-a5e796546ef8.jpg',
+      createdTime: '2024-08-18T18:45:15',
+      updatedTime: '2024-08-18T18:45:15'
+    }
+  ],
+  languageList: ['zh-CN', 'en-US'],
+  themeList: ['default', 'crazy']
+}
 export const useUserStore = defineStore(
   'user',
   () => {
@@ -75,11 +93,7 @@ export const useUserStore = defineStore(
     const userInfo = ref(JSON.parse(defaultUserInfoString))
     const userDiary = ref(JSON.parse(JSON.stringify(defaultUserDiary)))
     const userWordCount = ref(defaultWordCount)
-    const userPreferences = ref({
-      languageSelectNum: 0,
-      theme: 'default',
-      languageList: ['zh-CN', 'en-US']
-    })
+    const userPreferences = ref(JSON.parse(JSON.stringify(defaultUserPreferences)))
     const tokens = ref({})
 
     // 工具类
@@ -92,8 +106,12 @@ export const useUserStore = defineStore(
       if (res.data.code == 1) {
         userInfo.value.isRememberMe = isRememberMe
         await setToken(res.data.data.code)
+
+        ElMessage({ type: 'success', message: messageStore.accountConstant['LOGIN_SUCCESS'] })
+
         startTokenRefreshTimer()
         updateUserInfo()
+
         diaryStore.init()
       } else {
         ElMessage({
@@ -122,6 +140,7 @@ export const useUserStore = defineStore(
       } finally {
         stopTokenRefreshTimer()
         localStorage.removeItem('lastTokenRefreshTime') // 清除存储的时间
+        localStorage.removeItem('diaryAccessKey')
         if (tokens.value) {
           revokeToken(tokens.value.access_token)
           revokeToken(tokens.value.refresh_token, 'refresh_token')
@@ -132,6 +151,7 @@ export const useUserStore = defineStore(
         userInfo.value = JSON.parse(defaultUserInfoString)
         tokens.value = {}
         userWordCount.value = []
+        userPreferences.value = defaultUserPreferences
         initAll.value = false
         isNeedToUpdate.value = true
         diaryStore.logout()
@@ -160,20 +180,25 @@ export const useUserStore = defineStore(
           tokens.value = res.data.data
         }
       } catch (e) {
+        let _ = true
         if (e.response.status == 401 && userInfo.value.isRememberMe) {
           // 如果refreshToken过期，就重新登录
-          await getUserInfo() // 通过访问授权服务器的api来调用rememberMe功能
-          const res = await getAuthorizationCode()
-          if (res.data.code == 1) {
-            await setToken(res.data.data.code)
-          } else {
-            ElMessage({
-              message: res.data.msg,
-              grouping: true,
-              type: 'error'
-            })
+          const res_ = await getUserInfo() // 通过访问授权服务器的api来调用rememberMe功能
+          if (res_.data.error != 'invalid_session') {
+            const res = await getAuthorizationCode()
+            _ = false
+            if (res.data.code == 1) {
+              await setToken(res.data.data.code)
+            } else {
+              ElMessage({
+                message: res.data.msg,
+                grouping: true,
+                type: 'error'
+              })
+            }
           }
-        } else {
+        }
+        if (_) {
           ElMessage({
             message: messageStore.accountConstant['SESSION_EXPIRED'],
             grouping: true,
@@ -185,6 +210,55 @@ export const useUserStore = defineStore(
         localStorage.setItem('lastTokenRefreshTime', Date.now().toString()) // 每次刷新后更新时间
       }
     }
+
+    const getFriends = async () => {
+      if (!isAuthenticated.value) return
+      const res = await getFriendsAPI()
+      if (res.data.code == 1) {
+        const friends_ = new Map()
+        res.data.data.forEach((item) => friends_.set(item.id, item))
+        friends.value.forEach((item, index) => {
+          if (item != null && friends_.has(item.id)) {
+            friends.value[index] = friends_.get(item.id)
+            friends_.set(item.id, null)
+          } else {
+            friends.value[index] = null
+          }
+        })
+        friends.value = friends.value.filter((item) => item != null)
+        friends_.forEach((value) => {
+          if (value) friends.value.push(value)
+        })
+
+        loadFriendsStatus()
+      } else {
+        ElMessage.info(res.data.msg)
+      }
+    }
+    const loadFriendsStatus = async () => {
+      if (!isAuthenticated.value) return
+      const res = await getOnlineUsers()
+      if (res.data != null) {
+        const onlineUsers = res.data.onlineUserIdList
+        friends.value.forEach((item) => {
+          item.isOnline = onlineUsers.includes(item.id)
+        })
+        friends.value.sort((b, a) => a.isOnline - b.isOnline)
+      }
+    }
+
+    const getUserPreferences = async () => {
+      const res = await getUserPreferencesAPI()
+      if (res.data.code == 1) {
+        Object.keys(res.data.data).forEach((key) => {
+          if (Object.prototype.hasOwnProperty.call(userPreferences.value, key)) {
+            userPreferences.value[key] = res.data.data[key]
+          }
+        })
+      } else {
+        ElMessage.info(res.data.msg)
+      }
+    }
     const updateUserInfo = async () => {
       // 如果已经初始化过了，就不再初始化
       if (initAll.value) return
@@ -194,9 +268,10 @@ export const useUserStore = defineStore(
         setUserInfo(res.data.data)
         userInfo.value.isEdited = false
         if (userInfo.value.id === 0 || userInfo.value.id === undefined) return
-        // 获取用户日记状态 UserDiaryStatusList
-        await getUserDiaryStatus()
-        await getUserWordCount()
+        getUserPreferences()
+        getUserDiaryStatus()
+        getUserWordCount()
+        getFriends()
         ElMessage({
           message: messageStore.accountConstant['LOAD_SUCCESS'],
           grouping: true,
@@ -222,7 +297,9 @@ export const useUserStore = defineStore(
       if (res.data.code == 1) {
         if (date) {
           const index = userWordCount.value.findIndex((item) => item.date === date)
-          if (index !== -1) userWordCount.value[index] = res.data.data
+          if (res.data.data == null) return false
+          if (index == -1) userWordCount.value.push(res.data.data)
+          else userWordCount.value[index] = res.data.data
         } else userWordCount.value = res.data.data
         return true
       }
@@ -254,6 +331,29 @@ export const useUserStore = defineStore(
         return false
       }
     }
+    const savePreferences = async (isMust = false) => {
+      if (!userPreferences.value.isEdited && isMust) return
+      const res = await updateUserPreferencesAPI(userPreferences.value)
+      return res.data.code == 1
+    }
+
+    // 保存用户信息,分为基恩信息与偏好设置
+    const saveAccountInfo = async () => {
+      const res_ = await savePreferences()
+      let res = true
+      if (userInfo.value.isEdited) {
+        res = await updateUserInfoAPI({
+          ...userInfo.value
+        })
+      }
+      if (res && res_) {
+        ElMessage.success(messageStore.accountConstant['SAVE_SUCCESS'])
+        return true
+      } else {
+        ElMessage.error(messageStore.accountConstant['SAVE_ERROR'])
+        return false
+      }
+    }
     const updateLocalUserDiaryStatus = ({ diaryId, lastReadPage }, record = true) => {
       const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
       if (index === -1) return false
@@ -281,12 +381,11 @@ export const useUserStore = defineStore(
       return diary_.id
     }
     const deleteLocalUserDiaryStatus = (diaryId) => {
-      const lastReadDiaryId = userInfo.value.lastReadDiaryId
+      const lastReadDiaryId = userPreferences.value.lastReadDiaryId
       const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
       if (index < 1) return false
       if (lastReadDiaryId === diaryId) {
-        userInfo.value.lastReadDiaryId = userDiary.value[index - 1].diaryId
-        return true
+        userPreferences.value.lastReadDiaryId = userDiary.value[index - 1].diaryId
       }
       userDiary.value.splice(index, 1)
       isNeedToUpdate.value = true
@@ -294,10 +393,10 @@ export const useUserStore = defineStore(
     const setLocalLastReadDiaryId = (diaryId) => {
       const index = userDiary.value.findIndex((item) => item.diaryId === diaryId)
       if (index !== -1) {
-        userInfo.value.lastReadDiaryId = diaryId
+        userPreferences.value.lastReadDiaryId = diaryId
         saveLastReadDiaryId(diaryId)
       } else {
-        userInfo.value.lastReadDiaryId = userDiary.value[0].diaryId
+        userPreferences.value.lastReadDiaryId = userDiary.value[0].diaryId
       }
     }
     const saveLastReadDiaryId = async (diaryId) => {
@@ -307,7 +406,7 @@ export const useUserStore = defineStore(
       // 考虑到频繁更新，这里不再提示
       // if (res.data.code == 1) {
       //   // 由于设置了lastReadDiaryId的侦测器，这里如果再次设置会导致无限循环
-      //   // userInfo.value.lastReadDiaryId = diaryId
+      //   // userPreferences.value.lastReadDiaryId = diaryId
       //   return true
       // }
     }
@@ -317,25 +416,15 @@ export const useUserStore = defineStore(
       return user ? user.username : ''
     }
 
-    // 背景图片
-    const setBackgroundImg = (img) => {
-      // 实时更新
-      userInfo.value.backgroundImg = img
-      updateBackgroundImg(userInfo.value.id, { backgroundImg: img }).then((res) => {
-        if (res.data.code == 1) {
-          ElMessage.success(messageStore.accountConstant['BACKGROUND_IMG_UPLOAD_SUCCESS'])
-        } else {
-          ElMessage.error(res.data.msg)
-        }
-      })
-    }
     const selectLanguage = computed(
-      () => userPreferences.value.languageList[userPreferences.value.languageSelectNum]
+      () => userPreferences.value.languageList[userPreferences.value.language]
     )
 
     const refreshInterval = ref(null)
     const refreshInterval_ = ref(null)
+    const refreshFriendsInterval = ref(null)
     const TOKEN_REFRESH_INTERVAL = 1000 * 60 * 20 // 20分钟
+    const FRIENDS_REFRESH_INTERVAL = 1000 * 60 * 1 // 1分钟
     // const TOKEN_REFRESH_INTERVAL = 1000 * 20 // 20分钟
     const startTokenRefreshTimer = () => {
       stopTokenRefreshTimer()
@@ -349,15 +438,19 @@ export const useUserStore = defineStore(
           clearTimeout(refreshInterval_.value)
           refreshInterval.value = setInterval(refreshToken_, TOKEN_REFRESH_INTERVAL)
         },
-        remainingTime > 1000 ? remainingTime : 1000
+        remainingTime > 1000 ? remainingTime : 5000
       )
+
+      refreshFriendsInterval.value = setInterval(loadFriendsStatus, FRIENDS_REFRESH_INTERVAL)
     }
     const stopTokenRefreshTimer = () => {
       if (refreshInterval.value) {
         clearInterval(refreshInterval.value)
         clearTimeout(refreshInterval_.value)
+        clearInterval(refreshFriendsInterval)
         refreshInterval.value = null
         refreshInterval_.value = null
+        refreshFriendsInterval.value = null
       }
     }
 
@@ -369,8 +462,8 @@ export const useUserStore = defineStore(
       friends,
       tokens,
       userWordCount,
-      isAuthenticated,
       userPreferences,
+      isAuthenticated,
       selectLanguage,
       setToken,
       getAccessToken_,
@@ -380,6 +473,7 @@ export const useUserStore = defineStore(
       getUserWordCount,
       saveUserInfo,
       setUserInfo,
+      saveAccountInfo,
       login,
       logout,
       updateLocalUserDiaryStatus,
@@ -387,8 +481,7 @@ export const useUserStore = defineStore(
       addLocalUserDiaryStatus,
       deleteLocalUserDiaryStatus,
       setLocalLastReadDiaryId,
-      getUsernameById,
-      setBackgroundImg
+      getUsernameById
     }
   },
   {

@@ -9,7 +9,7 @@ import axios from 'axios'
 
 const instance = axios.create({
   baseURL: '/api/diary',
-  timeout: 10000,
+  timeout: 60000,
   withCredentials: true
 })
 import { useUserStore } from '@/stores'

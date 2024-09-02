@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-08-12 18:02:16
+ * @LastEditTime: 2024-08-31 19:22:03
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -135,6 +135,11 @@ const router = createRouter({
           path: 'music',
           name: 'music',
           component: () => import('@/components/modules/Music.vue')
+        },
+        {
+          path: 'chat',
+          name: 'chat',
+          component: () => import('@/components/modules/Chat.vue')
         }
       ]
     },

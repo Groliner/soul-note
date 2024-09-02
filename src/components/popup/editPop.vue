@@ -5,7 +5,7 @@
 
 */
 import { gsap } from 'gsap'
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { formatTime } from '@/composables/formatTime'
 import { useDiaryStore, useUserStore } from '@/stores'
 const props = defineProps({
@@ -17,6 +17,7 @@ const props = defineProps({
     default: false
   }
 })
+const emit = defineEmits(['close'])
 const diaryId = ref(props.diaryId)
 const open = ref(false)
 onMounted(() => {
@@ -93,6 +94,7 @@ const handleDelete = () => {
       open.value = !res
       if (res) {
         diaryStore.deleteDiary(diaryId.value)
+        emit('close')
       }
     })
 }
@@ -116,6 +118,15 @@ const handleSave = async () => {
   open.value = res ? false : true
   isSaveButtonActive.value = false
   // 添加动画
+  setTimeout(() => {
+    emit('close')
+  }, 500)
+}
+const handleCancel = () => {
+  open.value = false
+  setTimeout(() => {
+    emit('close')
+  }, 500)
 }
 
 // textarea 动画
@@ -198,6 +209,7 @@ const handleGoTo = (page) => {
     },
     false
   )
+
   router.push({
     name: 'diary'
     // query: {
@@ -207,6 +219,9 @@ const handleGoTo = (page) => {
   })
 
   open.value = false
+  setTimeout(() => {
+    emit('close')
+  }, 500)
 }
 </script>
 <template>
@@ -318,7 +333,7 @@ const handleGoTo = (page) => {
           <button class="selection-item" @click="handleSave" :disabled="isSaveButtonActive">
             {{ isSaveButtonActive ? 'Saving...' : 'Save' }}
           </button>
-          <button class="selection-item" @click="open = false">Cancel</button>
+          <button class="selection-item" @click="handleCancel">Cancel</button>
         </footer>
       </div>
     </div></Transition

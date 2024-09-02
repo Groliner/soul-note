@@ -6,9 +6,19 @@ import happy_birthday_cover from '@/assets/music/Happy_Happy_Birthday.jpg'
 import sakura from '@/assets/music/桜咲く.ogg'
 import sakura_cover from '@/assets/music/桜咲く.jpg'
 
+import light from '@/assets/music/光芒.ogg'
+import light_cover from '@/assets/music/光芒.jpg'
+
+import rimless from '@/assets/music/Rimless ～无边的世界～.ogg'
+import rimless_cover from '@/assets/music/Rimless ～无边的世界～.jpg'
+
+const albums = ['まよウタ!', 'STEP', '灼眼のシャナF', 'Rimless～フチナシノセカイ～']
+const trackNames = ['Happy Happy Birthday', '桜咲く', '光芒', 'Rimless ～无边的世界～']
+const albumArtworks = ['Happy Happy Birthday', '桜咲く', '光芒', 'Rimless ～无边的世界～']
+const coverArtworks = [happy_birthday_cover, sakura_cover, light_cover, rimless_cover]
+const trackUrl = [happy_birthday, sakura, light, rimless]
+
 const playerTrack = ref(null)
-const albumName = ref('')
-const trackName = ref('')
 const albumArt = ref(null)
 const sArea = ref(null)
 const seekBar = ref(null)
@@ -20,7 +30,6 @@ const tTime = ref('')
 const seekT = ref(0)
 const seekLoc = ref(0)
 const cM = ref(0)
-
 const ctMinutes = ref(0)
 const ctSeconds = ref(0)
 const curMinutes = ref(0)
@@ -32,11 +41,6 @@ const bTime = ref(0)
 const nTime = ref(0)
 const buffInterval = ref(null)
 const tFlag = ref(false)
-const albums = ['まよウタ!', 'STEP']
-const trackNames = ['Happy Happy Birthday', '桜咲く']
-const albumArtworks = ['Happy Happy Birthday', '桜咲く']
-const coverArtworks = [happy_birthday_cover, sakura_cover]
-const trackUrl = [happy_birthday, sakura]
 const currIndex = ref(-1)
 const isPlaying = ref(false)
 const audio = ref(new Audio())
@@ -167,9 +171,6 @@ const selectTrack = (flag) => {
     tProgress.value = '00:00'
     tTime.value = '00:00'
 
-    albumName.value = albums[currIndex.value]
-    trackName.value = trackNames[currIndex.value]
-
     audio.value.src = trackUrl[currIndex.value]
 
     nTime.value = 0
@@ -237,6 +238,10 @@ const props = defineProps({
   allBackground: {
     type: Boolean,
     default: true
+  },
+  theme: {
+    type: String,
+    default: ''
   }
 })
 </script>
@@ -252,8 +257,8 @@ const props = defineProps({
     <div id="player">
       <div id="player-track" ref="playerTrack" :class="{ active: isPlaying }">
         <div>
-          <div id="track-name">{{ trackName }}</div>
-          <div id="album-name">{{ albumName }}</div>
+          <div id="track-name">{{ trackNames[currIndex] }}</div>
+          <div id="album-name">{{ albums[currIndex] }}</div>
           <div id="track-time" ref="trackTime">
             <div id="current-time">{{ currentTime }}</div>
             <div id="track-length" ref="tTime">{{ trackLength }}</div>
@@ -311,10 +316,6 @@ const props = defineProps({
   </div>
 </template>
 
-<style>
-/* Add your styles here */
-</style>
-
 <style lang="scss" scoped>
 *:focus {
   outline: none;
@@ -334,6 +335,7 @@ body {
   width: 42rem;
   height: 8rem;
   margin: -4px auto;
+  opacity: 0.9;
 }
 
 #bg-artwork {
@@ -545,6 +547,7 @@ body {
   height: 100%;
   opacity: 0;
   z-index: -1;
+  object-fit: cover;
 }
 
 #album-art img.active {

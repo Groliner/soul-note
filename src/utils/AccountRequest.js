@@ -2,14 +2,14 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 15:20:16
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-08-12 17:25:18
+ * @LastEditTime: 2024-08-31 21:48:43
  */
 // axios请求
 import axios from 'axios'
 
 const instance = axios.create({
   baseURL: '/api/account',
-  timeout: 10000,
+  timeout: 60000,
   withCredentials: true
 })
 import { useUserStore } from '@/stores'

@@ -12,6 +12,8 @@ import {
   deleteDiaryPageAPI,
   updateDiaryPageAPI
 } from '@/api/diaryPage'
+import { encryptData, decryptData } from '@/composables/IOAESKey'
+
 const defaultDiary = [
   {
     id: 0,
@@ -63,7 +65,7 @@ export const useDiaryStore = defineStore(
       initAll.value = true
       for (let i = 0; i < diary.value.length; i++) {
         const diaryId = diary.value[i].id
-        if (diaryId !== 0) await getDiaryPage(diaryId)
+        if (diaryId !== 0) getDiaryPage(diaryId)
       }
     }
     const logout = () => {
@@ -98,6 +100,9 @@ export const useDiaryStore = defineStore(
         diaryPages.value[diaryId] = res.data.data.map((item) => {
           item.diaryPageContext.isEdited = false // 设置是否编辑过,便于后续判断是否需要提交
           return { ...item.diaryPage, context: item.diaryPageContext }
+        })
+        diaryPages.value[diaryId].map(async (item) => {
+          item.content = await decryptData(item.content)
         })
         return true
       }
@@ -229,10 +234,21 @@ export const useDiaryStore = defineStore(
       if (!pageList[index].context.isEdited && !isMust) {
         return 2 // 判断是否编辑过,未编辑过则不保存
       }
-      pageList[index].updatedTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
+      const diaryPage = {}
+      let diaryPageContext
+      Object.keys(pageList[index]).forEach((key) => {
+        if (key === 'context') {
+          diaryPageContext = pageList[index].context
+        } else {
+          diaryPage[key] = pageList[index][key]
+        }
+      })
+      diaryPage.updatedTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
+      diaryPage.content = await encryptData(diaryPage.content)
+
       const res = await updateDiaryPageAPI(pageList[index].diaryId, {
-        diaryPage: pageList[index],
-        diaryPageContext: pageList[index].context
+        diaryPage,
+        diaryPageContext
       })
       if (res.data.code == 1) {
         pageList[index].context.isEdited = false
@@ -297,6 +313,7 @@ export const useDiaryStore = defineStore(
       }
       return true
     }
+
     return {
       diary,
       diaryPages,

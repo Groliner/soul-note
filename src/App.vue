@@ -2,26 +2,22 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-08-11 20:25:16
+ * @LastEditTime: 2024-08-20 22:50:57
 -->
 <script setup>
 import zh from 'element-plus/es/locale/lang/zh-cn.mjs'
-import { ref, provide, watch } from 'vue'
+import { ref, provide, watch, onMounted } from 'vue'
 
 const pop = ref(false)
 provide('pressTime', 123)
 
-// import { useUserStore } from './stores'
-// import { storeToRefs } from 'pinia'
-// const userStore = useUserStore()
-// const { userDiary } = storeToRefs(userStore)
-
-// watch(userDiary, (newVal, oldVal) => {
-//   console.log('userDiary change', newVal, oldVal)
-// })
+import { useUserStore } from './stores'
+import { storeToRefs } from 'pinia'
+const userStore = useUserStore()
+const { userPreferences } = storeToRefs(userStore)
 </script>
 <template>
-  <div>
+  <div class="top-div" :class="{ crazy: userPreferences.theme == 1 }">
     <el-config-provider :locale="zh">
       <!-- 路由出口 -->
       <router-view v-slot="{ Component }">
@@ -42,7 +38,7 @@ provide('pressTime', 123)
   </div>
 </template>
 <style lang="scss">
-$times: 0.54s;
+$times: 0.44s;
 .fade-enter-active,
 .fade-leave-active {
   transition: all $times ease-in;
@@ -67,5 +63,9 @@ $times: 0.54s;
 }
 .popup-leave-active {
   transition: opacity $times * 0.6 cubic-bezier(0.5, 1, 0.89, 1);
+}
+
+.crazy {
+  filter: invert(1);
 }
 </style>

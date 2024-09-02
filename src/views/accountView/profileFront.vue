@@ -14,25 +14,23 @@ import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
 const messageStore = useMessageStore()
-const { userInfo, friends } = storeToRefs(userStore)
+const { userInfo, friends, userPreferences } = storeToRefs(userStore)
 let originalUserInfo = JSON.stringify({
   username: userInfo.value.username,
   email: userInfo.value.email,
   description: userInfo.value.description,
   avatar: userInfo.value.avatar
 })
-const diaries = computed(() =>
-  diaryStore.getLocalDiariesByUserId(userInfo.value.id)
-)
+const diaries = computed(() => diaryStore.getLocalDiariesByUserId(userInfo.value.id))
 import { gsap } from 'gsap'
 onUnmounted(() => {
   handleCancel()
 })
+
 // user Info edit
 const avatarInput = ref(null)
 const isEdit = ref(false)
 import { uploadImgAPI } from '@/api/fundamental'
-// 触发文件选择
 const triggerUpload = (target, value = true) => {
   if (!value) return
   target.click() // 打开文件选择对话框
@@ -112,41 +110,30 @@ function onEnter(el, done) {
   })
 }
 
-// 背景图片设置
-const backgroundImgInput = ref(null)
-const backImgSettingSize = ref('1.5em')
-const backImgSettingType = ref('light')
-const handleBackgroundImgChange = async (event) => {
-  const files = event.target.files
-  if (files.length > 0) {
-    const formData = new FormData()
-    formData.append('image', files[0])
-    const res = await uploadImgAPI(formData)
-    userStore.setBackgroundImg(res.data.data)
-  }
+// 个性化设置
+const SettingSize = ref('1.5em')
+const SettingType = ref('light')
+
+// 触发文件选择
+const handleSelfEdit = () => {
+  messageManager.showAccountSettingsModal()
 }
 </script>
 <template>
   <div class="pfl-wrapper">
     <div
       class="background-settings"
-      @mouseover="backImgSettingType = 'bold'"
-      @mouseleave="backImgSettingType = 'light'"
+      @mouseover="SettingType = 'bold'"
+      @mouseleave="SettingType = 'light'"
     >
       <a class="_">
         <PhFadersHorizontal
           class="icon"
-          :size="backImgSettingSize"
-          :weight="backImgSettingType"
-          @click="triggerUpload(backgroundImgInput)"
+          :size="SettingSize"
+          :weight="SettingType"
+          @click="handleSelfEdit"
         />
       </a>
-      <input
-        type="file"
-        ref="backgroundImgInput"
-        @change="handleBackgroundImgChange"
-        style="display: none"
-      />
     </div>
 
     <article>
@@ -158,46 +145,21 @@ const handleBackgroundImgChange = async (event) => {
         >
           <img :src="userInfo.avatar" />
         </button>
-        <input
-          type="file"
-          ref="avatarInput"
-          @change="handleAvatarChange"
-          style="display: none"
-        />
+        <input type="file" ref="avatarInput" @change="handleAvatarChange" style="display: none" />
         <div class="button button-edit">
-          <ph-note-pencil
-            class="icon_avatar"
-            v-show="!isEdit"
-            @click="isEdit = true"
-          />
-          <ph-check-circle
-            class="icon_avatar"
-            v-show="isEdit"
-            @click="handleSave"
-          />
+          <ph-note-pencil class="icon_avatar" v-show="!isEdit" @click="isEdit = true" />
+          <ph-check-circle class="icon_avatar" v-show="isEdit" @click="handleSave" />
         </div>
         <div class="button button-cancel" :class="{ active: isEdit }">
-          <ph-receipt-x
-            class="icon_cancel"
-            v-show="isEdit"
-            @click="handleCancel"
-          />
+          <ph-receipt-x class="icon_cancel" v-show="isEdit" @click="handleCancel" />
         </div>
       </div>
       <div class="profile-info">
         <h1 class="profile_username">
-          <flexInput
-            v-model:text="userInfo.username"
-            placeholder="username"
-            :status="isEdit"
-          />
+          <flexInput v-model:text="userInfo.username" placeholder="username" :status="isEdit" />
         </h1>
         <a class="profile_email">
-          <flexInput
-            v-model:text="userInfo.email"
-            placeholder="email"
-            :status="isEdit"
-          />
+          <flexInput v-model:text="userInfo.email" placeholder="email" :status="isEdit" />
         </a>
         <p>
           <flexInput
@@ -211,14 +173,14 @@ const handleBackgroundImgChange = async (event) => {
         <!-- 好友列表 -->
         <div class="friend-list">
           <TransitionGroup tag="ul">
-            <li v-for="friend in friends" :key="friend.id">
+            <li v-for="friend in friends" :key="friend.id" :class="{ online: friend.isOnline }">
               <div class="friend-card" @click="handleFriends">
                 <div class="friend-avatar">
                   <img :src="friend.avatar" />
                 </div>
                 <div class="friend-info">
                   <h4>{{ friend.username }}</h4>
-                  <p>{{ friend.description }}</p>
+                  <p>{{ friend.email }}</p>
                 </div>
                 <a class="options"><ph-sliders-horizontal class="icon" /></a>
               </div>
@@ -240,7 +202,7 @@ const handleBackgroundImgChange = async (event) => {
                 <img :src="diary.cover" />
                 <figcaption
                   :class="{
-                    active: diary.id === userInfo.lastReadDiaryId
+                    active: diary.id === userPreferences.lastReadDiaryId
                   }"
                 >
                   {{ diary.title }}
@@ -297,7 +259,6 @@ article {
   width: auto;
   height: auto;
   padding: 50px 0;
-  overflow: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -319,8 +280,9 @@ article {
 
       img {
         width: 100%;
+        height: 100%;
         object-fit: cover;
-        object-position: center;
+        object-position: top;
         transition: transform 0.25s;
         transform: scale(1.1);
         user-select: none;
@@ -404,12 +366,30 @@ article {
       justify-items: center;
     }
 
+    & > * {
+      max-height: 80vh;
+    }
+
     .friend-list {
-      width: 90%;
-      min-height: 3rem;
+      // min-height: 3rem;
       padding: 3rem;
+      padding-top: 0;
+      margin-top: 2rem;
       width: 26rem;
-      min-width: 200px;
+      overflow-y: scroll;
+      user-select: none;
+      &::-webkit-scrollbar {
+        width: 2px;
+        height: 2px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #2dd806;
+        border-radius: 10px;
+      }
+      &::-webkit-scrollbar-track {
+        background: #f0dde6;
+        border-radius: 10px;
+      }
       ul {
         padding: 0;
       }
@@ -418,9 +398,13 @@ article {
         transition: all 0.25s;
         border-radius: 10px;
         overflow: hidden;
+        margin-top: 1rem;
+
         .friend-card {
-          display: flex;
+          display: grid;
           align-items: center;
+          grid-template-columns: 5rem 11.3rem 2.7rem;
+          column-gap: 0.5rem;
           border-bottom: 4px solid var(--c-gray-400);
           cursor: pointer;
         }
@@ -431,16 +415,39 @@ article {
           border-radius: 50%;
           background-clip: border-box;
           overflow: hidden;
+          transition: all 0.25s;
+
+          box-shadow: 0 0 0.5rem #babbbc;
+          border: 2px solid #fafafa;
+
           img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: top;
+            transition: transform 0.25s;
+          }
+          &:hover {
+            box-shadow:
+              $shadow,
+              $inner-shadow,
+              0 0 20px #9fabc3b9;
+            border-color: transparent;
+
+            img {
+              transform: scale(1.08);
+            }
           }
         }
         .friend-info {
-          margin-right: 2em;
           display: flex;
           flex-direction: column;
+          height: 100%;
+          justify-content: center;
+          & > * {
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
           h4 {
             font-size: 1.2em;
             margin-bottom: 0.5rem;
@@ -461,6 +468,8 @@ article {
           }
         }
         &:hover {
+          filter: opacity(1);
+
           transform: translateY(-5px);
           box-shadow:
             0 0 20px rgba(0, 0, 0, 0.08),
@@ -475,6 +484,34 @@ article {
             }
           }
         }
+        filter: opacity(0.8);
+        &.online {
+          filter: opacity(1);
+          .friend-card {
+            border-bottom: 3px solid #5ed476ce;
+
+            .friend-avatar:hover {
+              box-shadow:
+                $shadow,
+                $inner-shadow,
+                0 0 20px #fb74a86e;
+            }
+          }
+          &:hover {
+            box-shadow:
+              0 0 20px rgba(105, 206, 219, 0.31),
+              $shadow;
+            h4 {
+              color: var(--primary);
+            }
+            .options {
+              background-color: var(--c-gray-400);
+              .icon {
+                color: var(--c-gray-900);
+              }
+            }
+          }
+        }
 
         &:not(:last-child) {
           margin-bottom: 1em;
@@ -484,10 +521,25 @@ article {
 
     .diary-list {
       align-self: flex-start;
-      margin: 1rem 0;
+      margin-top: 1.8rem;
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
+
+      overflow-y: scroll;
+      user-select: none;
+      &::-webkit-scrollbar {
+        width: 2px;
+        height: 2px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #35f01c;
+        border-radius: 10px;
+      }
+      &::-webkit-scrollbar-track {
+        background: #f5dada;
+        border-radius: 10px;
+      }
       @media screen and (max-width: 630px) {
         justify-content: center;
       }

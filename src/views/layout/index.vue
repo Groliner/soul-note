@@ -46,14 +46,14 @@ const updateTime = setInterval(() => {
   time.value.hour = t.getHours().toString().padStart(2, '0')
   time.value.minute = t.getMinutes().toString().padStart(2, '0')
   time.value.second = t.getSeconds().toString().padStart(2, '0')
-}, 3000)
+}, 10000)
 
 //背景图片,需要修改其他配件的透明度,否则会有不协调感.
 import { useUserStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
-const { userInfo } = storeToRefs(userStore)
-const backgroundImg = computed(() => userInfo.value.backgroundImg)
+const { userPreferences } = storeToRefs(userStore)
+const backgroundImg = computed(() => userPreferences.value.background)
 </script>
 <template>
   <div class="mapper">
@@ -63,13 +63,9 @@ const backgroundImg = computed(() => userInfo.value.backgroundImg)
     <section class="head-mask"></section>
     <section class="timer">
       <span class="timer__left"
-        >{{ time.hour || '--' }}:{{
-          time.minute || '--'
-        }}&nbsp;&shortmid;&nbsp;</span
+        >{{ time.hour || '--' }}:{{ time.minute || '--' }}&nbsp;&shortmid;&nbsp;</span
       >
-      <span class="timer__right"
-        >{{ time.month || '--' }}/{{ time.day || '--' }}</span
-      >
+      <span class="timer__right">{{ time.month || '--' }}/{{ time.day || '--' }}</span>
     </section>
     <leftNav class="_nav" />
     <section class="main">
