@@ -112,6 +112,7 @@ export const useMessageStore = defineStore(
           SAVE_SUCCESS: '账号 保存 成功',
           LOAD_SUCCESS: '账号信息 加载 成功',
           BACKGROUND_IMG_UPLOAD_SUCCESS: '背景 设置 成功',
+          REFRESH_AUTHORIZE_SUCCESS: '刷新授权成功',
 
           LOG_OUT_ERROR: '退出失败',
           SAVE_ERROR: '账号 保存 失败',
@@ -130,6 +131,7 @@ export const useMessageStore = defineStore(
           SAVE_SUCCESS: 'account save success',
           LOAD_SUCCESS: 'account load success',
           BACKGROUND_IMG_UPLOAD_SUCCESS: 'background set success',
+          REFRESH_AUTHORIZE_SUCCESS: 'Refresh authorize success',
 
           LOG_OUT_ERROR: 'Log out error',
           SAVE_ERROR: 'account save error',

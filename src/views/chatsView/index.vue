@@ -2,12 +2,15 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 12:19:25
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-09-02 21:17:15
+ * @LastEditTime: 2024-09-05 22:28:43
 -->
-<script setup></script>
+<script setup>
+import chatBox from './Chat.vue'
+</script>
 <template>
   <div class="container">
     <p>测试中</p>
+    <chatBox></chatBox>
   </div>
 </template>
 <style lang="scss" scoped>
@@ -16,14 +19,5 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  ul {
-    font-size: 1.3rem;
-    margin-left: 2em;
-    padding: 0;
-    li {
-      margin: 0 10px;
-      cursor: pointer;
-    }
-  }
 }
 </style>

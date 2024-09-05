@@ -180,25 +180,31 @@ export const useUserStore = defineStore(
           tokens.value = res.data.data
         }
       } catch (e) {
-        let _ = true
-        if (e.response.status == 401 && userInfo.value.isRememberMe) {
-          // 如果refreshToken过期，就重新登录
-          const res_ = await getUserInfo() // 通过访问授权服务器的api来调用rememberMe功能
-          if (res_.data.error != 'invalid_session') {
-            const res = await getAuthorizationCode()
-            _ = false
-            if (res.data.code == 1) {
-              await setToken(res.data.data.code)
-            } else {
-              ElMessage({
-                message: res.data.msg,
-                grouping: true,
-                type: 'error'
-              })
-            }
+        regularInfo()
+      } finally {
+        localStorage.setItem('lastTokenRefreshTime', Date.now().toString()) // 每次刷新后更新时间
+      }
+    }
+    const regularInfo = async () => {
+      let _ = false
+      try {
+        const res_ = await getUserInfo() // 通过访问授权服务器的api来调用rememberMe功能
+        if (res_.data.code == 1) {
+          const res = await getAuthorizationCode()
+          _ = true
+          if (res.data.code == 1) {
+            await setToken(res.data.data.code)
+          } else {
+            ElMessage({
+              message: res.data.msg,
+              grouping: true,
+              type: 'error'
+            })
           }
         }
-        if (_) {
+      } catch (e) {
+      } finally {
+        if (!_) {
           ElMessage({
             message: messageStore.accountConstant['SESSION_EXPIRED'],
             grouping: true,
@@ -206,8 +212,7 @@ export const useUserStore = defineStore(
           })
           logout()
         }
-      } finally {
-        localStorage.setItem('lastTokenRefreshTime', Date.now().toString()) // 每次刷新后更新时间
+        return _
       }
     }
 
@@ -476,6 +481,7 @@ export const useUserStore = defineStore(
       saveAccountInfo,
       login,
       logout,
+      regularInfo,
       updateLocalUserDiaryStatus,
       getLocalUserDiaryStatus,
       addLocalUserDiaryStatus,

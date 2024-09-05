@@ -29,12 +29,13 @@ const register_ = async () => {
   formData.append('captcha', captcha.value)
   const res = await register(formData)
 }
+import { generateAESKey, encryptPassword } from '@/composables/IOAESKey'
 
 const login_ = async () => {
   const formData = new FormData()
   formData.append('username', username.value)
-  formData.append('password', password.value)
   formData.append('remember-me', remember.value)
+  formData.set('password', await encryptPassword(password.value))
   const res = await login(formData)
 }
 const logout = async () => {

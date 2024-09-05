@@ -17,6 +17,8 @@ const backgroundImgSelectNum = ref(
     0
   )
 )
+let backgroundImgSelectedNum = backgroundImgSelectNum.value
+
 const deletedImgList = ref([])
 const addImgList = ref([])
 
@@ -105,6 +107,7 @@ const handleBackgroundImgChange = async (event) => {
 }
 const handleBackgroundImgSelect = () => {
   userPreferences.value.background = backgroundList[backgroundImgSelectNum.value].imgUrl
+  backgroundImgSelectedNum = backgroundImgSelectNum.value
 }
 
 const handleBackgroundImgDelete = () => {
@@ -117,9 +120,13 @@ const handleBackgroundImgDelete = () => {
     )
     .then((res) => {
       if (res) {
-        deletedImgList.value.push(backgroundList[backgroundImgSelectNum.value])
-        backgroundList.splice(backgroundImgSelectNum.value, 1)
-        backgroundImgSelectNum.value = Math.min(backgroundImgSelectNum.value--, 0)
+        const num = backgroundImgSelectNum.value
+        deletedImgList.value.push(backgroundList[num])
+        backgroundList.splice(num, 1)
+        backgroundImgSelectNum.value = Math.min(num--, 0)
+        if (backgroundImgSelectedNum == num) {
+          backgroundImgSelectedNum = backgroundImgSelectNum.value
+        }
       }
     })
 }
@@ -137,7 +144,7 @@ const handleSave = () => {
   const del_ = deletedImgList.value.filter((x) => !addImgList.value.includes(x))
   if (add_.length > 0) addUserBackgroundImgAPI(add_)
   if (del_.length > 0) deleteUserBackgroundImgAPI(del_)
-  userPreferences.value.background = backgroundList[backgroundImgSelectNum.value].imgUrl
+  userPreferences.value.background = backgroundList[backgroundImgSelectedNum].imgUrl
   userStore.saveAccountInfo().then(() => {
     saveProcess.value = false
     open.value = false

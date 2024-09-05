@@ -22,6 +22,12 @@ let originalUserInfo = JSON.stringify({
   avatar: userInfo.value.avatar
 })
 const diaries = computed(() => diaryStore.getLocalDiariesByUserId(userInfo.value.id))
+const isOnline = computed(() => {
+  const list = friends.value.filter((user) => user.id == userInfo.value.id)
+  if (list.length > 0) {
+    return list[0].isOnline
+  }
+})
 import { gsap } from 'gsap'
 onUnmounted(() => {
   handleCancel()
@@ -70,7 +76,8 @@ import {
   PhCheckCircle,
   PhReceiptX,
   PhSlidersHorizontal,
-  PhFadersHorizontal
+  PhFadersHorizontal,
+  PhArrowClockwise
 } from '@phosphor-icons/vue'
 import { messageManager } from '@/directives/index'
 
@@ -88,6 +95,7 @@ const handleClick = (diaryId) => {
 }
 
 import { Flip } from 'gsap/all'
+import { ElMessage } from 'element-plus'
 gsap.registerPlugin(Flip) // 后续可以添加删除后的移动动画
 
 // 日记本列表动画
@@ -111,28 +119,43 @@ function onEnter(el, done) {
 }
 
 // 个性化设置
-const SettingSize = ref('1.5em')
 const SettingType = ref('light')
 
 // 触发文件选择
 const handleSelfEdit = () => {
   messageManager.showAccountSettingsModal()
 }
+
+const isRefreshing = ref(false)
+const handleRefresh = async () => {
+  if (isRefreshing.value) return
+  isRefreshing.value = true
+  const res = await userStore.regularInfo()
+  if (res) {
+    ElMessage({
+      message: messageStore.accountConstant['REFRESH_AUTHORIZE_SUCCESS'],
+      type: 'success',
+      grouping: true
+    })
+  }
+  isRefreshing.value = false
+}
 </script>
 <template>
   <div class="pfl-wrapper">
+    <div class="authRefresh" :class="{ refreshing: isRefreshing }">
+      <PhArrowClockwise class="icon" @click="handleRefresh" />
+      <div class="text">
+        {{ userStore.selectLanguage === 'en-US' ? 'refreshAuth' : '刷新权限' }}
+      </div>
+    </div>
     <div
       class="background-settings"
       @mouseover="SettingType = 'bold'"
       @mouseleave="SettingType = 'light'"
     >
       <a class="_">
-        <PhFadersHorizontal
-          class="icon"
-          :size="SettingSize"
-          :weight="SettingType"
-          @click="handleSelfEdit"
-        />
+        <PhFadersHorizontal class="icon" :weight="SettingType" @click="handleSelfEdit" />
       </a>
     </div>
 
@@ -169,6 +192,7 @@ const handleSelfEdit = () => {
           />
         </p>
       </div>
+      <div class="dash" :class="{ online: isOnline }"></div>
       <div class="profile-content">
         <!-- 好友列表 -->
         <div class="friend-list">
@@ -225,7 +249,50 @@ const handleSelfEdit = () => {
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.08);
   position: relative;
 }
+.authRefresh {
+  position: absolute;
+  top: 1.3em;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
+  .icon {
+    cursor: pointer;
+    transition: color 0.25s ease;
+    font-size: 1.7em;
+    color: var(--c-gray-500);
+    &:hover {
+      color: #8fd8b6;
+    }
+  }
+  .text {
+    font-size: 1rem;
+    color: $sucColor;
+    opacity: 0;
+    user-select: none;
+    cursor: auto;
+    transition: all 0.25s ease;
+  }
+  &.refreshing {
+    .icon {
+      cursor: progress;
+      color: #8fd8b6;
+      animation: spin 1s linear infinite;
+    }
+  }
+  & .icon:hover + .text {
+    opacity: 1;
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
 .background-settings {
   position: absolute;
   top: 1.3em;
@@ -237,7 +304,7 @@ const handleSelfEdit = () => {
 
   .icon {
     transition: font-size 0.25s ease;
-    font-size: 1.4em;
+    font-size: 1.6em;
     color: var(--c-gray-500);
   }
   ._ {
@@ -248,7 +315,7 @@ const handleSelfEdit = () => {
 
   &:hover {
     .icon {
-      font-size: 1.55em;
+      font-size: 1.66em;
     }
     border-color: #1dc779ad;
   }
@@ -353,12 +420,19 @@ article {
       }
     }
   }
-  .profile-content {
+  .dash {
     margin-top: 1rem;
+    height: 2px;
+    width: 100%;
+    background-color: var(--primary-light);
+    &.online {
+      background-color: $onlineColor;
+    }
+  }
+  .profile-content {
     display: grid;
     grid-template-columns: 1fr 4fr;
     gap: 1rem;
-    border-top: 2px solid var(--primary-light);
     justify-content: space-around;
 
     @media screen and (max-width: 630px) {
@@ -488,7 +562,7 @@ article {
         &.online {
           filter: opacity(1);
           .friend-card {
-            border-bottom: 3px solid #5ed476ce;
+            border-bottom: 3px solid $onlineColor;
 
             .friend-avatar:hover {
               box-shadow:

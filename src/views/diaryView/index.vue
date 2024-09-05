@@ -242,21 +242,21 @@ function onLeave(el, done) {
   position: fixed;
   left: 0;
   z-index: 100;
-  @media screen and (max-width: 1200px) {
-    left: 40px;
-    top: 10vh;
-  }
-  @media screen and (max-width: 800px) {
-    left: 30px;
-  }
+  // @media screen and (max-width: 1200px) {
+  //   left: 40px;
+  //   top: 10vh;
+  // }
+  // @media screen and (max-width: 800px) {
+  //   left: 30px;
+  // }
 
   ul {
     color: rgb(68, 68, 68);
-    padding-left: 50px;
+    padding-left: 2rem;
     height: 70vh;
     overflow-y: scroll;
     user-select: none;
-    width: 150%;
+    padding-right: 1.8rem;
     &::-webkit-scrollbar {
       width: 0;
       height: 2px;
@@ -313,10 +313,10 @@ function onLeave(el, done) {
 }
 
 .diaryNav li .nav_link:hover:before {
-  left: -77px;
+  left: -67px;
 }
 .diaryNav li .nav_link.active:before {
-  left: -66px;
+  left: -56px;
 }
 .diaryNav li .nav_link.active ~ .icon_pencil {
   opacity: 1;
