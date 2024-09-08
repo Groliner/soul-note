@@ -54,10 +54,14 @@ import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const { userPreferences } = storeToRefs(userStore)
 const backgroundImg = computed(() => userPreferences.value.background)
+
+import testBackground from '@/assets/images/background.png'
+const isTest = computed(() => window.location.hostname === 'localhost')
 </script>
 <template>
   <div class="mapper">
-    <img class="background-img" :src="backgroundImg" />
+    <img class="background-img" :src="testBackground" v-if="isTest" />
+    <img class="background-img" :src="backgroundImg" v-else />
 
     <!-- head-mask 暂定透明 -->
     <section class="head-mask"></section>

@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-08-31 09:58:39
+ * @LastEditTime: 2024-09-08 11:08:53
  */
 import { fileURLToPath, URL } from 'node:url'
 
@@ -36,6 +36,11 @@ export default defineConfig({
         changeOrigin: true, //是否跨域
         rewrite: (path) => path.replace(/^\/api/, '') //重写路径，去掉路径中的/api
       }
+      // '/ws': {
+      //   target: 'ws://localhost:11114',
+      //   changeOrigin: true,
+      //   rewrite: (path) => path.replace(/^\/ws/, '')
+      // }
     }
   },
   resolve: {

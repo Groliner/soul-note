@@ -145,6 +145,19 @@ export const useMessageStore = defineStore(
       }
       return msg[userStore.selectLanguage]
     })
+    const chatConstant = computed(() => {
+      const msg = {
+        'zh-CN': {
+          SEND_SUCCESS: '发送 成功',
+          SEND_ERROR: '发送 失败'
+        },
+        'en-US': {
+          SEND_SUCCESS: 'send success',
+          SEND_ERROR: 'send error'
+        }
+      }
+      return msg[userStore.selectLanguage]
+    })
     const tips = computed(() => {
       const msg = {
         'zh-CN': {
@@ -162,7 +175,8 @@ export const useMessageStore = defineStore(
       homeConstant,
       diaryConstant,
       diaryPageConstant,
-      accountConstant
+      accountConstant,
+      chatConstant
     }
   },
   {

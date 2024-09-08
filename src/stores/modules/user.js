@@ -28,6 +28,7 @@ import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
 import { ElMessage } from 'element-plus'
 
 import defaultIMG from '../../assets/images/logo.png'
+import avatar from '@/assets/images/logo.png'
 
 const defaultUserInfoString = JSON.stringify({
   avatar: defaultIMG,
@@ -40,6 +41,17 @@ const defaultUserInfoString = JSON.stringify({
   updatedTime: '',
   isRememberMe: false
 })
+const defaultUserInfo = {
+  avatar: avatar,
+  backgroundImg:
+    'https://java-spring-mybatis.oss-cn-beijing.aliyuncs.com/3d6d7ffe-2c03-45a0-bd45-6b31ea0767c9.png',
+  createdTime: '2024-08-15T10:56:02',
+  description: '测试用户',
+  email: 'p2rr2@r32r23rqweewrew.com',
+  id: 0,
+  isOnline: true,
+  lastReadDiaryId: 152
+}
 const defaultFriends = []
 const defaultUserDiary = [
   {
@@ -420,6 +432,12 @@ export const useUserStore = defineStore(
       const user = friends.value.find((item) => item.id === id)
       return user ? user.username : ''
     }
+    const getUserInfoById = (id) => {
+      if (userInfo.value.id == id)
+        return { ...userInfo.value, backgroundImg: userPreferences.value.background }
+      const user = friends.value.find((item) => item.id == id)
+      return user ? user : defaultUserInfo
+    }
 
     const selectLanguage = computed(
       () => userPreferences.value.languageList[userPreferences.value.language]
@@ -487,7 +505,8 @@ export const useUserStore = defineStore(
       addLocalUserDiaryStatus,
       deleteLocalUserDiaryStatus,
       setLocalLastReadDiaryId,
-      getUsernameById
+      getUsernameById,
+      getUserInfoById
     }
   },
   {

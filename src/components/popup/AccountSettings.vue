@@ -120,7 +120,7 @@ const handleBackgroundImgDelete = () => {
     )
     .then((res) => {
       if (res) {
-        const num = backgroundImgSelectNum.value
+        let num = backgroundImgSelectNum.value
         deletedImgList.value.push(backgroundList[num])
         backgroundList.splice(num, 1)
         backgroundImgSelectNum.value = Math.min(num--, 0)

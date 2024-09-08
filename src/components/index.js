@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 12:19:25
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-08-31 18:46:10
+ * @LastEditTime: 2024-09-08 17:07:09
  */
 // 插件方式将组件全局注册
 import slider from './Slider.vue'
@@ -17,6 +17,7 @@ import popup from './popup/Popup.vue'
 import flexInput from './FlexInput.vue'
 import send from './modules/SendEmail.vue'
 import blusterButton from './modules/BlusterButton.vue'
+import FriendList from './modules/FriendList.vue'
 export const componentPlugin = {
   install(app) {
     app.component('ClockComponent', clock)
@@ -31,5 +32,6 @@ export const componentPlugin = {
     app.component('flexInput', flexInput)
     app.component('sendButton', send)
     app.component('blusterButton', blusterButton)
+    app.component('friendList', FriendList)
   }
 }
