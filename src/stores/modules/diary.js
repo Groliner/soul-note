@@ -58,9 +58,12 @@ export const useDiaryStore = defineStore(
     const messageStore = useMessageStore()
     const diary = ref(JSON.parse(JSON.stringify(defaultDiary)))
     const diaryPages = ref(JSON.parse(defaultPages))
-    const initAll = ref(false) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
-    const init = async () => {
-      if (initAll.value) return
+    const initAll = ref(
+      !window.location.pathname.startsWith('/diary') &&
+        !window.location.pathname.startsWith('/account')
+    ) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
+    const init = async (isForceRefresh) => {
+      if (initAll.value && !isForceRefresh) return
       await getDiary()
       initAll.value = true
       for (let i = 0; i < diary.value.length; i++) {

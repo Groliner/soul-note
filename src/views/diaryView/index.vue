@@ -5,6 +5,8 @@ import pagination from './pagination.vue'
 import { useDiaryStore, useUserStore, useMessageStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { PhPencilLine } from '@phosphor-icons/vue'
+import { formatTimeToSecond } from '@/composables/formatTime'
+
 const userStore = useUserStore()
 const messageStore = useMessageStore()
 const { userDiary, userInfo, userPreferences } = storeToRefs(userStore)
@@ -39,6 +41,8 @@ const observer = new ResizeObserver((entries) => {
   }
 })
 onMounted(() => {
+  userStore.updateUserInfo()
+  diaryStore.init()
   // 开始观察<span>元素
   observer.observe(pageTitleInputMirrorRef.value)
 
@@ -218,12 +222,15 @@ function onLeave(el, done) {
       @flip="handleFlip"
     />
     <div class="update_time">
-      <p>Updated at: {{ diaryPage.updatedTime }}</p>
+      <p>
+        {{ userStore.selectLanguage === 'en-US' ? 'Updated at' : '更新于' }}:
+        {{ formatTimeToSecond(diaryPage.update_time) }}
+      </p>
     </div>
     <div class="button_save">
       <div class="mapper">
         <button @click="handleSave" class="custom-btn btn-16">
-          {{ userPreferences.language === 1 ? 'SAVE' : '保存' }}
+          {{ userStore.selectLanguage === 'en-US' ? 'SAVE' : '保存' }}
         </button>
       </div>
     </div>
@@ -234,7 +241,7 @@ function onLeave(el, done) {
   padding-bottom: 9.3rem;
   padding-top: 70px;
   @media screen and (max-width: 1200px) {
-    padding-top: 88px;
+    padding-top: 40px;
   }
 }
 .diaryNav {
@@ -338,6 +345,9 @@ article {
     transform: translateX(-50%);
     z-index: 100;
     font-size: 1.8em;
+    @media screen and (max-width: 1200px) {
+      top: 51px;
+    }
     input {
       background-color: transparent;
       outline: none;

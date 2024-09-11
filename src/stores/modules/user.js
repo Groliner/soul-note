@@ -172,8 +172,8 @@ export const useUserStore = defineStore(
     }
     const isAuthenticated = computed(() => (tokens.value?.access_token ? true : false))
 
-    const initAll = ref(false)
-    const isNeedToUpdate = ref(true) // 减少请求次数
+    const initAll = ref(!window.location.pathname.startsWith('/account')) // 是否初始化过
+    const isNeedToUpdate = ref(window.location.pathname.startsWith('/account')) // 减少请求次数
     // 设置token
     const setToken = async (code) => {
       const res = await getAccessToken(code)
@@ -276,9 +276,9 @@ export const useUserStore = defineStore(
         ElMessage.info(res.data.msg)
       }
     }
-    const updateUserInfo = async () => {
+    const updateUserInfo = async (isForceRefresh) => {
       // 如果已经初始化过了，就不再初始化
-      if (initAll.value) return
+      if (initAll.value && !isForceRefresh) return
       const res = await getUserInfoAPI()
       initAll.value = true
       if (res.data.code == 1) {
@@ -286,7 +286,7 @@ export const useUserStore = defineStore(
         userInfo.value.isEdited = false
         if (userInfo.value.id === 0 || userInfo.value.id === undefined) return
         getUserPreferences()
-        getUserDiaryStatus()
+        getUserDiaryStatus(isForceRefresh)
         getUserWordCount()
         getFriends()
         ElMessage({
@@ -296,8 +296,8 @@ export const useUserStore = defineStore(
         })
       } else ElMessage.error(res.data.msg)
     }
-    const getUserDiaryStatus = async (userId = userInfo.value.id) => {
-      if (!isNeedToUpdate.value) return true
+    const getUserDiaryStatus = async (isForceRefresh, userId = userInfo.value.id) => {
+      if (!isNeedToUpdate.value && !isForceRefresh) return true
       const res = await getUserDiaryStatusAPI({ userId })
       if (res.data.code === 1) {
         userDiary.value = res.data.data

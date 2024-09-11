@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-09-06 12:40:25
+ * @LastEditTime: 2024-09-11 16:50:03
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -163,7 +163,7 @@ import { useUserStore, useDiaryStore, useMessageStore } from '@/stores'
 router.beforeEach((to, from) => {
   const userStore = useUserStore()
   const messageStore = useMessageStore()
-  const diaryStore = useDiaryStore()
+  console.log(messageStore.tips['REFRESH_TIPS'])
   if (
     !['home', 'login', 'test', '404 not found', 'oauth'].includes(to.name) &&
     !userStore.isAuthenticated
@@ -171,14 +171,15 @@ router.beforeEach((to, from) => {
     // userStore.logout()
     return { name: 'login' }
   }
-  if (['account', 'diary'].includes(to.name)) {
-    console.log(messageStore.tips['REFRESH_TIPS'])
-    userStore.getUserDiaryStatus()
-    diaryStore.init()
-  }
-  if (['account'].includes(to.name)) {
-    userStore.updateUserInfo()
-  }
+  // 此处的更新逻辑分别下放到各自的index.vue中
+  // if (['account', 'diary'].includes(to.name)) {
+  //   console.log(messageStore.tips['REFRESH_TIPS'])
+  //   userStore.getUserDiaryStatus()
+  //   diaryStore.init()
+  // }
+  // if (['account'].includes(to.name)) {
+  //   userStore.updateUserInfo()
+  // }
   return true
 })
 

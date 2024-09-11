@@ -2,28 +2,72 @@
  * @Author: Gro lin
  * @Date: 2024-08-31 17:54:31
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-09-08 22:16:26
+ * @LastEditTime: 2024-09-11 17:47:38
 -->
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue'
 import { formatTimeToSecond } from '@/composables/formatTime'
-import { PhPaperclip, PhStackMinus, PhArrowCircleDown } from '@phosphor-icons/vue'
-import { useChatStore, useUserStore } from '@/stores'
+import { PhPaperclip, PhTrash, PhArrowCircleDown, PhSpinnerGap } from '@phosphor-icons/vue'
+import { useChatStore, useUserStore, useMessageStore } from '@/stores'
 import gsap from 'gsap'
 import { ScrollToPlugin } from 'gsap/all'
 import { storeToRefs } from 'pinia'
 gsap.registerPlugin(ScrollToPlugin)
 const chatWindowMessage = ref('')
 const chatThread = ref(null)
-const sendChannelOpen = ref(true)
-const chatName =
-  "It's about not knowing what to name it, so I'm just going to make it up as I go along."
 const attachFilesNameLength = 12
 const chatStore = useChatStore()
 const userStore = useUserStore()
+const messageStore = useMessageStore()
 
-const { chatBox, chatId } = storeToRefs(chatStore)
+const { chatBox, chatId, isConnected } = storeToRefs(chatStore)
 const receiveUserInfo = computed(() => userStore.getUserInfoById(chatId.value))
+// import sakura_cover from '@/assets/music/桜咲く.jpg'
+// import light_cover from '@/assets/music/光芒.jpg'
+// import light from '@/assets/music/光芒.ogg'
+// import rimless_cover from '@/assets/music/Rimless ～无边的世界～.jpg'
+// import big from '@/assets/images/Snipaste_2024-08-31_09-56-14.png'
+// chatBox.value.push({
+//   id: '5e576650-7c14-4f74-8da4-3518aa188ae3',
+//   receiveId: 79,
+//   sendId: 79,
+//   isSelf: true,
+//   type: 'file',
+//   content: '哈哈哈哈哈哈哈哈',
+//   time: '2024-09-09 22:04:51',
+//   status: 'sent',
+//   isPinned: false,
+//   isChannel: false,
+//   fileNames: ['Iroha Isshiki [Oregairu].jpg', '下载 (3).jpg', '雪之下雪乃.jpg'],
+//   fileNameUriMapList: [
+//     {
+//       name: 'Iroha Isshiki [Oregairu].jpg',
+//       uri: sakura_cover
+//     },
+//     {
+//       name: '下载 (3).jpg',
+//       uri: light_cover
+//     },
+//     {
+//       name: '雪之下雪乃.ogg',
+//       uri: light
+//     },
+//     {
+//       name: '雪之下.ogg',
+//       uri: light
+//     },
+//     {
+//       name: '雪.png',
+//       uri: big
+//     },
+//     {
+//       name: '雪之下雪乃.jpg',
+//       uri: rimless_cover
+//     }
+//   ]
+// })
+const canGetMoreMessages = ref(true)
+const isGettingMoreMessages = ref(false)
 const handleMessage = (event) => {
   if (event.key === 'Enter' && !event.shiftKey) {
     // 阻止默认换行行为并执行发送操作
@@ -46,29 +90,81 @@ const autoExpand = (event) => {
   target.scrollTop = target.scrollHeight
 }
 import { v4 as uuidv4 } from 'uuid'
+import { ElMessage } from 'element-plus'
 const sendMessage = () => {
-  if (chatWindowMessage.value.length === 0) return
+  // 检查是否有输入
+  if (chatWindowMessage.value.length === 0 && attachedFiles.value.length === 0) return
+
+  // 构造基础消息
   const message = {
     id: uuidv4(),
     receiveId: chatId.value,
     sendId: userStore.userInfo.id,
-    content: chatWindowMessage.value,
     isSelf: true,
-    type: 'text',
+    type: attachedFiles.value.length > 0 ? 'file' : 'text',
+    content: chatWindowMessage.value,
     time: formatTimeToSecond(new Date()),
     status: 'sending',
-    uri: '',
     isPinned: false,
-    channelId: null
+    isChannel: false,
+    fileNames: [] // 初始化文件数组
   }
-  chatStore.sendMessage(message)
+
+  // 计算文件大小并检查
+  const totalFileSize = attachedFiles.value.reduce((total, file) => total + file.size, 0)
+  if (attachedFiles.value.length > 0 && totalFileSize / 1024 / 1024 > 10) {
+    ElMessage({
+      message: messageStore.chatConstant['SEND_OVER_SIZE_WARRING'],
+      type: 'warning',
+      grouping: true
+    })
+    return
+  }
+
+  // 如果是文件消息，处理文件
+  if (attachedFiles.value.length > 0) {
+    const formData = new FormData()
+
+    attachedFiles.value.forEach((file) => {
+      message.fileNames.push(file.name) // 将文件名保存到消息对象
+      formData.append('fileContents', file)
+    })
+    formData.append('id', message.id)
+    formData.append('receiveId', message.receiveId)
+    formData.append('isChannel', message.isChannel)
+    chatStore.sendFiles(message, formData) // 发送文件消息
+    attachedFiles.value = [] // 发送后清空文件
+  } else {
+    // 文本消息处理
+    chatStore.sendMessage(message) // 发送文本消息
+  }
+
+  // 清空输入框
   chatWindowMessage.value = ''
+
+  // 处理界面更新
   nextTick(() => {
     scrollToBottom(chatThread.value)
     autoExpand({ target: document.querySelector('.chat-message') })
   })
 }
+
+onMounted(() => {
+  const chat_thread = document.querySelector('.chat-thread')
+  chat_thread.addEventListener('scroll', checkScrollPosition)
+  // 在刷新页面此处滚动条并没有渲染出来，作用在视图切换
+  // scrollToBottom(chat_thread)
+  checkScrollPosition()
+
+  // focusChatFunction() // 是否添加这个功能有待商榷。默认只有用户点击输入框才会聚焦
+})
+onUnmounted(() => {
+  const chat_thread = document.querySelector('.chat-thread')
+  chat_thread.removeEventListener('scroll', checkScrollPosition)
+})
+
 const scrollToBottom = (target) => {
+  // console.log(target)
   gsap.to(target, {
     scrollTo: {
       y: 'max',
@@ -77,27 +173,26 @@ const scrollToBottom = (target) => {
     }
   })
 }
-onMounted(() => {
-  scrollToBottom(chatThread.value)
-  // focusChatFunction() // 是否添加这个功能有待商榷。默认只有用户点击输入框才会聚焦
-  chatThread.value.addEventListener('scroll', (event) => {
-    const chatThread = event.target
-    // 检查是否在底部
-    // console.log(
-    //   Math.floor(chatThread.scrollHeight - chatThread.scrollTop),
-    //   Math.floor(chatThread.clientHeight)
-    // )
-    const isAtBottom =
-      Math.floor(chatThread.scrollHeight - chatThread.scrollTop) - 10 <
-      Math.floor(chatThread.clientHeight)
-
-    // 如果不在底部，添加 'active' 类；如果在底部，移除 'active' 类
-    if (!isAtBottom) {
-      document.querySelector('.gotoBottom').classList.add('active')
-    } else {
-      document.querySelector('.gotoBottom').classList.remove('active')
-    }
+const checkScrollPosition = () => {
+  const chatThread = document.querySelector('.chat-thread')
+  // console.log(
+  //   Math.floor(chatThread.scrollHeight - chatThread.scrollTop) - 10,
+  //   Math.floor(chatThread.clientHeight)
+  // )
+  const isAtBottom =
+    Math.floor(chatThread.scrollHeight - chatThread.scrollTop) - 10 <
+    Math.floor(chatThread.clientHeight)
+  if (!isAtBottom) {
+    document.querySelector('.gotoBottom').classList.add('active')
+  } else {
+    document.querySelector('.gotoBottom').classList.remove('active')
+  }
+}
+watch(chatBox, () => {
+  nextTick(() => {
+    checkScrollPosition()
   })
+  canGetMoreMessages.value = true
 })
 const focusChatFunction = () => {
   const chat = document.getElementsByClassName('chat')[0]
@@ -121,6 +216,8 @@ const filesSize = computed(() => {
     ? (size / 1024).toFixed(2) + 'KB'
     : (size / 1024 / 1024).toFixed(2) + 'MB'
 })
+let draggedItemIndex = null
+
 const triggerAttachment = () => {
   attachmentInput.value.click()
 }
@@ -132,6 +229,18 @@ const handleAttachmentChange = (event) => {
 }
 const handleDropFile = (index) => {
   attachedFiles.value.splice(index, 1)
+}
+
+const getMoreMessages = () => {
+  if (canGetMoreMessages.value && !isGettingMoreMessages.value) {
+    isGettingMoreMessages.value = true
+
+    const time = chatBox.value[0]?.time
+    chatStore.getChatMessages(chatId.value, time).then((res) => {
+      isGettingMoreMessages.value = false
+      canGetMoreMessages.value = res
+    })
+  }
 }
 
 // 提取文件名（不包括后缀）
@@ -146,26 +255,56 @@ function truncatedFileName(fileName) {
 function fileExtension(fileName) {
   return fileName.substring(fileName.lastIndexOf('.'))
 }
+function isImage(uri) {
+  // 检查文件后缀名是否为图片类型
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg']
+  const fileExtension = uri.split('.').pop().toLowerCase()
+  return imageExtensions.includes(fileExtension)
+}
+function onDragStart(index) {
+  console.log(index)
+  draggedItemIndex = index
+}
+// 处理放置事件
+function onDrop(index) {
+  if (draggedItemIndex !== null) {
+    // 将元素从原来的位置移除并插入到目标位置
+    const draggedItem = attachedFiles.value[draggedItemIndex]
+    attachedFiles.value.splice(draggedItemIndex, 1) // 移除原位置元素
+    attachedFiles.value.splice(index, 0, draggedItem) // 插入到新的位置
+    draggedItemIndex = null // 重置拖拽索引
+  }
+}
 </script>
 <template>
   <div class="chat">
-    <h2 class="chat-name">{{ chatName }}</h2>
+    <h2 class="chat-name">{{ receiveUserInfo.username }}</h2>
     <ul class="chat-thread" ref="chatThread">
+      <li v-if="canGetMoreMessages" @click="getMoreMessages" class="get-more-messages">
+        <div class="icon-wrapper" :class="{ gettingMessages: isGettingMoreMessages }">
+          <PhSpinnerGap class="icon" weight="bold" />
+          <span class="text">Get more messages</span>
+        </div>
+      </li>
       <li v-for="(chat, index) in chatBox" :key="index">
         <article :class="chat.isSelf ? 'client' : 'server'">
           <div class="cover">
-            <img :src="receiveUserInfo.avatar" alt="avatar" />
+            <img :src="receiveUserInfo.avatar" :alt="receiveUserInfo.username" />
           </div>
-          <div class="content">
-            <p v-if="chat.type == 'text'">
+          <div class="context">
+            <p class="content">
               {{ chat.content }}
             </p>
-            <p v-else-if="chat.type == 'image'">
-              <img :src="chat.uri" :alt="chat.content" />
-            </p>
-            <p v-else-if="chat.type == 'file'">
-              <a :href="chat.uri" download>{{ chat.content }}<span>download</span></a>
-            </p>
+            <div class="attach-file">
+              <div
+                v-for="({ name, uri }, index) in chat.fileNameUriMapList"
+                :key="index"
+                :class="isImage(name) ? 'image' : 'file'"
+              >
+                <img v-if="isImage(name)" :src="uri" :alt="name" />
+                <a v-else :href="uri" target="_blank">{{ name }}</a>
+              </div>
+            </div>
             <span class="time">{{ chat.time }}</span>
           </div>
         </article>
@@ -179,7 +318,7 @@ function fileExtension(fileName) {
       <div class="chat-wrapper">
         <div class="chat-attach">
           <PhPaperclip class="icon" @click="triggerAttachment" />
-          <div class="text">attach files</div>
+          <div :class="{ text: fileCount < 1 }" class="file-count-badge">{{ fileCount }}</div>
           <input
             type="file"
             ref="attachmentInput"
@@ -187,34 +326,42 @@ function fileExtension(fileName) {
             style="display: none"
             multiple
           />
-          <div v-if="fileCount > 0" class="file-count-badge">{{ fileCount }}</div>
         </div>
         <textarea
           class="chat-message"
-          :class="{ online: sendChannelOpen }"
+          :class="{ online: isConnected }"
           v-model="chatWindowMessage"
-          :disabled="!sendChannelOpen"
+          :disabled="!isConnected"
           placeholder="Type a message..."
           @keydown="handleMessage"
           @input="autoExpand"
           rows="1"
         />
-        <button class="chat-send" :disabled="!sendChannelOpen" @click="sendMessage">Send</button>
+        <button class="chat-send" :disabled="!isConnected" @click="sendMessage">Send</button>
       </div>
     </div>
     <div v-if="attachedFiles.length > 0" class="chat-attachment">
       <div class="caption">
-        <h4>Attached Files:</h4>
+        <h4>
+          {{ userStore.selectLanguage === 'en-US' ? 'Attached Files:' : '附件：' }}
+        </h4>
         <span class="total-size">{{ filesSize }}</span>
       </div>
       <ul class="attachment-list">
-        <li v-for="(file, index) in attachedFiles" :key="index">
+        <li
+          v-for="(file, index) in attachedFiles"
+          :key="index"
+          draggable="true"
+          @dragstart="onDragStart(index)"
+          @dragover.prevent
+          @drop="onDrop(index)"
+        >
           <p class="attachment-name" :title="file.name">
             {{ truncatedFileName(file.name) }}
             <span class="extension">{{ fileExtension(file.name) }}</span>
           </p>
           <div class="attachment-suffix">
-            <PhStackMinus class="icon" alt="delete" @click="handleDropFile(index)" />
+            <ph-trash class="icon" alt="delete" @click="handleDropFile(index)" />
 
             <span class="size"
               >({{
@@ -284,6 +431,54 @@ $chat-thread-avatar-size: 50px;
     clear: both;
     display: block;
     padding: 16px 40px 16px 20px;
+    &.get-more-messages {
+      text-align: center;
+      .icon-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        &.gettingMessages {
+          .icon {
+            transform: scale(1.2);
+            color: $onlineColor;
+            animation: rotate 1s linear infinite;
+          }
+          .text {
+            opacity: 0;
+          }
+          @keyframes rotate {
+            from {
+              transform: rotate(0deg);
+            }
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        }
+        & > * {
+          transition: all 0.23s ease;
+        }
+        .icon {
+          width: 1rem;
+          height: 1rem;
+        }
+        .text {
+          font-size: 0.7rem;
+        }
+        &:hover {
+          .icon,
+          .text {
+            color: $onlineColor;
+          }
+          .text {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+
     article {
       display: flex;
       align-items: center;
@@ -301,7 +496,7 @@ $chat-thread-avatar-size: 50px;
           object-position: center;
         }
       }
-      .content {
+      .context {
         border-radius: 10px;
         max-width: 53%;
         min-width: 200px;
@@ -313,9 +508,38 @@ $chat-thread-avatar-size: 50px;
         flex-direction: column;
         gap: 0.4em;
         position: relative;
-        p {
+        .content {
           margin-bottom: 0.6em;
           line-height: 1.3em;
+        }
+        .attach-file {
+          display: flex;
+          gap: 0.2em;
+          flex-direction: column;
+          .file {
+            order: 1;
+            width: 100%;
+            a {
+              color: #000000;
+              text-decoration: none;
+              &:hover {
+                color: var(--primary-dark);
+                text-decoration: underline;
+              }
+            }
+          }
+          .image {
+            order: 0;
+            max-width: 15rem;
+            border-radius: 8px;
+            overflow: hidden;
+            img {
+              max-width: 100%;
+              height: 100%;
+              object-fit: cover;
+              object-position: center;
+            }
+          }
         }
         .time {
           font-size: 0.8em;
@@ -338,7 +562,7 @@ $chat-thread-avatar-size: 50px;
         .cover {
           display: none;
         }
-        .content {
+        .context {
           padding: 0.66em 0.56em 0.4em 0.66em;
 
           background-color: $chatClientBgColor;
@@ -358,7 +582,7 @@ $chat-thread-avatar-size: 50px;
         -moz-animation: show-chat-even 0.15s 1 ease-in;
         -webkit-animation: show-chat-even 0.15s 1 ease-in;
 
-        .content {
+        .context {
           padding: 0.66em 0.6em 0.4em 0.56em;
 
           background-color: $chatServerBgColor;
@@ -434,15 +658,7 @@ $chat-thread-avatar-size: 50px;
         }
       }
       .text {
-        position: absolute;
-        width: max-content;
-        bottom: 0;
-        left: 50%;
-        transform: translateY(100%) translateX(-50%);
-        font-size: 1rem;
-        color: $chatInputTextColor;
         opacity: 0;
-        transition: opacity 0.3s ease;
       }
       .file-count-badge {
         background-color: rgba(222, 34, 34, 0.942);
@@ -520,8 +736,9 @@ $chat-thread-avatar-size: 50px;
     min-width: 12.7rem;
     li {
       transition: all 0.23s ease;
+      cursor: all-scroll;
       &:hover {
-        border-bottom: 1px solid #00b129;
+        background-color: $chatInputBgColor;
       }
       .attachment-name {
         transition: all 0.23s ease;
@@ -529,11 +746,12 @@ $chat-thread-avatar-size: 50px;
         white-space: nowrap;
         font-size: 1.3rem;
         line-height: 1.22rem;
+        color: var(--c-gray-600);
         .extension {
           white-space: nowrap;
         }
         &:hover {
-          color: #00b129;
+          color: #724b21;
         }
       }
       .attachment-suffix {

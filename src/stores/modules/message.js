@@ -149,11 +149,19 @@ export const useMessageStore = defineStore(
       const msg = {
         'zh-CN': {
           SEND_SUCCESS: '发送 成功',
-          SEND_ERROR: '发送 失败'
+
+          SEND_ERROR: '发送 失败',
+          GET_MESSAGE_ERROR: '获取消息失败',
+
+          SEND_OVER_SIZE_WARRING: '附件文件总大小不能超过10MB'
         },
         'en-US': {
           SEND_SUCCESS: 'send success',
-          SEND_ERROR: 'send error'
+
+          SEND_ERROR: 'send error',
+          GET_MESSAGE_ERROR: 'get message error',
+
+          SEND_OVER_SIZE_WARRING: 'The total size of the attached files cannot exceed 10MB'
         }
       }
       return msg[userStore.selectLanguage]

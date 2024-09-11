@@ -123,8 +123,7 @@ const isTest = computed(() => window.location.hostname === 'localhost')
   }
 
   .main {
-    width: 91%;
-    margin: 0 auto;
+    width: 100vw;
     margin-top: 5rem;
     min-height: 100vh;
     position: relative;
