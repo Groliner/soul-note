@@ -6,6 +6,7 @@ signUP 注册设置数组(props)
 logIn 登录设置数组(props)
 TODO:
 添加邮箱验证功能
+移动端的触发问题
 */
 import { toRef, ref, computed, watch, nextTick } from 'vue'
 import {
@@ -332,16 +333,10 @@ const handleLogIn = async (resetTween) => {
 }
 </script>
 <template>
-  <div
-    id="app-cover"
-    ref="app_cover"
-    :class="{ active: isHover }"
-    @mouseover="handleHover"
-    @mouseleave="handleOut"
-  >
+  <div id="app-cover" ref="app_cover" :class="{ active: isHover }" @mouseover="handleHover">
     <h1 id="heading" class="up" :class="{ inactive: !isSignUp && isHover }">Sign Up</h1>
 
-    <form method="post" action="" autocomplete="off">
+    <form method="post" action="" autocomplete="off" @focusout="handleOut">
       <div id="inp-box-cover">
         <div id="inp-padd" :class="{ rememberMe: remember }">
           <div

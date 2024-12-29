@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import dayjs from 'dayjs'
-import { formatTimeToDate } from '@/composables/formatTime'
+import { formatTimeToDate, formatTimeToSecond } from '@/composables/formatTime'
 import { useUserStore } from './user'
 import { useMessageStore } from './message'
 import { ElMessage } from 'element-plus'
@@ -62,8 +62,8 @@ export const useDiaryStore = defineStore(
       !window.location.pathname.startsWith('/diary') &&
         !window.location.pathname.startsWith('/account')
     ) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
-    const init = async (isForceRefresh) => {
-      if (initAll.value && !isForceRefresh) return
+    const init = async (force = false) => {
+      if (initAll.value && !force) return
       await getDiary()
       initAll.value = true
       for (let i = 0; i < diary.value.length; i++) {
@@ -246,7 +246,10 @@ export const useDiaryStore = defineStore(
           diaryPage[key] = pageList[index][key]
         }
       })
+      // 这里将修改时间设置为ISO 8601 格式，因为不想改后端了。
       diaryPage.updatedTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
+      diaryPageContext.updatedTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
+
       diaryPage.content = await encryptData(diaryPage.content)
 
       const res = await updateDiaryPageAPI(pageList[index].diaryId, {

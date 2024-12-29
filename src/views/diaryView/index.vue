@@ -224,7 +224,7 @@ function onLeave(el, done) {
     <div class="update_time">
       <p>
         {{ userStore.selectLanguage === 'en-US' ? 'Updated at' : '更新于' }}:
-        {{ formatTimeToSecond(diaryPage.update_time) }}
+        {{ formatTimeToSecond(diaryPage.updatedTime) }}
       </p>
     </div>
     <div class="button_save">
@@ -417,7 +417,7 @@ article {
   /* 16 */
   .btn-16 {
     border: none;
-    color: #000;
+    color: $littleFontColor;
   }
   .btn-16:after {
     position: absolute;
@@ -425,7 +425,7 @@ article {
     width: 0;
     height: 100%;
     top: 0;
-    left: 0;
+    right: 0;
     direction: rtl;
     z-index: -1;
     box-shadow:
@@ -436,11 +436,11 @@ article {
     transition: all 0.3s ease;
   }
   .btn-16:hover {
-    color: var(--primary-light);
+    color: black;
   }
   .btn-16:hover:after {
     left: auto;
-    right: 0;
+    left: 0;
     width: 100%;
   }
   .btn-16:active {

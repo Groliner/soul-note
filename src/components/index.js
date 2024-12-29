@@ -17,7 +17,7 @@ import popup from './popup/Popup.vue'
 import flexInput from './FlexInput.vue'
 import send from './modules/SendEmail.vue'
 import blusterButton from './modules/BlusterButton.vue'
-import FriendList from './modules/FriendList.vue'
+import ChatList from './modules/ChatList.vue'
 export const componentPlugin = {
   install(app) {
     app.component('ClockComponent', clock)
@@ -32,6 +32,6 @@ export const componentPlugin = {
     app.component('flexInput', flexInput)
     app.component('sendButton', send)
     app.component('blusterButton', blusterButton)
-    app.component('friendList', FriendList)
+    app.component('chatList', ChatList)
   }
 }

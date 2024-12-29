@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useDiaryStore } from './diary'
+import { useContactsStore } from './contacts'
 import { useMessageStore } from './message'
 import router from '@/router'
 import {
@@ -111,6 +112,7 @@ export const useUserStore = defineStore(
     // 工具类
     const messageStore = useMessageStore()
     const diaryStore = useDiaryStore()
+    const contactsStore = useContactsStore()
     const login = async (isRememberMe) => {
       initAll.value = false
 
@@ -124,7 +126,9 @@ export const useUserStore = defineStore(
         startTokenRefreshTimer()
         updateUserInfo()
 
-        diaryStore.init()
+        // 注意以下数据更新的条件限制
+        diaryStore.init(true)
+        contactsStore.init()
       } else {
         ElMessage({
           message: messageStore.accountConstant['AUTHORIZE_ERROR'],
@@ -167,6 +171,7 @@ export const useUserStore = defineStore(
         initAll.value = false
         isNeedToUpdate.value = true
         diaryStore.logout()
+        contactsStore.logout()
         router.push('/home')
       }
     }
@@ -179,6 +184,7 @@ export const useUserStore = defineStore(
       const res = await getAccessToken(code)
       if (res.data.code == 1) {
         tokens.value = res.data.data
+        localStorage.setItem('lastTokenRefreshTime', Date.now().toString())
       }
     }
     const getAccessToken_ = () => {
@@ -276,19 +282,19 @@ export const useUserStore = defineStore(
         ElMessage.info(res.data.msg)
       }
     }
-    const updateUserInfo = async (isForceRefresh) => {
+    const updateUserInfo = async () => {
       // 如果已经初始化过了，就不再初始化
-      if (initAll.value && !isForceRefresh) return
+      if (initAll.value) return
       const res = await getUserInfoAPI()
       initAll.value = true
       if (res.data.code == 1) {
         setUserInfo(res.data.data)
         userInfo.value.isEdited = false
         if (userInfo.value.id === 0 || userInfo.value.id === undefined) return
-        getUserPreferences()
-        getUserDiaryStatus(isForceRefresh)
+        await getUserPreferences()
+        getUserDiaryStatus()
         getUserWordCount()
-        getFriends()
+        // getFriends()
         ElMessage({
           message: messageStore.accountConstant['LOAD_SUCCESS'],
           grouping: true,
@@ -296,8 +302,8 @@ export const useUserStore = defineStore(
         })
       } else ElMessage.error(res.data.msg)
     }
-    const getUserDiaryStatus = async (isForceRefresh, userId = userInfo.value.id) => {
-      if (!isNeedToUpdate.value && !isForceRefresh) return true
+    const getUserDiaryStatus = async (userId = userInfo.value.id) => {
+      if (!isNeedToUpdate.value) return true
       const res = await getUserDiaryStatusAPI({ userId })
       if (res.data.code === 1) {
         userDiary.value = res.data.data
@@ -467,14 +473,12 @@ export const useUserStore = defineStore(
       refreshFriendsInterval.value = setInterval(loadFriendsStatus, FRIENDS_REFRESH_INTERVAL)
     }
     const stopTokenRefreshTimer = () => {
-      if (refreshInterval.value) {
-        clearInterval(refreshInterval.value)
-        clearTimeout(refreshInterval_.value)
-        clearInterval(refreshFriendsInterval)
-        refreshInterval.value = null
-        refreshInterval_.value = null
-        refreshFriendsInterval.value = null
-      }
+      clearInterval(refreshInterval.value)
+      clearTimeout(refreshInterval_.value)
+      clearInterval(refreshFriendsInterval)
+      refreshInterval.value = null
+      refreshInterval_.value = null
+      refreshFriendsInterval.value = null
     }
 
     // 刷新页面自动执行

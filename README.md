@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-04-10 07:09:02
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-04-10 13:30:18
+ * @LastEditTime: 2024-11-17 21:14:30
 -->
 
 # soul-note
@@ -43,11 +43,11 @@ npm run lint
 
 ## z-index
 
-- fixed组件：100  
-- 蒙版：301  
-- nav:302  
-- header:303  
-- popup: 600  
+- fixed组件：100
+- 蒙版：301
+- nav:302
+- header:303
+- popup: 600
 - around black line: 1000
 
 ## logis
@@ -57,6 +57,9 @@ npm run lint
 - 变量的相等判断用的全等,注意数字与字符的区别,route.query获得的为字符.
 - 设置独立的Message Store用来规范提示信息
 - 用户信息的编辑除了头像都整合到单独的窗口中
+- 所有的store初始化都放在index.vue的onMounted中
+-
+
 ## BUG
 
 ### logout逻辑中:
@@ -78,3 +81,4 @@ const logout = async () => {
     console.log('ok')
   }
 }
+```

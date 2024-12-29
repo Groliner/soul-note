@@ -47,7 +47,23 @@ function onLeave(el, done) {
     onComplete: done
   })
 }
+
+const scrollToPage = () => {
+  const container = document.querySelector('.pages')
+  const target = document.querySelector('.pages .active')
+
+  // 如果 target 元素不可见，则进行滚动
+  gsap.to(container, {
+    scrollTo: {
+      y: target,
+      ease: 'power1.out',
+      duration: 0.4
+    }
+  })
+}
+
 import { PhPlusSquare } from '@phosphor-icons/vue'
+import { nextTick, onMounted, watch } from 'vue'
 </script>
 <template>
   <div class="container_pagination">
@@ -57,6 +73,8 @@ import { PhPlusSquare } from '@phosphor-icons/vue'
         @before-enter="onBeforeEnter"
         @enter="onEnter"
         @leave="onLeave"
+        @after-leave="scrollToPage"
+        @after-enter="scrollToPage"
         class="pages"
       >
         <li

@@ -2,17 +2,24 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 12:19:25
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-09-08 19:12:49
+ * @LastEditTime: 2024-11-02 16:02:11
 -->
 <script setup>
-import { useUserStore, useMessageStore } from '@/stores'
+import { useContactsStore, useChatStore } from '@/stores'
+import { PhSlidersHorizontal, PhMagnifyingGlassPlus } from '@phosphor-icons/vue'
 import { storeToRefs } from 'pinia'
-const userStore = useUserStore()
-const messageStore = useMessageStore()
-const { friends } = storeToRefs(userStore)
+import { computed } from 'vue'
+const contactsStore = useContactsStore()
+const chatStore = useChatStore()
 
-import { PhSlidersHorizontal } from '@phosphor-icons/vue'
-import { messageManager } from '@/directives/index'
+const props = defineProps({
+  chatOrientation: Number
+})
+const chatLists = computed(() => {
+  const lists = contactsStore.getChatLists(props.chatOrientation)
+  return lists
+})
+const { chatId } = storeToRefs(chatStore)
 const emit = defineEmits(['chatChange'])
 
 // 好友列表动画
@@ -24,21 +31,32 @@ const handleFriends = (id) => {
   //   draggable: true
   // })
   // console.log(res)
+  chatStore.setChatId(id)
   emit('chatChange', id)
 }
 </script>
 <template>
-  <!-- 好友列表 -->
-  <div class="friend-list">
+  <!-- chat列表 -->
+  <div class="chat-list">
     <TransitionGroup tag="ul">
-      <li v-for="friend in friends" :key="friend.id" :class="{ online: friend.isOnline }">
-        <div class="friend-card" @click="handleFriends(friend.id)">
-          <div class="friend-avatar">
-            <img :src="friend.avatar" />
+      <li v-for="chat in chatLists" :key="chat.id" :class="{ chatting: chatId == chat.id }">
+        <div class="chat-card" @click="handleFriends(chat.id)" v-if="chatOrientation == 0">
+          <div class="chat-avatar">
+            <img :src="chat.avatar" />
           </div>
-          <div class="friend-info">
-            <h4>{{ friend.username }}</h4>
-            <p>{{ friend.email }}</p>
+          <div class="chat-info">
+            <h4>{{ chat.nickname || chat.username }}</h4>
+            <p>{{ chat.email }}</p>
+          </div>
+          <a class="options"><ph-sliders-horizontal class="icon" /></a>
+        </div>
+        <div class="chat-card" @click="handleFriends(chat.id)" v-else>
+          <div class="chat-avatar">
+            <img :src="chat.avatar" />
+          </div>
+          <div class="chat-info">
+            <h4>{{ chat.name }}</h4>
+            <p>{{ chat.description }}</p>
           </div>
           <a class="options"><ph-sliders-horizontal class="icon" /></a>
         </div>
@@ -47,15 +65,12 @@ const handleFriends = (id) => {
   </div>
 </template>
 <style lang="scss" scoped>
-.friend-list {
+.chat-list {
   // min-height: 3rem;
-  padding: 3rem;
   padding-top: 0;
-  margin-top: 2rem;
-  max-height: 80vh;
-  width: 26rem;
   overflow-y: scroll;
   user-select: none;
+  padding: 0 0.6rem 0 0.3rem;
   &::-webkit-scrollbar {
     width: 2px;
     height: 2px;
@@ -70,15 +85,15 @@ const handleFriends = (id) => {
   }
   ul {
     padding: 0;
+    width: 20rem;
   }
   li {
     list-style: none;
     transition: all 0.25s;
     border-radius: 10px;
     overflow: hidden;
-    margin-top: 1rem;
 
-    .friend-card {
+    .chat-card {
       display: grid;
       align-items: center;
       grid-template-columns: 5rem 11.3rem 2.7rem;
@@ -86,7 +101,7 @@ const handleFriends = (id) => {
       border-bottom: 4px solid var(--c-gray-400);
       cursor: pointer;
     }
-    .friend-avatar {
+    .chat-avatar {
       margin: 0.5em 1em;
       width: 4rem;
       height: 4rem;
@@ -117,7 +132,7 @@ const handleFriends = (id) => {
         }
       }
     }
-    .friend-info {
+    .chat-info {
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -163,12 +178,12 @@ const handleFriends = (id) => {
       }
     }
     filter: opacity(0.8);
-    &.online {
+    &.chatting {
       filter: opacity(1);
-      .friend-card {
-        border-bottom: 3px solid $onlineColor;
+      .chat-card {
+        border-bottom: 3px solid $chattingColor;
 
-        .friend-avatar:hover {
+        .chat-avatar:hover {
           box-shadow:
             $shadow,
             $inner-shadow,

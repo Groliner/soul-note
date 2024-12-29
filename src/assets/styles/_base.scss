@@ -33,7 +33,9 @@ html {
 body {
   box-sizing: border-box;
 }
-
+span {
+  white-space: pre;
+}
 /* 自定义滚动条的整体部分 */
 ::-webkit-scrollbar {
   width: 8px; /* 设置滚动条的宽度 */

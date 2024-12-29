@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 12:19:25
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-09-08 17:03:17
+ * @LastEditTime: 2024-12-29 19:29:53
 -->
 <script setup>
 /*
@@ -14,20 +14,22 @@
 自定义背景
 **/
 
-import { useUserStore, useDiaryStore, useMessageStore } from '@/stores'
+import { useUserStore, useDiaryStore, useMessageStore, useContactsStore } from '@/stores'
 import { ref, onUnmounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
 const messageStore = useMessageStore()
-const { userInfo, friends, userPreferences } = storeToRefs(userStore)
-let originalUserInfo = JSON.stringify({
-  username: userInfo.value.username,
-  email: userInfo.value.email,
-  description: userInfo.value.description,
-  avatar: userInfo.value.avatar
-})
+const contactsStore = useContactsStore()
+const friends = computed(() => contactsStore.getChatLists(0))
+const { userInfo, userPreferences } = storeToRefs(userStore)
+const fields = ['username', 'email', 'description', 'avatar']
+let originalUserInfo = Object.fromEntries(fields.map((key) => [key, userInfo.value[key]]))
 const diaries = computed(() => diaryStore.getLocalDiariesByUserId(userInfo.value.id))
+
+/*
+此处的isOnline暂且搁置，不起作用。
+*/
 const isOnline = computed(() => {
   const list = friends.value.filter((user) => user.id == userInfo.value.id)
   if (list.length > 0) {
@@ -64,17 +66,21 @@ const handleAvatarChange = async (event) => {
     userStore.setUserInfo({ avatar: res.data.data })
   }
 }
+import { compareObjBaseA } from '@/composables/methods'
 const handleSave = async () => {
-  isEdit.value = false
-  userInfo.value.isEdited = originalUserInfo !== JSON.stringify(userInfo.value)
+  userInfo.value.isEdited = !compareObjBaseA(originalUserInfo, userInfo.value)
   await userStore.saveUserInfo()
-  originalUserInfo = JSON.stringify(userInfo.value)
+  originalUserInfo = Object.fromEntries(fields.map((key) => [key, userInfo.value[key]]))
+  isEdit.value = false
 }
 const handleCancel = () => {
   // 重置用户信息
+
+  if (isEdit.value) {
+    userStore.setUserInfo(originalUserInfo)
+    userInfo.value.isEdited = false
+  }
   isEdit.value = false
-  userStore.setUserInfo(JSON.parse(originalUserInfo))
-  userInfo.value.isEdited = false
 }
 
 import {
@@ -248,7 +254,8 @@ const handleRefresh = async () => {
 </template>
 <style lang="scss" scoped>
 .pfl-wrapper {
-  width: 100%;
+  margin: 0 auto;
+  width: 92%;
   height: 100%;
   padding: 40px;
   background-color: rgb(251 248 242 / 42%);

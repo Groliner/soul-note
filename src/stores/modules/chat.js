@@ -2,16 +2,26 @@
  * @Author: Gro lin
  * @Date: 2024-09-07 15:49:55
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-09-11 15:54:51
+ * @LastEditTime: 2024-12-29 18:27:12
  */
+/*
+管理消息的发送与socket，rtc的连接
+*/
 import { defineStore } from 'pinia'
 import { Client } from '@stomp/stompjs'
-import { getWebSocketConfiguration, uploadFiles, getMessages, responseMessageAPI } from '@/api/chat'
+import {
+  getWebSocketConfiguration,
+  uploadFiles,
+  getMessages,
+  responseMessageAPI,
+  getChatGroupsAPI
+} from '@/api/chat'
 import { useUserStore } from './user'
+import { useContactsStore } from './contacts'
 import { useMessageStore } from './message'
 import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { formatTimeToSecond } from '@/composables/formatTime'
+import { formatTimeToSecond, compareTime } from '@/composables/formatTime'
 // {
 //   websocketAppDestinationPrefix: '/app'
 //   websocketEndpoint: 'soul-note'
@@ -48,17 +58,32 @@ export const useChatStore = defineStore(
     let stompClient = null
     let isConnected = ref(false)
     const chatBoxes = ref([])
+    const chatBoxGroups = ref([])
     const userStore = useUserStore()
+    const contactsStore = useContactsStore()
     const messageStore = useMessageStore()
+
     const chatId = ref(0)
-    const init = () => {
-      if (userStore.isAuthenticated) {
-        if (!stompClient || !isConnected.value) {
-          initConfiguration()
-          userStore.friends.forEach((item) => {
-            getChatMessages(item.id)
-          })
-        }
+    const init = (force = false) => {
+      if (!userStore.isAuthenticated) {
+        return false
+      }
+      if (!stompClient || !isConnected.value) {
+        initConfiguration()
+      }
+      if (force) {
+        chatBoxes.value = []
+        chatBoxGroups.value = []
+      }
+      if (chatBoxes.value.length == 0) {
+        contactsStore.friends.forEach((item) => {
+          getChatMessages(item.userId)
+        })
+      }
+      if (chatBoxGroups.value.length == 0) {
+        contactsStore.groups.forEach((item) => {
+          getChatMessages(item.id, null, true)
+        })
       }
     }
     const initConfiguration = () => {
@@ -87,6 +112,7 @@ export const useChatStore = defineStore(
           console.log(frame)
           subscribeSystem()
           subscribeUser()
+          subscribeGroup()
           isConnected.value = true
         },
         onDisconnect: () => {
@@ -175,21 +201,45 @@ export const useChatStore = defineStore(
     const subscribeGroup = () => {
       // userStore.getGroupList()
       // 订阅群组消息
-      stompClient.subscribe(configuration.value.websocketStompEndpoints['group'], (mes) => {
-        const message = JSON.parse(mes.body)
-        message.isSelf = false
-        chatBoxes.value.push(message)
+      getChatGroupsAPI().then((response) => {
+        if (response.data.code == 1) {
+          response.data.data.forEach((group) => {
+            console.log(configuration.value.websocketStompEndpoints['group'] + '/' + group.id)
+            stompClient.subscribe(
+              configuration.value.websocketStompEndpoints['group'] + '-' + group.id,
+              (mes) => {
+                const message = JSON.parse(mes.body)
+                message.isSelf = false
+                chatBoxes.value.push(message)
+              }
+            )
+          })
+        } else {
+          ElMessage({
+            message: response.data.msg
+              ? response.data.msg
+              : messageStore.chatConstant['GET_GROUP_ERROR'],
+            type: 'error',
+            grouping: true
+          })
+        }
       })
     }
 
-    const chatBox = computed(() => {
-      if (chatId.value === undefined) {
-        return chatBoxes.value
+    const getChatBox = (id, isGroup) => {
+      if (id === undefined) {
+        return []
       }
-      return chatBoxes.value.filter(
-        (item) => item.sendId == chatId.value || item.receiveId == chatId.value
-      )
-    })
+      if (isGroup) {
+        return chatBoxGroups.value.filter((item) => item.receiveId == id)
+      } else {
+        return chatBoxes.value.filter(
+          (item) =>
+            (item.sendId == id && item.receiveId == userStore.userInfo.id) ||
+            (item.receiveId == id && item.sendId == userStore.userInfo.id)
+        )
+      }
+    }
     const sendMessage = (message) => {
       const serializedMessage = JSON.stringify(message)
       stompClient.publish({
@@ -222,14 +272,11 @@ export const useChatStore = defineStore(
       chatBoxes.value.push(message)
     }
 
-    const setChatId = (id) => {
-      chatId.value = id
-    }
-
-    const getChatMessages = async (receiveId, time) => {
+    const getChatMessages = async (receiveId, time, group = false) => {
       const params = {
         sendId: userStore.userInfo.id,
         receiveId: receiveId,
+        group,
         time: time ? time : formatTimeToSecond(Date.now()),
         pageSize: 30
       }
@@ -242,7 +289,10 @@ export const useChatStore = defineStore(
               responseMessage(item.id, item.sendId)
             }
           })
-          chatBoxes.value.unshift(...res.data)
+          const targetArray = group ? chatBoxGroups.value : chatBoxes.value
+
+          targetArray.unshift(...res.data)
+
           return res.data.length > 29
         } else {
           ElMessage({
@@ -261,14 +311,20 @@ export const useChatStore = defineStore(
       }
       responseMessageAPI(params)
     }
+    const setChatId = (id) => {
+      chatId.value = id
+    }
     return {
-      chatBox,
+      chatBoxes,
+      chatBoxGroups,
       chatId,
       isConnected,
       init,
+      subscribeGroup,
       sendMessage,
       sendFiles,
       setChatId,
+      getChatBox,
       getChatMessages
     }
   },

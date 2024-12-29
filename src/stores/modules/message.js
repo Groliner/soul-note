@@ -10,7 +10,7 @@ export const useMessageStore = defineStore(
         'zh-CN': { error: 'home error', success: 'home success' },
         'en-US': { error: 'home error' }
       }
-      return msg[userStore.selectLanguage]
+      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
     })
     const userStore = useUserStore()
     const diaryConstant = computed(() => {
@@ -46,7 +46,7 @@ export const useMessageStore = defineStore(
           DIARY_DESC_PLACEHOLDER: 'Please enter the diary description'
         }
       }
-      return msg[userStore.selectLanguage]
+      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
     })
     const diaryPageConstant = computed(() => {
       const msg = {
@@ -101,7 +101,7 @@ export const useMessageStore = defineStore(
                           7. Anytime there's a pop-up alert asking it's saved immediately.`
         }
       }
-      return msg[userStore.selectLanguage]
+      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
     })
     const accountConstant = computed(() => {
       const msg = {
@@ -143,7 +143,7 @@ export const useMessageStore = defineStore(
           SESSION_EXPIRED: 'Session expired, please login again'
         }
       }
-      return msg[userStore.selectLanguage]
+      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
     })
     const chatConstant = computed(() => {
       const msg = {
@@ -152,6 +152,8 @@ export const useMessageStore = defineStore(
 
           SEND_ERROR: '发送 失败',
           GET_MESSAGE_ERROR: '获取消息失败',
+          GET_FRIENDS_ERROR: '获取好友失败',
+          GET_GROUP_ERROR: '获取群组失败',
 
           SEND_OVER_SIZE_WARRING: '附件文件总大小不能超过10MB'
         },
@@ -160,11 +162,13 @@ export const useMessageStore = defineStore(
 
           SEND_ERROR: 'send error',
           GET_MESSAGE_ERROR: 'get message error',
+          GET_FRIENDS_ERROR: 'get friends error',
+          GET_GROUP_ERROR: 'get group error',
 
           SEND_OVER_SIZE_WARRING: 'The total size of the attached files cannot exceed 10MB'
         }
       }
-      return msg[userStore.selectLanguage]
+      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
     })
     const tips = computed(() => {
       const msg = {
@@ -175,7 +179,7 @@ export const useMessageStore = defineStore(
           REFRESH_TIPS: 'Refresh the page to update data from the database'
         }
       }
-      return msg[userStore.selectLanguage]
+      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
     })
     return {
       message,

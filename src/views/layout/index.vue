@@ -127,6 +127,12 @@ const isTest = computed(() => window.location.hostname === 'localhost')
     margin-top: 5rem;
     min-height: 100vh;
     position: relative;
+    @media screen and (max-width: 1200px) {
+      margin-top: 3.5rem;
+    }
+    * {
+      width: 100%;
+    }
   }
   .footer {
     width: 100%;

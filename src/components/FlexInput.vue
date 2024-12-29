@@ -38,8 +38,7 @@ onMounted(() => {
       for (let entry of entries) {
         if (entry.contentRect.width)
           if (!props.anime)
-            inputRef.value.style.width =
-              entry.contentRect.width + props.offsetWidth + 'px'
+            inputRef.value.style.width = entry.contentRect.width + props.offsetWidth + 'px'
           else
             gsap.to(inputRef.value, {
               width: entry.contentRect.width + props.offsetWidth,
@@ -62,8 +61,7 @@ const handleEdit = (m) => {
   if (!props.status) return
   isInput.value = m
   if (!isInput.value || !inputRef.value) return
-  inputRef.value.style.width =
-    mirror.value.offsetWidth + props.offsetWidth + 'px'
+  inputRef.value.style.width = mirror.value.offsetWidth + props.offsetWidth + 'px'
   nextTick(() => {
     inputRef.value.focus()
   })
@@ -89,7 +87,7 @@ const text = defineModel('text', {
     }}</span>
   </div>
 </template>
-<style>
+<style scoped>
 input {
   background-color: transparent;
   outline: none;
@@ -101,6 +99,9 @@ input {
 }
 span {
   width: inherit;
+  white-space: wrap;
+}
+span.hidden {
   white-space: pre;
 }
 .hidden {

@@ -2,26 +2,41 @@
  * @Author: Gro lin
  * @Date: 2024-08-31 17:54:31
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-09-11 17:47:38
+ * @LastEditTime: 2024-12-29 18:26:05
 -->
+/** 聊天窗存在bug: 不同的聊天之间切换时，聊天窗口共用滚动条，后续考虑为每一个聊天窗口添加高度记录。
+*/
 <script setup>
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue'
 import { formatTimeToSecond } from '@/composables/formatTime'
-import { PhPaperclip, PhTrash, PhArrowCircleDown, PhSpinnerGap } from '@phosphor-icons/vue'
-import { useChatStore, useUserStore, useMessageStore } from '@/stores'
+import {
+  PhPaperclip,
+  PhTrash,
+  PhArrowCircleDown,
+  PhSpinnerGap,
+  PhArrowsLeftRight
+} from '@phosphor-icons/vue'
+import { useChatStore, useUserStore, useMessageStore, useContactsStore } from '@/stores'
 import gsap from 'gsap'
 import { ScrollToPlugin } from 'gsap/all'
 import { storeToRefs } from 'pinia'
+
+const props = defineProps({
+  chatOrientation: Number
+})
+
 gsap.registerPlugin(ScrollToPlugin)
 const chatWindowMessage = ref('')
 const chatThread = ref(null)
-const attachFilesNameLength = 12
+const attachFilesNameLength = 10
 const chatStore = useChatStore()
 const userStore = useUserStore()
+const contactsStore = useContactsStore()
 const messageStore = useMessageStore()
 
-const { chatBox, chatId, isConnected } = storeToRefs(chatStore)
-const receiveUserInfo = computed(() => userStore.getUserInfoById(chatId.value))
+const { chatId, isConnected } = storeToRefs(chatStore)
+const chatObjectInfo = computed(() => contactsStore.getChatObjectInfo(chatId.value))
+const chatBox = computed(() => chatStore.getChatBox(chatId.value, props.chatOrientation == 1))
 // import sakura_cover from '@/assets/music/桜咲く.jpg'
 // import light_cover from '@/assets/music/光芒.jpg'
 // import light from '@/assets/music/光芒.ogg'
@@ -106,7 +121,7 @@ const sendMessage = () => {
     time: formatTimeToSecond(new Date()),
     status: 'sending',
     isPinned: false,
-    isChannel: false,
+    isChannel: props.chatOrientation == 1,
     fileNames: [] // 初始化文件数组
   }
 
@@ -134,6 +149,8 @@ const sendMessage = () => {
     formData.append('isChannel', message.isChannel)
     chatStore.sendFiles(message, formData) // 发送文件消息
     attachedFiles.value = [] // 发送后清空文件
+    attachedFiles.value.length = 0
+    isShowAttachment.value = true
   } else {
     // 文本消息处理
     chatStore.sendMessage(message) // 发送文本消息
@@ -151,10 +168,13 @@ const sendMessage = () => {
 
 onMounted(() => {
   const chat_thread = document.querySelector('.chat-thread')
-  chat_thread.addEventListener('scroll', checkScrollPosition)
+  console.log(chat_thread)
+  if (chat_thread) {
+    chat_thread.addEventListener('scroll', checkScrollPosition)
+    checkScrollPosition()
+  }
   // 在刷新页面此处滚动条并没有渲染出来，作用在视图切换
   // scrollToBottom(chat_thread)
-  checkScrollPosition()
 
   // focusChatFunction() // 是否添加这个功能有待商榷。默认只有用户点击输入框才会聚焦
 })
@@ -191,6 +211,7 @@ const checkScrollPosition = () => {
 watch(chatBox, () => {
   nextTick(() => {
     checkScrollPosition()
+    //scrollToBottom(chatThread.value)
   })
   canGetMoreMessages.value = true
 })
@@ -217,6 +238,7 @@ const filesSize = computed(() => {
     : (size / 1024 / 1024).toFixed(2) + 'MB'
 })
 let draggedItemIndex = null
+const isShowAttachment = ref(false)
 
 const triggerAttachment = () => {
   attachmentInput.value.click()
@@ -236,7 +258,7 @@ const getMoreMessages = () => {
     isGettingMoreMessages.value = true
 
     const time = chatBox.value[0]?.time
-    chatStore.getChatMessages(chatId.value, time).then((res) => {
+    chatStore.getChatMessages(chatId.value, time, props.chatOrientation == 1).then((res) => {
       isGettingMoreMessages.value = false
       canGetMoreMessages.value = res
     })
@@ -262,7 +284,8 @@ function isImage(uri) {
   return imageExtensions.includes(fileExtension)
 }
 function onDragStart(index) {
-  console.log(index)
+  // console.log(index)
+
   draggedItemIndex = index
 }
 // 处理放置事件
@@ -278,18 +301,20 @@ function onDrop(index) {
 </script>
 <template>
   <div class="chat">
-    <h2 class="chat-name">{{ receiveUserInfo.username }}</h2>
+    <h2 class="chat-name">
+      {{ chatObjectInfo?.nickname || chatObjectInfo?.username || chatObjectInfo?.name }}
+    </h2>
     <ul class="chat-thread" ref="chatThread">
       <li v-if="canGetMoreMessages" @click="getMoreMessages" class="get-more-messages">
         <div class="icon-wrapper" :class="{ gettingMessages: isGettingMoreMessages }">
           <PhSpinnerGap class="icon" weight="bold" />
-          <span class="text">Get more messages</span>
+          <p class="text">Get more messages</p>
         </div>
       </li>
       <li v-for="(chat, index) in chatBox" :key="index">
         <article :class="chat.isSelf ? 'client' : 'server'">
           <div class="cover">
-            <img :src="receiveUserInfo.avatar" :alt="receiveUserInfo.username" />
+            <img :src="chatObjectInfo.avatar" :alt="chatObjectInfo.id" />
           </div>
           <div class="context">
             <p class="content">
@@ -340,14 +365,19 @@ function onDrop(index) {
         <button class="chat-send" :disabled="!isConnected" @click="sendMessage">Send</button>
       </div>
     </div>
-    <div v-if="attachedFiles.length > 0" class="chat-attachment">
+    <div v-show="attachedFiles.length > 0" class="chat-attachment">
       <div class="caption">
-        <h4>
+        <h4 @click="isShowAttachment = !isShowAttachment">
           {{ userStore.selectLanguage === 'en-US' ? 'Attached Files:' : '附件：' }}
         </h4>
+        <PhArrowsLeftRight
+          class="icon"
+          :class="{ expanded: isShowAttachment }"
+          @click="isShowAttachment = !isShowAttachment"
+        />
         <span class="total-size">{{ filesSize }}</span>
       </div>
-      <ul class="attachment-list">
+      <ul class="attachment-list" v-show="isShowAttachment">
         <li
           v-for="(file, index) in attachedFiles"
           :key="index"
@@ -396,7 +426,6 @@ $chat-thread-avatar-size: 50px;
   background-color: $chat-thread-bgd-color;
 }
 .chat {
-  width: 77vw;
   border-radius: 7px;
   position: relative;
   // box-shadow: 0 0 10px rgba(25, 245, 98, 0.3); /* 添加阴影效果 */
@@ -432,13 +461,14 @@ $chat-thread-avatar-size: 50px;
     display: block;
     padding: 16px 40px 16px 20px;
     &.get-more-messages {
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       .icon-wrapper {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        width: fit-content;
         cursor: pointer;
+        text-align: center;
         &.gettingMessages {
           .icon {
             transform: scale(1.2);
@@ -716,21 +746,40 @@ $chat-thread-avatar-size: 50px;
 }
 .chat-attachment {
   z-index: 100;
-  position: fixed;
-  left: 1rem;
-  top: 10vh;
+  position: absolute;
+  left: 0;
+  top: 10px;
   width: fit-content;
-  max-height: 70vh;
+  transform: translateX(-100%);
   .caption {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 5px;
+    min-width: 12.7rem;
+    user-select: none;
+    h4,
+    .icon {
+      cursor: pointer;
+      &:hover {
+        color: #724b21;
+      }
+    }
+    .icon {
+      transition: transform 0.23s ease;
+      transform: rotate(90deg);
+
+      &.expanded {
+        transform: rotate(0);
+      }
+    }
   }
+
   .attachment-list {
     width: fit-content;
     // direction: rtl;
     overflow-y: auto;
-    max-height: 65vh;
+    max-height: 42vh;
     list-style: none;
     padding: 0;
     min-width: 12.7rem;

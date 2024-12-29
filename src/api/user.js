@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 12:19:25
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-09-10 17:43:48
+ * @LastEditTime: 2024-09-30 16:52:58
  */
 /*
  * @Author: Gro lin
@@ -18,6 +18,8 @@ export const getCaptchaAPI = () => request.get('public/captcha')
 export const LogInTemplateAPI = () => req.get('template')
 
 export const getUserInfoAPI = () => request.get('user')
+
+export const getUserInfoByIdAPI = (id) => request.get('user/' + id)
 
 export const updateUserInfoAPI = (data) => request.put('user', data)
 

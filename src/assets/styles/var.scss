@@ -34,6 +34,8 @@ $priceColor: #cf4444;
   --c-yellow-500: #f8c583;
   --c-yellow-600: #f9bc73;
   --rotation: -3deg;
+  --bgColorMenu: #1d1d27;
+  --duration: 0.7s;
 }
 
 $shadow:
@@ -49,9 +51,12 @@ $outer-shadow:
   inset 0.2rem 0.2rem 0.5rem var(--greyLight-2),
   inset -0.2rem -0.2rem 0.5rem var(--white);
 
+$littleFontColor: #ae9e9e;
 $diaryPageColor: #fffbe7db;
 $onlineColor: #5ed476ce;
+$chattingColor: #5ed4d4ce;
 $chatInputBgColor: rgb(244 244 244);
+$chatInputBgColor_light: rgb(255 254 254);
 $chatInputTextColor: #0d0d0d;
 $chatServerBgColor: rgba(255, 253, 242, 0.809);
 $chatClientBgColor: rgb(246 255 255 / 66%);
