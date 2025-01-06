@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-09-07 15:49:55
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-12-29 18:27:12
+ * @LastEditTime: 2024-12-31 18:55:54
  */
 /*
 管理消息的发送与socket，rtc的连接
@@ -210,7 +210,7 @@ export const useChatStore = defineStore(
               (mes) => {
                 const message = JSON.parse(mes.body)
                 message.isSelf = false
-                chatBoxes.value.push(message)
+                chatBoxGroups.value.push(message)
               }
             )
           })
