@@ -1,15 +1,32 @@
 <script setup>
+/*
+TODO:
+将主页的样式设提取为API
+
+*/
 import { useUserStore } from '@/stores'
 import audioPlay from '../testView/audioPlay.vue'
 
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 const userStore = useUserStore()
-const theme = ref('')
+const themeMode = 0
+const themeList = [
+  {
+    name: 'birthday',
+    text: 'HAPPY BIRTHDAY!'
+  },
+  {
+    name: 'simple',
+    text: 'DEVELOPING'
+  }
+]
+const theme = computed(() => themeList[themeMode])
 </script>
 <template>
   <div class="container_home">
-    <section class="section_home" v-if="theme === 'birthday'">
-      <h1>Happy Birthday ! Grozhi</h1>
+    <section class="section_home" v-if="theme.name === 'birthday'">
+      <!-- <h1>Happy Birthday ! Grozhi</h1> -->
+      <h1>Happy Birthday ! Wolong</h1>
       <p>Moving forward and Handling your worries correctly, then catching the future</p>
     </section>
     <section class="section_home" v-else>
@@ -21,29 +38,15 @@ const theme = ref('')
       </p>
     </section>
     <section class="section_loading">
-      <div id="load" v-if="theme === 'birthday'" class="birthday">
-        <div>H</div>
-        <div>A</div>
-        <div>P</div>
-        <div>P</div>
-        <div>Y</div>
-        <div>B</div>
-        <div>I</div>
-        <div>R</div>
-        <div>T</div>
-        <div>H</div>
-      </div>
-      <div id="load" v-else>
-        <div>D</div>
-        <div>E</div>
-        <div>V</div>
-        <div>E</div>
-        <div>L</div>
-        <div>O</div>
-        <div>P</div>
-        <div>I</div>
-        <div>N</div>
-        <div>G</div>
+      <div id="load" :class="{ birthday: theme.name === 'birthday' }">
+        <div
+          v-for="(word, index) in theme.text"
+          :style="{
+            animationDelay: `${index * 0.2}s`
+          }"
+        >
+          {{ word }}
+        </div>
       </div>
     </section>
     <!-- <section class="send-message">
@@ -84,9 +87,6 @@ const theme = ref('')
       @include absCenter;
       top: 40%;
       overflow: visible;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       user-select: none;
       cursor: default;
 
@@ -106,23 +106,17 @@ const theme = ref('')
         font-family: inherit;
         font-size: 2em;
         animation: move 3s linear infinite;
-        -o-animation: move 3s linear infinite;
-        -moz-animation: move 3s linear infinite;
-        -webkit-animation: move 3s linear infinite;
         transform: rotate(180deg);
-        -o-transform: rotate(180deg);
-        -moz-transform: rotate(180deg);
-        -webkit-transform: rotate(180deg);
 
-        @for $i from 2 through 10 {
-          &:nth-child(#{$i}) {
-            $delay: ($i - 1) * 0.2s;
-            animation-delay: $delay;
-            -o-animation-delay: $delay;
-            -moz-animation-delay: $delay;
-            -webkit-animation-delay: $delay;
-          }
-        }
+        // @for $i from 2 through 10 {
+        //   &:nth-child(#{$i}) {
+        //     $delay: ($i - 1) * 0.2s;
+        //     animation-delay: $delay;
+        //     -o-animation-delay: $delay;
+        //     -moz-animation-delay: $delay;
+        //     -webkit-animation-delay: $delay;
+        //   }
+        // }
 
         @keyframes move {
           0% {
@@ -131,25 +125,16 @@ const theme = ref('')
           }
           35% {
             left: 59%;
-            -moz-transform: rotate(0deg);
-            -webkit-transform: rotate(0deg);
-            -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           65% {
             left: 41%;
-            -moz-transform: rotate(0deg);
-            -webkit-transform: rotate(0deg);
-            -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           100% {
             left: 0%;
-            -moz-transform: rotate(180deg);
-            -webkit-transform: rotate(180deg);
-            -o-transform: rotate(180deg);
             transform: rotate(180deg);
             opacity: 0;
           }
@@ -161,25 +146,16 @@ const theme = ref('')
           }
           35% {
             left: 59%;
-            -moz-transform: rotate(0deg);
-            -webkit-transform: rotate(0deg);
-            -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           65% {
             left: 41%;
-            -moz-transform: rotate(0deg);
-            -webkit-transform: rotate(0deg);
-            -o-transform: rotate(0deg);
             transform: rotate(0deg);
             opacity: 1;
           }
           100% {
             left: 0%;
-            -moz-transform: rotate(180deg);
-            -webkit-transform: rotate(180deg);
-            -o-transform: rotate(180deg);
             transform: rotate(180deg);
             opacity: 0;
           }

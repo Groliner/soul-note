@@ -121,7 +121,7 @@ export const useUserStore = defineStore(
         userInfo.value.isRememberMe = isRememberMe
         await setToken(res.data.data.code)
 
-        ElMessage({ type: 'success', message: messageStore.accountConstant['LOGIN_SUCCESS'] })
+        ElMessage({ type: 'success', message: messageStore.loginConstant['LOGIN_SUCCESS'] })
 
         startTokenRefreshTimer()
         updateUserInfo()
@@ -234,6 +234,7 @@ export const useUserStore = defineStore(
       }
     }
 
+    // 这里的功能转移到chat模块。
     const getFriends = async () => {
       if (!isAuthenticated.value) return
       const res = await getFriendsAPI()
@@ -278,6 +279,7 @@ export const useUserStore = defineStore(
             userPreferences.value[key] = res.data.data[key]
           }
         })
+        return true
       } else {
         ElMessage.info(res.data.msg)
       }
@@ -291,14 +293,19 @@ export const useUserStore = defineStore(
         setUserInfo(res.data.data)
         userInfo.value.isEdited = false
         if (userInfo.value.id === 0 || userInfo.value.id === undefined) return
-        await getUserPreferences()
-        getUserDiaryStatus()
-        getUserWordCount()
-        // getFriends()
-        ElMessage({
-          message: messageStore.accountConstant['LOAD_SUCCESS'],
-          grouping: true,
-          type: 'success'
+        getUserPreferences().then((res) => {
+          if (res) {
+            getUserDiaryStatus()
+            getUserWordCount()
+            // getFriends()
+            ElMessage({
+              message: messageStore.accountConstant['LOAD_SUCCESS'],
+              grouping: true,
+              type: 'success'
+            })
+          } else {
+            ElMessage.error(messageStore.accountConstant['LOAD_ERROR'])
+          }
         })
       } else ElMessage.error(res.data.msg)
     }
@@ -445,9 +452,10 @@ export const useUserStore = defineStore(
       return user ? user : defaultUserInfo
     }
 
-    const selectLanguage = computed(
-      () => userPreferences.value.languageList[userPreferences.value.language]
-    )
+    const selectLanguage = computed(() => {
+      const language = userPreferences.value.languageList[userPreferences.value.language]
+      return language ? language : 'zh-CN'
+    })
 
     const refreshInterval = ref(null)
     const refreshInterval_ = ref(null)

@@ -1,16 +1,17 @@
+<!--
+ * @Author: Gro lin
+ * @Date: 2024-08-09 12:19:25
+ * @LastEditors: Gro lin
+ * @LastEditTime: 2025-01-30 13:54:59
+-->
 <script setup>
 import { useUserStore } from '@/stores'
-import { storeToRefs } from 'pinia'
-const { userPreferences } = storeToRefs(useUserStore())
+const userStore = useUserStore()
 </script>
 <template>
   <div class="container">
     <section>
-      {{
-        userPreferences.languageSelectNum === 1
-          ? 'there should be library'
-          : '这里将会是图书馆系统'
-      }}
+      {{ userStore.selectLanguage === 'en-US' ? 'there will be library' : '这里将会是图书馆系统' }}
     </section>
   </div>
 </template>
@@ -22,7 +23,7 @@ const { userPreferences } = storeToRefs(useUserStore())
   background-repeat: no-repeat;
   background-position: center;
   height: 40rem;
-  background-image: url('../../assets/images/soul-note/note_3.webp');
+  // background-image: url('../../assets/images/soul-note/note_3.webp');
   align-items: center;
 }
 </style>

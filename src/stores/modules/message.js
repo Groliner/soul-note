@@ -5,14 +5,40 @@ export const useMessageStore = defineStore(
   'messageConstant',
   () => {
     const message = ref([])
+    const userStore = useUserStore()
+
+    const loginConstant = computed(() => {
+      const msg = {
+        'zh-CN': {
+          LOAD_SUCCESS: '加载 成功',
+          LOGIN_SUCCESS: '登录 成功',
+          REGISTER_SUCCESS: '注册 成功',
+
+          LOAD_ERROR: '加载 超时',
+          LOGIN_ERROR: '登录 失败',
+          REGISTER_ERROR: '注册 失败'
+        },
+        'en-US': {
+          LOAD_SUCCESS: 'load success',
+          LOGIN_SUCCESS: 'login success',
+          REGISTER_SUCCESS: 'register success',
+
+          LOAD_ERROR: 'load error',
+          LOGIN_ERROR: 'Incorrect username or password',
+          REGISTER_ERROR: 'User creation failed'
+        }
+      }
+      return msg[userStore.selectLanguage]
+    })
+
     const homeConstant = computed(() => {
       const msg = {
         'zh-CN': { error: 'home error', success: 'home success' },
         'en-US': { error: 'home error' }
       }
-      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
+      return msg[userStore.selectLanguage]
     })
-    const userStore = useUserStore()
+
     const diaryConstant = computed(() => {
       const msg = {
         'zh-CN': {
@@ -46,7 +72,7 @@ export const useMessageStore = defineStore(
           DIARY_DESC_PLACEHOLDER: 'Please enter the diary description'
         }
       }
-      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
+      return msg[userStore.selectLanguage]
     })
     const diaryPageConstant = computed(() => {
       const msg = {
@@ -101,7 +127,7 @@ export const useMessageStore = defineStore(
                           7. Anytime there's a pop-up alert asking it's saved immediately.`
         }
       }
-      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
+      return msg[userStore.selectLanguage]
     })
     const accountConstant = computed(() => {
       const msg = {
@@ -143,7 +169,7 @@ export const useMessageStore = defineStore(
           SESSION_EXPIRED: 'Session expired, please login again'
         }
       }
-      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
+      return msg[userStore.selectLanguage]
     })
     const chatConstant = computed(() => {
       const msg = {
@@ -168,7 +194,7 @@ export const useMessageStore = defineStore(
           SEND_OVER_SIZE_WARRING: 'The total size of the attached files cannot exceed 10MB'
         }
       }
-      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
+      return msg[userStore.selectLanguage]
     })
     const tips = computed(() => {
       const msg = {
@@ -179,11 +205,12 @@ export const useMessageStore = defineStore(
           REFRESH_TIPS: 'Refresh the page to update data from the database'
         }
       }
-      return msg[userStore.selectLanguage ? userStore.selectLanguage : 'zh-CN']
+      return msg[userStore.selectLanguage]
     })
     return {
       message,
       tips,
+      loginConstant,
       homeConstant,
       diaryConstant,
       diaryPageConstant,

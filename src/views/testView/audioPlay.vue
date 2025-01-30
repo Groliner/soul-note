@@ -6,17 +6,25 @@ import happy_birthday_cover from '@/assets/music/Happy_Happy_Birthday.jpg'
 import sakura from '@/assets/music/桜咲く.ogg'
 import sakura_cover from '@/assets/music/桜咲く.jpg'
 
+import toWalkAway from '@/assets/music/今、歩き出す君へ。.ogg'
+import toWalkAway_cover from '@/assets/music/今、歩き出す君へ。.jpg'
+
 import light from '@/assets/music/光芒.ogg'
 import light_cover from '@/assets/music/光芒.jpg'
 
 import rimless from '@/assets/music/Rimless ～无边的世界～.ogg'
 import rimless_cover from '@/assets/music/Rimless ～无边的世界～.jpg'
 
-const albums = ['まよウタ!', 'STEP', '灼眼のシャナF', 'Rimless～フチナシノセカイ～']
-const trackNames = ['Happy Happy Birthday', '桜咲く', '光芒', 'Rimless ～无边的世界～']
-const albumArtworks = ['Happy Happy Birthday', '桜咲く', '光芒', 'Rimless ～无边的世界～']
-const coverArtworks = [happy_birthday_cover, sakura_cover, light_cover, rimless_cover]
-const trackUrl = [happy_birthday, sakura, light, rimless]
+const albums = ['まよウタ!', 'Ceui (セイ)', '灼眼のシャナF', 'Rimless～フチナシノセカイ～']
+const trackNames = ['Happy Happy Birthday', '今、歩き出す君へ。', '光芒', 'Rimless ～无边的世界～']
+const albumArtworks = [
+  'Happy Happy Birthday',
+  '今、歩き出す君へ。',
+  '光芒',
+  'Rimless ～无边的世界～'
+]
+const coverArtworks = [happy_birthday_cover, toWalkAway_cover, light_cover, rimless_cover]
+const trackUrl = [happy_birthday, toWalkAway, light, rimless]
 
 const playerTrack = ref(null)
 const albumArt = ref(null)

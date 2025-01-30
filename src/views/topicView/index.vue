@@ -2,14 +2,12 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 12:19:25
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-11-18 11:15:53
+ * @LastEditTime: 2025-01-30 13:53:45
 -->
 <script setup>
 import { ref } from 'vue'
 import { useUserStore } from '@/stores'
-import { storeToRefs } from 'pinia'
-const { userPreferences } = storeToRefs(useUserStore())
-
+const userStore = useUserStore()
 import AnimatedSearchBox from '@/components/funnyGadgets/AnimatedSearchBox.vue'
 import { encryptData } from '@/composables/IOAESKey'
 const topicList = ref([])
@@ -22,9 +20,7 @@ const handleSearch = (content) => {
 <template>
   <div class="container">
     <div>
-      {{
-        userPreferences.languageSelectNum === 1 ? 'there should be topics' : '这里将会是话题系统'
-      }}
+      {{ userStore.selectLanguage === 'en-US' ? 'there will be topics' : '这里将会是话题系统' }}
     </div>
     <div class="search_wrapper">
       <AnimatedSearchBox

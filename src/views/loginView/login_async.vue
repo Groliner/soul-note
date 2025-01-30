@@ -6,9 +6,9 @@ signUP 注册设置数组(props)
 logIn 登录设置数组(props)
 TODO:
 添加邮箱验证功能
-移动端的触发问题
+
 */
-import { toRef, ref, computed, watch, nextTick } from 'vue'
+import { toRef, ref, computed, watch, nextTick, onMounted } from 'vue'
 import {
   PhArrowCircleRight,
   PhArrowCircleLeft,
@@ -16,6 +16,15 @@ import {
   PhArrowsClockwise
 } from '@phosphor-icons/vue'
 import { gsap } from 'gsap'
+
+// 移动端的触发问题,通过区分是否为移动端来设置互动
+const isMobile = ref(false)
+onMounted(() => {
+  if (window.innerWidth < 620) {
+    isMobile.value = true
+  }
+})
+
 const props = defineProps({
   signUp: {
     type: Array,
@@ -91,6 +100,7 @@ watch(inputArray, () => {
   refArray.length = totalSteps.value
   refArray.forEach((inner, index) => {
     const key = inputArray.value[index].id
+    // responseData只有在注册之后才会有数据，用于在登录时快速填充
     inner.value.value =
       responseData.value?.data && key in responseData.value.data ? responseData.value.data[key] : ''
   })
@@ -263,8 +273,9 @@ const handleAnimation = () => {
   }
 }
 
-import { useUserStore } from '@/stores'
+import { useUserStore, useMessageStore } from '@/stores'
 const userStore = useUserStore()
+const messageStore = useMessageStore()
 import { login, register } from '@/api/oauth2'
 import { generateAESKey, encryptPassword } from '@/composables/IOAESKey'
 
@@ -282,11 +293,11 @@ const handleSignUp = async (resetTween) => {
   const code = await register(formData)
     .then((res) => {
       if (res.data.code == 1) {
-        ElMessage({ type: 'success', message: 'Signup successfully' })
+        ElMessage({ type: 'success', message: messageStore.loginConstant['REGISTER_SUCCESS'] })
       } else {
         ElMessage({
           type: 'warning',
-          message: res.data.msg || 'User creation failed'
+          message: res.data.msg || messageStore.loginConstant['REGISTER_ERROR']
         })
       }
       return res.data.code
@@ -317,7 +328,7 @@ const handleLogIn = async (resetTween) => {
       } else {
         ElMessage({
           type: 'warning',
-          message: res.data.msg || 'Incorrect username or password'
+          message: res.data.msg || messageStore.loginConstant['LOGIN_ERROR']
         })
       }
       return res.data.code
@@ -336,7 +347,7 @@ const handleLogIn = async (resetTween) => {
   <div id="app-cover" ref="app_cover" :class="{ active: isHover }" @mouseover="handleHover">
     <h1 id="heading" class="up" :class="{ inactive: !isSignUp && isHover }">Sign Up</h1>
 
-    <form method="post" action="" autocomplete="off" @focusout="handleOut">
+    <form method="post" action="" autocomplete="off" @mouseout="handleOut" v-if="isMobile">
       <div id="inp-box-cover">
         <div id="inp-padd" :class="{ rememberMe: remember }">
           <div
@@ -392,7 +403,62 @@ const handleLogIn = async (resetTween) => {
         </div>
       </div>
     </form>
-
+    <form method="post" action="" autocomplete="off" @focusout="handleOut" v-else>
+      <div id="inp-box-cover">
+        <div id="inp-padd" :class="{ rememberMe: remember }">
+          <div
+            class="inp-box"
+            :class="{
+              inactive: stepNumber > index + 1 && isHover,
+              active: stepNumber === index + 1 && isHover
+            }"
+            v-for="(inp, index) in inputArray"
+            :key="index"
+            :id="inp.id"
+          >
+            <input
+              :name="inp.id"
+              :disabled="stepNumber < index + 1"
+              :ref="(el) => setRefArray(el, index)"
+              :type="inp.type"
+              class="inp"
+              :placeholder="inp.placeholder"
+              :spellcheck="inp?.spellcheck"
+              :autocomplete="inp?.autocomplete"
+              @keyup="checkInput(refArray[index])"
+              @keydown.enter.prevent="handleKeyDownEnter"
+            />
+          </div>
+          <div
+            id="prev-action-btn"
+            :class="{ active: stepNumber > 1 && !isFinished }"
+            ref="preAction"
+            @click="moveToPreviousStep()"
+          >
+            <ph-arrow-circle-left class="arrow" weight="bold" />
+          </div>
+          <div
+            id="next-action-btn"
+            :class="{ active: nextStep && !isFinished }"
+            ref="nextAction"
+            @click="moveToNextStep"
+          >
+            <ph-arrow-circle-right class="arrow" weight="bold" />
+          </div>
+        </div>
+        <div id="progress-bar-cover" :class="{ hideForm: isFinished }">
+          <div id="progress" ref="progress">
+            <div id="working" v-show="load">
+              Working<ph-arrows-clockwise class="loading" weight="bold" />
+            </div>
+            <div id="acc-success" v-show="!load">
+              <p>Account Created<ph-check-fat class="checkout" weight="fill" /></p>
+              <span id="init-login" @click="reset">Login now</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
     <h1 id="heading" class="down" :class="{ inactive: isHover && isSignUp }">
       Log In
       <div
