@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-09-07 15:49:55
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-12-31 18:55:54
+ * @LastEditTime: 2025-01-31 22:49:43
  */
 /*
 管理消息的发送与socket，rtc的连接
@@ -19,7 +19,7 @@ import {
 import { useUserStore } from './user'
 import { useContactsStore } from './contacts'
 import { useMessageStore } from './message'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { formatTimeToSecond, compareTime } from '@/composables/formatTime'
 // {
@@ -86,6 +86,18 @@ export const useChatStore = defineStore(
         })
       }
     }
+
+    const logout = () => {
+      if (stompClient) {
+        stompClient.deactivate()
+        stompClient = null
+      }
+      chatBoxes.value = []
+      chatBoxGroups.value = []
+      isConnected.value = false
+      configuration.value = {}
+    }
+
     const initConfiguration = () => {
       getWebSocketConfiguration()
         .then((response) => {
@@ -98,8 +110,11 @@ export const useChatStore = defineStore(
     }
     // 连接到 WebSocket
     const connectWebSocket = () => {
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+      const wsUrl = `${wsProtocol}://${window.location.host}/ws/soul-note`
       stompClient = new Client({
-        brokerURL: 'ws://localhost:12345/ws/soul-note', // WebSocket URL
+        brokerURL: wsUrl, // WebSocket URL
+
         connectHeaders: {
           // 可以传递连接时的额外信息，如认证信息
           Authorization: userStore.getAccessToken_()
@@ -107,6 +122,7 @@ export const useChatStore = defineStore(
         // debug: (str) => {
         //   console.log(str) // 打印调试信息
         // },
+
         onConnect: (frame) => {
           console.log('Connected to WebSocket')
           console.log(frame)
@@ -199,31 +215,42 @@ export const useChatStore = defineStore(
     }
 
     const subscribeGroup = () => {
-      // userStore.getGroupList()
       // 订阅群组消息
-      getChatGroupsAPI().then((response) => {
-        if (response.data.code == 1) {
-          response.data.data.forEach((group) => {
-            console.log(configuration.value.websocketStompEndpoints['group'] + '/' + group.id)
-            stompClient.subscribe(
-              configuration.value.websocketStompEndpoints['group'] + '-' + group.id,
-              (mes) => {
-                const message = JSON.parse(mes.body)
-                message.isSelf = false
-                chatBoxGroups.value.push(message)
-              }
-            )
-          })
-        } else {
-          ElMessage({
-            message: response.data.msg
-              ? response.data.msg
-              : messageStore.chatConstant['GET_GROUP_ERROR'],
-            type: 'error',
-            grouping: true
-          })
-        }
+      contactsStore.groups.forEach((group) => {
+        stompClient.subscribe(
+          configuration.value.websocketStompEndpoints['group'] + '-' + group.id,
+          (mes) => {
+            const message = JSON.parse(mes.body)
+            message.isSelf = false
+            chatBoxGroups.value.push(message)
+          }
+        )
       })
+      // userStore.getGroupList()
+      // 不再单独获取群组列表，而是在contactsStore中获取
+      // getChatGroupsAPI().then((response) => {
+      //   if (response.data.code == 1) {
+      //     response.data.data.forEach((group) => {
+      //       console.log(configuration.value.websocketStompEndpoints['group'] + '/' + group.id)
+      //       stompClient.subscribe(
+      //         configuration.value.websocketStompEndpoints['group'] + '-' + group.id,
+      //         (mes) => {
+      //           const message = JSON.parse(mes.body)
+      //           message.isSelf = false
+      //           chatBoxGroups.value.push(message)
+      //         }
+      //       )
+      //     })
+      //   } else {
+      //     ElMessage({
+      //       message: response.data.msg
+      //         ? response.data.msg
+      //         : messageStore.chatConstant['GET_GROUP_ERROR'],
+      //       type: 'error',
+      //       grouping: true
+      //     })
+      //   }
+      // })
     }
 
     const getChatBox = (id, isGroup) => {
@@ -320,6 +347,7 @@ export const useChatStore = defineStore(
       chatId,
       isConnected,
       init,
+      logout,
       subscribeGroup,
       sendMessage,
       sendFiles,

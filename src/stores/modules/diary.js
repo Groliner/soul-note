@@ -59,20 +59,20 @@ export const useDiaryStore = defineStore(
     const diary = ref(JSON.parse(JSON.stringify(defaultDiary)))
     const diaryPages = ref(JSON.parse(defaultPages))
     const initAll = ref(
-      !window.location.pathname.startsWith('/diary') &&
-        !window.location.pathname.startsWith('/account')
+      window.location.pathname.startsWith('/diary') ||
+        window.location.pathname.startsWith('/account')
     ) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
     const init = async (force = false) => {
-      if (initAll.value && !force) return
+      if (!initAll.value && !force) return
       await getDiary()
-      initAll.value = true
+      initAll.value = false
       for (let i = 0; i < diary.value.length; i++) {
         const diaryId = diary.value[i].id
         if (diaryId !== 0) getDiaryPage(diaryId)
       }
     }
     const logout = () => {
-      initAll.value = false
+      initAll.value = true
       setDiary()
       setPages()
     }

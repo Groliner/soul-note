@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 12:19:25
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-12-29 18:26:17
+ * @LastEditTime: 2025-03-28 15:27:58
 -->
 <script setup>
 import { onMounted, ref, watch, computed, onUnmounted } from 'vue'
@@ -64,7 +64,7 @@ const handleChatChange = (id) => {}
 // 页面加载时监听点击事件
 onMounted(() => {
   contactsStore.init().then((res) => {
-    chatStore.init(true)
+    chatStore.init()
   })
   document.addEventListener('click', handleClickOutside)
 })

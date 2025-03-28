@@ -7,10 +7,8 @@ logIn 登录设置数组(props)
 TODO:
 添加邮箱验证功能
 
-QUESTION:
-loginData是否应该在handout时进行条件空置？
 */
-import { useTemplateRef, ref, computed, watch, nextTick, onMounted } from 'vue'
+import { useTemplateRef, toRef, ref, computed, watch, nextTick, onMounted } from 'vue'
 import {
   PhArrowCircleRight,
   PhArrowCircleLeft,
@@ -87,30 +85,35 @@ const props = defineProps({
 
 const isSignUp = ref(false)
 const inputArray = ref(props.logIn)
+const inpBoxRef = useTemplateRef('inpBox')
 const totalSteps = computed(() => inputArray.value.length)
-
+let refArray = []
+const setRefArray = (el, index) => {
+  //执行时机在inputArray变化,且dom更新(每次输入或者触发事件)之后,
+  // console.log('重组', el?.name, el?.value, index)
+  if (el) {
+    refArray[index] = toRef(el)
+  }
+}
+watch(inputArray, () => {
+  // 由于refArray绑定的input取决于位置,并且setRefArray执行时机比较晚,所以此处更新input.value根据最新的inputArray
+  // console.log('侦测到模式转换,开始规则refArray', totalSteps.value)
+  refArray.length = totalSteps.value
+  refArray.forEach((inner, index) => {
+    const key = inputArray.value[index].id
+    // responseData只有在注册之后才会有数据，用于在登录时快速填充
+    inner.value.value =
+      responseData.value?.data && key in responseData.value.data ? responseData.value.data[key] : ''
+  })
+})
 const finishedStep = ref(0)
 const stepNumber = ref(1)
 const isFinished = ref(false)
 const nextStep = ref(false)
 const isHover = ref(false)
-const inpBoxRef = useTemplateRef('inpBox')
-const inputArrayRef = ref([])
+const progressRef = useTemplateRef('progress')
 const preActionRef = useTemplateRef('preAction')
 const nextActionRef = useTemplateRef('nextAction')
-const progressBarCoverRef = useTemplateRef('progressBarCover')
-const progressWidth = computed(() => ((stepNumber.value - 1) / totalSteps.value) * 100)
-watch(
-  () => inputArray.value.length,
-  async () => {
-    await nextTick() // 等待DOM更新(异步函数的另一种写法)
-    inputArrayRef.value = inpBoxRef.value.map((item) => item.querySelector('input'))
-    inputArrayRef.value.forEach((item) => {
-      item.value = loginData.value ? loginData.value[item.name] : ''
-    })
-  },
-  { immediate: true }
-)
 const handleHover = (el) => {
   if (isHover.value) return
   if (el.target.classList.contains('up')) {
@@ -125,39 +128,46 @@ const handleHover = (el) => {
   isHover.value = true
   if (finishedStep.value < totalSteps.value)
     nextTick(() => {
-      inputArrayRef.value[0].focus()
+      refArray[0].value.focus()
     })
 }
 const handleOut = () => {
-  isHover.value = stepNumber.value > 1 || inputArrayRef.value[0].value.trim().length > 0
-  if (loginData.value && !isFinished.value) {
-    loginData.value = null
+  // console.log(responseData.value.data)
+  isHover.value = stepNumber.value > 1 || refArray[0].value.value.trim().length > 0
+
+  if (responseData.value?.data && !isFinished.value) {
+    responseData.value.data = undefined
   }
 }
-const checkInput = (event) => {
-  const el = event.target
-  //console.log(el, el.name, el.value)
+const checkInput = (el) => {
   // 用户每次输入自动执行
-  const index = inputArray.value.findIndex((item) => item.id === el.name)
-  const inputRegular = inputArray.value[index]
-  if (el.value.match(inputRegular.regex)) {
-    nextStep.value = true
-    finishedStep.value = index + 1
-  } else {
-    nextStep.value = false
-    finishedStep.value = index
-  }
+  // console.log('检查输入', el.value.name, el.value.value, stepNumber.value)
+  inputArray.value.forEach((inner, index) => {
+    if (inner.id === el.value.name && index + 1 === stepNumber.value) {
+      if (el.value.value.match(inner.regex)) {
+        nextStep.value = true
+        finishedStep.value = index + 1
+      } else {
+        finishedStep.value = index
+        nextStep.value = false
+      }
+      return nextStep.value
+    }
+  })
 }
-watch(stepNumber, async (new_step, old_step) => {
+watch(stepNumber, (new_step, old_step) => {
   if (new_step < 0 || new_step > totalSteps.value) return
   // console.log(new_step, old_step)
-  await nextTick()
-  inputArrayRef.value[new_step - 1].focus()
+  checkInput(refArray[new_step - 1])
+  nextTick(() => {
+    refArray[new_step - 1].value.focus()
+  })
 })
 const moveToNextStep = () => {
   if (!nextActionRef.value.classList.contains('active')) return
   stepNumber.value =
     finishedStep.value >= stepNumber.value ? stepNumber.value + 1 : finishedStep.value + 1
+  progressRef.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
   if (finishedStep.value >= totalSteps.value && stepNumber.value > totalSteps.value) {
     isFinished.value = true
     setTimeout(handleFinished, 500)
@@ -166,6 +176,7 @@ const moveToNextStep = () => {
 const moveToPreviousStep = () => {
   if (!preActionRef.value.classList.contains('active')) return
   if (stepNumber.value > 1) stepNumber.value--
+  progressRef.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
 }
 
 const handleKeyDownEnter = () => {
@@ -175,9 +186,10 @@ const handleKeyDownEnter = () => {
 
 // 定义结束以及异步动画
 const load = ref(true)
+const responseData = ref({}) // 用于用户注册后的快速登录
 const reset = (change = true, toStep = '1') => {
   load.value = true
-  progressBarCoverRef.value.classList.remove('hide-form')
+  progressRef.value.parentElement.classList.remove('hide-form')
   // console.log(toStep)
   // 判断toStep是否包含username
   stepNumber.value =
@@ -188,11 +200,16 @@ const reset = (change = true, toStep = '1') => {
     inputArray.value = props.logIn
     isSignUp.value = false
   }
+  progressRef.value.style.width = `${((stepNumber.value - 1) / totalSteps.value) * 100}%`
   isFinished.value = false
+  // nextStep.value = false
+  // 由于setRefArray执行时机比较晚,所以当change=true时下面check由于refArray更新较慢
+  // 也就是在注册后转入登录input时的第一次checkInput不会影响nextStep.value,保持为true,除非上面设置为false
+  // checkInput(refArray[stepNumber.value - 1])
 }
 const handleFinished = () => {
   load.value = true
-  progressBarCoverRef.value.classList.add('hide-form')
+  progressRef.value.parentElement.classList.add('hide-form')
   const resetTween = handleAnimation()
   if (isSignUp.value) handleSignUp(resetTween)
   else handleLogIn(resetTween)
@@ -263,22 +280,16 @@ const messageStore = useMessageStore()
 import { login, register } from '@/api/oauth2'
 import { generateAESKey, encryptPassword } from '@/composables/IOAESKey'
 
-const loginData = ref(null) // 用于用户注册后的快速登录
 const remember = ref(false)
-const getBasicData = async () => {
-  const formData = new FormData()
-  inputArrayRef.value.forEach((item) => {
-    formData.append(item.name, item.value)
-  })
-  loginData.value = Object.fromEntries(formData)
-
-  const pwd = formData.get('password')
-  formData.set('password', await encryptPassword(pwd))
-  return [formData, pwd]
-}
 // 异步请求
 const handleSignUp = async (resetTween) => {
-  const [formData, pwd] = await getBasicData()
+  const formData = new FormData()
+  refArray.forEach((item) => {
+    formData.append(item.value.name, item.value.value)
+  })
+  responseData.value.data = Object.fromEntries(formData)
+  const pwd = formData.get('password')
+  formData.set('password', await encryptPassword(pwd))
   //发送数据等待返回
   const code = await register(formData)
     .then((res) => {
@@ -299,11 +310,16 @@ const handleSignUp = async (resetTween) => {
       return 0
     })
   // console.log('handleSignUp:res', res)
-  resetTween(code, 0.5)
+  resetTween(code, 0.6)
 }
 const handleLogIn = async (resetTween) => {
-  const [formData, pwd] = await getBasicData()
+  const formData = new FormData()
+  refArray.forEach((item) => {
+    formData.append(item.value.name, item.value.value)
+  })
   formData.append('remember-me', remember.value)
+  const pwd = formData.get('password')
+  formData.set('password', await encryptPassword(pwd))
   const code = await login(formData)
     .then((res) => {
       if (res.data.code === 1) {
@@ -348,12 +364,13 @@ const handleLogIn = async (resetTween) => {
             <input
               :name="inp.id"
               :disabled="stepNumber < index + 1"
+              :ref="(el) => setRefArray(el, index)"
               :type="inp.type"
               class="inp"
               :placeholder="inp.placeholder"
               :spellcheck="inp?.spellcheck"
               :autocomplete="inp?.autocomplete"
-              @keyup="checkInput"
+              @keyup="checkInput(refArray[index])"
               @keydown.enter.prevent="handleKeyDownEnter"
             />
           </div>
@@ -374,8 +391,8 @@ const handleLogIn = async (resetTween) => {
             <ph-arrow-circle-right class="arrow" weight="bold" />
           </div>
         </div>
-        <div id="progress-bar-cover" ref="progressBarCover">
-          <div id="progress" :style="{ width: progressWidth + '%' }">
+        <div id="progress-bar-cover" :class="{ hideForm: isFinished }">
+          <div id="progress" ref="progress">
             <div id="working" v-show="load">
               Working<ph-arrows-clockwise class="loading" weight="bold" />
             </div>
@@ -404,12 +421,13 @@ const handleLogIn = async (resetTween) => {
             <input
               :name="inp.id"
               :disabled="stepNumber < index + 1"
+              :ref="(el) => setRefArray(el, index)"
               :type="inp.type"
               class="inp"
               :placeholder="inp.placeholder"
               :spellcheck="inp?.spellcheck"
               :autocomplete="inp?.autocomplete"
-              @keyup="checkInput"
+              @keyup="checkInput(refArray[index])"
               @keydown.enter.prevent="handleKeyDownEnter"
             />
           </div>
@@ -430,8 +448,8 @@ const handleLogIn = async (resetTween) => {
             <ph-arrow-circle-right class="arrow" weight="bold" />
           </div>
         </div>
-        <div id="progress-bar-cover" ref="progressBarCover">
-          <div id="progress" :style="{ width: progressWidth + '%' }">
+        <div id="progress-bar-cover" :class="{ hideForm: isFinished }">
+          <div id="progress" ref="progress">
             <div id="working" v-show="load">
               Working<ph-arrows-clockwise class="loading" weight="bold" />
             </div>

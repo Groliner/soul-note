@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-09-28 21:50:42
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-12-29 17:05:40
+ * @LastEditTime: 2025-03-28 15:20:19
  */
 /**
 管理用户的联系人信息
@@ -27,17 +27,20 @@ export const useContactsStore = defineStore(
     const contactsUserList = ref([]) // 存储具体信息
     const userStore = useUserStore()
     const messageStore = useMessageStore()
-
+    const initAll = ref(
+      window.location.pathname.startsWith('/chats') ||
+        window.location.pathname.startsWith('/account')
+    ) // 设置是否初始化所有数据,在用户想要重新加载数据时使用
     const init = async (force = false) => {
       if (!userStore.isAuthenticated) {
         return false
       }
-      if (friends.value.length == 0 || force) {
-        await getFriends()
+      if (!initAll.value && !force) {
+        return
       }
-      if (groups.value.length == 0 || force) {
-        await getGroups()
-      }
+      initAll.value = false
+      await getFriends()
+      await getGroups()
     }
     const logout = () => {
       friends.value = []

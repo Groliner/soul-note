@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useDiaryStore } from './diary'
 import { useContactsStore } from './contacts'
 import { useMessageStore } from './message'
+import { useChatStore } from './chat'
 import router from '@/router'
 import {
   getUserInfoAPI,
@@ -19,10 +20,10 @@ import {
   getAccessToken,
   login,
   introspectToken,
+  register,
   logout_,
   revokeToken,
   refreshToken,
-  register,
   getUserInfo
 } from '@/api/oauth2'
 import { getUserDiaryStatusAPI } from '@/api/userDiaryStatus'
@@ -113,6 +114,7 @@ export const useUserStore = defineStore(
     const messageStore = useMessageStore()
     const diaryStore = useDiaryStore()
     const contactsStore = useContactsStore()
+    const chatStore = useChatStore()
     const login = async (isRememberMe) => {
       initAll.value = false
 
@@ -128,7 +130,7 @@ export const useUserStore = defineStore(
 
         // 注意以下数据更新的条件限制
         diaryStore.init(true)
-        contactsStore.init()
+        contactsStore.init(true)
       } else {
         ElMessage({
           message: messageStore.accountConstant['AUTHORIZE_ERROR'],
@@ -172,6 +174,7 @@ export const useUserStore = defineStore(
         isNeedToUpdate.value = true
         diaryStore.logout()
         contactsStore.logout()
+        chatStore.logout()
         router.push('/home')
       }
     }

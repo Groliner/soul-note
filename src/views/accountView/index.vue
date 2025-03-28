@@ -2,18 +2,20 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 12:19:25
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-09-11 16:54:51
+ * @LastEditTime: 2025-01-30 20:06:19
 -->
 <script setup>
 import profileFront from './profileFront.vue'
 import calendar from '@/components/modules/YearCalendar.vue'
 import { onMounted, ref } from 'vue'
-import { useUserStore, useDiaryStore } from '@/stores'
+import { useUserStore, useDiaryStore, useContactsStore } from '@/stores'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
+const contactsStore = useContactsStore()
 onMounted(() => {
   userStore.updateUserInfo()
   diaryStore.init()
+  contactsStore.init()
 })
 </script>
 <template>

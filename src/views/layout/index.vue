@@ -130,7 +130,7 @@ const isTest = computed(() => window.location.hostname === 'localhost')
     @media screen and (max-width: 1200px) {
       margin-top: 3.5rem;
     }
-    * {
+    & > * {
       width: 100%;
     }
   }

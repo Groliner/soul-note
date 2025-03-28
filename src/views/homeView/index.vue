@@ -9,7 +9,7 @@ import audioPlay from '../testView/audioPlay.vue'
 
 import { computed, ref } from 'vue'
 const userStore = useUserStore()
-const themeMode = 0
+const themeMode = 1
 const themeList = [
   {
     name: 'birthday',
@@ -55,7 +55,7 @@ const theme = computed(() => themeList[themeMode])
       <sendButton />
     </section> -->
     <section class="section_audio">
-      <audioPlay :allBackground="false" :theme="theme" />
+      <audioPlay :allBackground="false" :theme="theme.name" />
     </section>
   </div>
 </template>
