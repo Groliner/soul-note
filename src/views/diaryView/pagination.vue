@@ -97,19 +97,19 @@ import { nextTick, onMounted, watch } from 'vue'
 </template>
 <style lang="scss" scoped>
 .container_pagination {
-  position: fixed;
-  top: 120px;
-  right: 8em;
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  transition: all 0.3s ease;
+  // position: fixed;
+  // top: 120px;
+  // right: 8em;
+  // display: grid;
+  // grid-template-columns: 1fr 2fr 1fr;
+  // justify-content: center;
+  // align-items: center;
+  // gap: 2px;
+  // transition: all 0.3s ease;
 
-  @media screen and (max-width: 800px) {
-    right: 5em;
-  }
+  // @media screen and (max-width: 800px) {
+  //   right: 5em;
+  // }
 }
 
 .pages-container {

@@ -2,14 +2,14 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-08-20 22:50:57
+ * @LastEditTime: 2025-03-29 22:03:18
 -->
 <script setup>
 import zh from 'element-plus/es/locale/lang/zh-cn.mjs'
 import { ref, provide, watch, onMounted } from 'vue'
 
 const pop = ref(false)
-provide('pressTime', 123)
+provide('pressTime', 101)
 
 import { useUserStore } from './stores'
 import { storeToRefs } from 'pinia'
@@ -38,7 +38,7 @@ const { userPreferences } = storeToRefs(userStore)
   </div>
 </template>
 <style lang="scss">
-$times: 0.44s;
+$times: 0.33s;
 .fade-enter-active,
 .fade-leave-active {
   transition: all $times ease-in;

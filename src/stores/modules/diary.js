@@ -275,6 +275,11 @@ export const useDiaryStore = defineStore(
         diary.value[index].words = words
       }
     }
+
+    // 此处的方法待定，考虑将userStore中的userDiaryStatus提取到diaryStore管理。
+    const getUserDiaries = (userId) => {
+      return diary.value.filter((item) => item.userId == userId)
+    }
     const getLocalDiaryById = (id) => {
       const index = diary.value.findIndex((item) => item.id === id && id !== 0)
 

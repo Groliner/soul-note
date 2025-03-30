@@ -1,3 +1,9 @@
+<!--
+ * @Author: Gro lin
+ * @Date: 2024-08-09 12:19:25
+ * @LastEditors: Gro lin
+ * @LastEditTime: 2025-03-30 10:55:25
+-->
 <script setup>
 /*
 选项卡组件
@@ -27,13 +33,7 @@ const props = defineProps({
 <template>
   <div class="segmented-control">
     <div v-for="i in props.n" :key="i" :class="`segmented-control__${i}`">
-      <input
-        type="radio"
-        name="radio2"
-        :value="i - 1"
-        :id="`tab-${i}`"
-        v-model="picked"
-      />
+      <input type="radio" name="radio2" :value="i" :id="`tab-${i}`" v-model="picked" />
       <label :for="`tab-${i}`">
         <p>Tab {{ i }}</p></label
       >

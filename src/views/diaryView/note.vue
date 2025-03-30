@@ -13,10 +13,9 @@ TODO
 目前当使用撤回或重做,光标的撤销因为undoStack中的selectionStart并没有去实现(selectionStart===selectionEnd),
 所以光标会返回至上一个stack的selectionEnd
 */
-import { nextTick, watch } from 'vue'
+import { nextTick, watch, useTemplateRef, onMounted } from 'vue'
 import gsap from 'gsap'
 import { ScrollToPlugin } from 'gsap/all'
-import { ref, onMounted } from 'vue'
 gsap.registerPlugin(ScrollToPlugin)
 gsap.defaults({ duration: 0.37 })
 const diaryContext = defineModel('context', {
@@ -45,7 +44,7 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['save'])
-const textareaRef = ref(null)
+const textareaRef = useTemplateRef('textareaRef')
 let undoStack = [
   {
     text: diaryContent.value,

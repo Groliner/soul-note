@@ -109,6 +109,7 @@ export const useUserStore = defineStore(
     const userWordCount = ref(defaultWordCount)
     const userPreferences = ref(JSON.parse(JSON.stringify(defaultUserPreferences)))
     const tokens = ref({})
+    const isNeedToUpdate = ref(window.location.pathname.startsWith('/account')) // 减少请求次数
 
     // 工具类
     const messageStore = useMessageStore()
@@ -116,7 +117,7 @@ export const useUserStore = defineStore(
     const contactsStore = useContactsStore()
     const chatStore = useChatStore()
     const login = async (isRememberMe) => {
-      initAll.value = false
+      isNeedToUpdate.value = true
 
       const res = await getAuthorizationCode()
       if (res.data.code == 1) {
@@ -170,7 +171,6 @@ export const useUserStore = defineStore(
         tokens.value = {}
         userWordCount.value = []
         userPreferences.value = defaultUserPreferences
-        initAll.value = false
         isNeedToUpdate.value = true
         diaryStore.logout()
         contactsStore.logout()
@@ -180,8 +180,6 @@ export const useUserStore = defineStore(
     }
     const isAuthenticated = computed(() => (tokens.value?.access_token ? true : false))
 
-    const initAll = ref(!window.location.pathname.startsWith('/account')) // 是否初始化过
-    const isNeedToUpdate = ref(window.location.pathname.startsWith('/account')) // 减少请求次数
     // 设置token
     const setToken = async (code) => {
       const res = await getAccessToken(code)
@@ -289,9 +287,8 @@ export const useUserStore = defineStore(
     }
     const updateUserInfo = async () => {
       // 如果已经初始化过了，就不再初始化
-      if (initAll.value) return
+      if (!isNeedToUpdate.value) return
       const res = await getUserInfoAPI()
-      initAll.value = true
       if (res.data.code == 1) {
         setUserInfo(res.data.data)
         userInfo.value.isEdited = false
@@ -306,6 +303,7 @@ export const useUserStore = defineStore(
               grouping: true,
               type: 'success'
             })
+            isNeedToUpdate.value = false
           } else {
             ElMessage.error(messageStore.accountConstant['LOAD_ERROR'])
           }
@@ -313,11 +311,11 @@ export const useUserStore = defineStore(
       } else ElMessage.error(res.data.msg)
     }
     const getUserDiaryStatus = async (userId = userInfo.value.id) => {
-      if (!isNeedToUpdate.value) return true
+      // if (!isNeedToUpdate.value) return true
       const res = await getUserDiaryStatusAPI({ userId })
       if (res.data.code === 1) {
         userDiary.value = res.data.data
-        isNeedToUpdate.value = false
+        // isNeedToUpdate.value = false
         return true
       }
       ElMessage.error(res.data.msg)
@@ -358,7 +356,7 @@ export const useUserStore = defineStore(
         userInfo.value.isEdited = false
         return true
       } else {
-        initAll.value = true
+        isNeedToUpdate.value = true
         updateUserInfo()
         ElMessage.error(res.data.msg)
         return false
@@ -465,7 +463,7 @@ export const useUserStore = defineStore(
     const refreshFriendsInterval = ref(null)
     const TOKEN_REFRESH_INTERVAL = 1000 * 60 * 20 // 20分钟
     const FRIENDS_REFRESH_INTERVAL = 1000 * 60 * 1 // 1分钟
-    // const TOKEN_REFRESH_INTERVAL = 1000 * 20 // 20分钟
+    // const TOKEN_REFRESH_INTERVAL = 1000 * 20 // 20秒
     const startTokenRefreshTimer = () => {
       stopTokenRefreshTimer()
       const lasRefreshTime = localStorage.getItem('lastTokenRefreshTime')

@@ -91,8 +91,8 @@ const totalSteps = computed(() => inputArray.value.length)
 
 const finishedStep = ref(0)
 const stepNumber = ref(1)
-const isFinished = ref(false)
 const nextStep = ref(false)
+const isFinished = ref(false)
 const isHover = ref(false)
 const inpBoxRef = useTemplateRef('inpBox')
 const inputArrayRef = ref([])
@@ -109,7 +109,7 @@ watch(
       item.value = loginData.value ? loginData.value[item.name] : ''
     })
   },
-  { immediate: true }
+  { immediate: true } // 此处设置会在第一次渲染时自动执行一次
 )
 const handleHover = (el) => {
   if (isHover.value) return
@@ -258,11 +258,11 @@ const handleAnimation = () => {
 }
 
 import { useUserStore, useMessageStore } from '@/stores'
-const userStore = useUserStore()
-const messageStore = useMessageStore()
 import { login, register } from '@/api/oauth2'
 import { generateAESKey, encryptPassword } from '@/composables/IOAESKey'
 
+const userStore = useUserStore()
+const messageStore = useMessageStore()
 const loginData = ref(null) // 用于用户注册后的快速登录
 const remember = ref(false)
 const getBasicData = async () => {
@@ -293,7 +293,7 @@ const handleSignUp = async (resetTween) => {
       return res.data.code
     })
     .catch((err) => {
-      ElMessage.error(err.response.data?.msg || err.data.message)
+      ElMessage.error(err.response.data?.msg || err.message)
     })
     .finally(() => {
       return 0

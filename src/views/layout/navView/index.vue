@@ -13,12 +13,19 @@ watch(show, (newVal, oldVal) => {
       ease: 'Power2.easeInOut'
     })
     gsap.fromTo('.nav', { xPercent: -100 }, { xPercent: 0, display: 'block', ease: 'Expo.easeOut' })
-    gsap.from('.nav li', {
-      opacity: 0,
-      y: 20,
-      ease: 'Power2.easeInOut',
-      stagger: 0.1
-    })
+    gsap.fromTo(
+      '.nav li',
+      {
+        opacity: 0,
+        y: 20
+      },
+      {
+        opacity: 1,
+        y: 0,
+        ease: 'Power2.easeInOut',
+        stagger: 0.1
+      }
+    )
     logoText.value.style.opacity = '0'
     logoText.value.style.display = 'none'
   } else {
@@ -32,6 +39,10 @@ watch(show, (newVal, oldVal) => {
       display: 'none',
       ease: 'Expo.easeOut'
     })
+    // gsap.to('.nav li', {
+    //   opacity: 0,
+    //   y: 20
+    // })
     logoText.value.style.opacity = '1'
     logoText.value.style.display = 'block'
   }
@@ -264,6 +275,7 @@ a {
     }
 
     li {
+      opacity: 1;
       margin-left: 3vw;
       margin-bottom: 0.5vw;
       position: relative;

@@ -158,7 +158,7 @@ const router = createRouter({
   }
 })
 
-import { useUserStore, useDiaryStore, useMessageStore } from '@/stores'
+import { useUserStore, useMessageStore } from '@/stores'
 
 router.beforeEach((to, from) => {
   const userStore = useUserStore()

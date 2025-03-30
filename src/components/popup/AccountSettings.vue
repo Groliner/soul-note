@@ -1,6 +1,6 @@
 <script setup>
 import img from '@/assets/images/loading.webp'
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { useUserStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { gsap } from 'gsap'
@@ -24,22 +24,21 @@ const addImgList = ref([])
 
 const sliderTime = 1
 let i = 999
-onMounted(() => {
-  watch(open, (newV) => {
-    if (newV) {
-      gsap.to('.mask', {
-        opacity: 1,
-        display: 'block',
-        ease: 'Power2.easeInOut'
-      })
-    } else {
-      gsap.to('.mask', {
-        opacity: 0,
-        display: 'none',
-        ease: 'Power2.easeInOut'
-      })
-    }
-  })
+watch(open, async (newV) => {
+  await nextTick()
+  if (newV) {
+    gsap.to('.mask', {
+      opacity: 1,
+      display: 'block',
+      ease: 'Power2.easeInOut'
+    })
+  } else {
+    gsap.to('.mask', {
+      opacity: 0,
+      display: 'none',
+      ease: 'Power2.easeInOut'
+    })
+  }
 })
 
 // gsapSlider 方法，用于实现动画效果
@@ -158,6 +157,7 @@ const handleSave = () => {
 <template>
   <Transition name="popup">
     <div class="container_settings" v-if="open">
+      <!-- 设置两个蒙版，z-index分别为299，301，background-img的z-index为300 -->
       <div class="mask" v-show="open"></div>
       <div class="mask mask_2" v-show="open"></div>
       <div
@@ -192,7 +192,7 @@ const handleSave = () => {
           </div>
           <div class="account_desc">
             <p class="account_desc_label">
-              {{ userStore.selectLanguage === 'en-US' ? 'DESC' : '简介' }}:
+              {{ userStore.selectLanguage === 'en-US' ? 'INTRO' : '简介' }}:
             </p>
             <p class="account_desc_value">
               {{ userInfo.description }}
@@ -319,7 +319,8 @@ const handleSave = () => {
             </div>
           </div>
           <button class="account_others_btn">
-            {{ userStore.selectLanguage === 'en-US' ? 'change pwd' : '修改密码' }}
+            <!-- {{ userStore.selectLanguage === 'en-US' ? 'change pwd' : '修改密码' }} -->
+            debug...
           </button>
         </div>
       </div>
