@@ -139,7 +139,8 @@ const router = createRouter({
         {
           path: 'storeToRefs',
           name: 'storeToRefs',
-          component: () => import('@/components/test/Test_StoreToRefs.vue')
+          component: () =>
+            import('@/components/test/Test_StoreToRefs/Test_StoreToRefs.vue')
         }
       ]
     },

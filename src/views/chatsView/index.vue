@@ -5,16 +5,25 @@
  * @LastEditTime: 2025-03-28 15:27:58
 -->
 <script setup>
-import { onMounted, ref, watch, computed, onUnmounted } from 'vue'
+import { onMounted, ref, watch, useTemplateRef, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { PhArrowSquareRight, PhMagnifyingGlass } from '@phosphor-icons/vue'
 import chatBox from './Chat.vue'
 import gsap from 'gsap'
-import { useChatStore, useUserStore, useContactsStore } from '@/stores'
+import {
+  useChatStore,
+  useUserStore,
+  useContactsStore,
+  useConstantStore
+} from '@/stores'
 const chatStore = useChatStore()
 const userStore = useUserStore()
 const contactsStore = useContactsStore()
 
+const constantStore = useConstantStore()
+const { chatConstant } = storeToRefs(constantStore)
+
+// 实现联系列表的动画
 const isShowChatList = ref(true)
 watch(isShowChatList, (newVal) => {
   if (newVal) {
@@ -41,9 +50,8 @@ const handleFindChat = () => {}
 const chatOrientation = ref(0)
 
 const isSearchActive = ref(false)
-const searchWrapperRef = ref(null)
+const searchWrapperRef = useTemplateRef('searchWrapper')
 const searchContent = ref('')
-const searchPlaceholder = userStore.selectLanguage === 'en-US' ? 'Search Group or User' : '搜索'
 const searchToggle = (event) => {
   chatOrientation.value = 2
   if (!isSearchActive.value && searchContent.value.length > 0) {
@@ -53,7 +61,10 @@ const searchToggle = (event) => {
 }
 // 点击外部触发关闭搜索框的逻辑
 const handleClickOutside = (event) => {
-  if (!searchWrapperRef.value || searchWrapperRef.value.contains(event.target)) {
+  if (
+    !searchWrapperRef.value ||
+    searchWrapperRef.value.contains(event.target)
+  ) {
     return
   }
   isSearchActive.value = false
@@ -108,13 +119,13 @@ onUnmounted(() => {
             class="search-wrapper"
             @click="searchToggle"
             :class="{ active: isSearchActive }"
-            ref="searchWrapperRef"
+            ref="searchWrapper"
           >
             <input
               v-model="searchContent"
               type="text"
               class="search-input"
-              :placeholder="searchPlaceholder"
+              :placeholder="chatConstant['SEARCH_PLACEHOLDER']"
             />
             <button class="search-icon" @click="searchToggle">
               <PhMagnifyingGlass class="icon" weight="bold" />
@@ -123,7 +134,11 @@ onUnmounted(() => {
         </div>
       </div>
       <div class="side-list-show-button" :class="{ expanded: isShowChatList }">
-        <PhArrowSquareRight class="icon" weight="light" @click="isShowChatList = !isShowChatList" />
+        <PhArrowSquareRight
+          class="icon"
+          weight="light"
+          @click="isShowChatList = !isShowChatList"
+        />
       </div>
     </div>
   </div>

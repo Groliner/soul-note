@@ -5,7 +5,7 @@
  * @LastEditTime: 2025-04-14 13:17:00
  */
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useUserStore } from './user'
 
 export const useConstantStore = defineStore(
@@ -47,19 +47,22 @@ export const useConstantStore = defineStore(
       return msg[userStore.selectLanguage]
     })
 
-    const count = ref(0)
-    const doubleCount = computed(() => count.value * 2)
-
-    const increment = () => {
-      count.value++
-    }
+    const chatConstant = computed(() => {
+      const msg = {
+        'zh-CN': {
+          SEARCH_PLACEHOLDER: '搜 索'
+        },
+        'en-US': {
+          SEARCH_PLACEHOLDER: 'Search Group or User'
+        }
+      }
+      return msg[userStore.selectLanguage]
+    })
 
     return {
       diaryConstant,
       accountConstant,
-      count,
-      doubleCount,
-      increment
+      chatConstant
     }
   },
   { persist: true }

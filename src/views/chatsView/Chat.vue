@@ -4,10 +4,19 @@
  * @LastEditors: Gro lin
  * @LastEditTime: 2024-12-29 18:26:05
 -->
-/** 聊天窗存在bug: 不同的聊天之间切换时，聊天窗口共用滚动条，后续考虑为每一个聊天窗口添加高度记录。
+/** 聊天窗存在bug:
+不同的聊天之间切换时，聊天窗口共用滚动条，后续考虑为每一个聊天窗口添加高度记录。
 */
 <script setup>
-import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue'
+import {
+  ref,
+  onMounted,
+  onUnmounted,
+  computed,
+  nextTick,
+  watch,
+  useTemplateRef
+} from 'vue'
 import { formatTimeToSecond } from '@/composables/formatTime'
 import {
   PhPaperclip,
@@ -16,7 +25,12 @@ import {
   PhSpinnerGap,
   PhArrowsLeftRight
 } from '@phosphor-icons/vue'
-import { useChatStore, useUserStore, useMessageStore, useContactsStore } from '@/stores'
+import {
+  useChatStore,
+  useUserStore,
+  useMessageStore,
+  useContactsStore
+} from '@/stores'
 import gsap from 'gsap'
 import { ScrollToPlugin } from 'gsap/all'
 import { storeToRefs } from 'pinia'
@@ -35,8 +49,12 @@ const contactsStore = useContactsStore()
 const messageStore = useMessageStore()
 
 const { chatId, isConnected } = storeToRefs(chatStore)
-const chatObjectInfo = computed(() => contactsStore.getChatObjectInfo(chatId.value))
-const chatBox = computed(() => chatStore.getChatBox(chatId.value, props.chatOrientation == 1))
+const chatObjectInfo = computed(() =>
+  contactsStore.getChatObjectInfo(chatId.value)
+)
+const chatBox = computed(() =>
+  chatStore.getChatBox(chatId.value, props.chatOrientation == 1)
+)
 // import sakura_cover from '@/assets/music/桜咲く.jpg'
 // import light_cover from '@/assets/music/光芒.jpg'
 // import light from '@/assets/music/光芒.ogg'
@@ -101,14 +119,16 @@ const handleMessage = (event) => {
 const autoExpand = (event) => {
   const target = event.target
   target.style.height = 'auto' // 先将高度设为自动，清除之前的高度
-  target.style.height = Math.min(target.scrollHeight + 1.2, window.innerHeight * 0.2) + 'px'
+  target.style.height =
+    Math.min(target.scrollHeight + 1.2, window.innerHeight * 0.2) + 'px'
   target.scrollTop = target.scrollHeight
 }
 import { v4 as uuidv4 } from 'uuid'
 import { ElMessage } from 'element-plus'
 const sendMessage = () => {
   // 检查是否有输入
-  if (chatWindowMessage.value.length === 0 && attachedFiles.value.length === 0) return
+  if (chatWindowMessage.value.length === 0 && attachedFiles.value.length === 0)
+    return
 
   // 构造基础消息
   const message = {
@@ -126,7 +146,10 @@ const sendMessage = () => {
   }
 
   // 计算文件大小并检查
-  const totalFileSize = attachedFiles.value.reduce((total, file) => total + file.size, 0)
+  const totalFileSize = attachedFiles.value.reduce(
+    (total, file) => total + file.size,
+    0
+  )
   if (attachedFiles.value.length > 0 && totalFileSize / 1024 / 1024 > 10) {
     ElMessage({
       message: messageStore.chatConstant['SEND_OVER_SIZE_WARRING'],
@@ -227,7 +250,7 @@ const focusChatFunction = () => {
   })
 }
 
-const attachmentInput = ref(null)
+const attachmentInputRef = useTemplateRef('attachmentInput')
 const attachedFiles = ref([])
 const fileCount = computed(() => attachedFiles.value.length)
 const filesSize = computed(() => {
@@ -241,7 +264,7 @@ let draggedItemIndex = null
 const isShowAttachment = ref(false)
 
 const triggerAttachment = () => {
-  attachmentInput.value.click()
+  attachmentInputRef.value.click()
 }
 const handleAttachmentChange = (event) => {
   const files = event.target.files
@@ -258,10 +281,15 @@ const getMoreMessages = () => {
     isGettingMoreMessages.value = true
 
     const time = chatBox.value[0]?.time
-    chatStore.getChatMessages(chatId.value, time, props.chatOrientation == 1).then((res) => {
-      isGettingMoreMessages.value = false
-      canGetMoreMessages.value = res
-    })
+    const isGroup = props.chatOrientation == 1 ? true : false
+    chatStore
+      .getChatMessages(chatId.value, time, isGroup)
+      .then((res) => {
+        canGetMoreMessages.value = res
+      })
+      .finally(() => {
+        isGettingMoreMessages.value = false
+      })
   }
 }
 
@@ -302,11 +330,22 @@ function onDrop(index) {
 <template>
   <div class="chat">
     <h2 class="chat-name">
-      {{ chatObjectInfo?.nickname || chatObjectInfo?.username || chatObjectInfo?.name }}
+      {{
+        chatObjectInfo?.nickname ||
+        chatObjectInfo?.username ||
+        chatObjectInfo?.name
+      }}
     </h2>
     <ul class="chat-thread" ref="chatThread">
-      <li v-if="canGetMoreMessages" @click="getMoreMessages" class="get-more-messages">
-        <div class="icon-wrapper" :class="{ gettingMessages: isGettingMoreMessages }">
+      <li
+        v-show="canGetMoreMessages"
+        @click="getMoreMessages"
+        class="get-more-messages"
+      >
+        <div
+          class="icon-wrapper"
+          :class="{ gettingMessages: isGettingMoreMessages }"
+        >
           <PhSpinnerGap class="icon" weight="bold" />
           <p class="text">Get more messages</p>
         </div>
@@ -337,16 +376,27 @@ function onDrop(index) {
     </ul>
     <div class="chat-window">
       <div class="gotoBottom">
-        <PhArrowCircleDown class="icon" weight="light" @click="scrollToBottom(chatThread)" />
+        <PhArrowCircleDown
+          class="icon"
+          weight="light"
+          @click="scrollToBottom(chatThread)"
+        />
       </div>
 
       <div class="chat-wrapper">
         <div class="chat-attach">
-          <PhPaperclip class="icon" @click="triggerAttachment" />
-          <div :class="{ text: fileCount < 1 }" class="file-count-badge">{{ fileCount }}</div>
+          <PhPaperclip
+            class="icon"
+            :class="{ disabled: !isConnected }"
+            @click="triggerAttachment"
+          />
+          <div :class="{ text: fileCount < 1 }" class="file-count-badge">
+            {{ fileCount }}
+          </div>
           <input
             type="file"
             ref="attachmentInput"
+            :disabled="!isConnected"
             @change="handleAttachmentChange"
             style="display: none"
             multiple
@@ -362,13 +412,17 @@ function onDrop(index) {
           @input="autoExpand"
           rows="1"
         />
-        <button class="chat-send" :disabled="!isConnected" @click="sendMessage">Send</button>
+        <button class="chat-send" :disabled="!isConnected" @click="sendMessage">
+          Send
+        </button>
       </div>
     </div>
     <div v-show="attachedFiles.length > 0" class="chat-attachment">
       <div class="caption">
         <h4 @click="isShowAttachment = !isShowAttachment">
-          {{ userStore.selectLanguage === 'en-US' ? 'Attached Files:' : '附件：' }}
+          {{
+            userStore.selectLanguage === 'en-US' ? 'Attached Files:' : '附件：'
+          }}
         </h4>
         <PhArrowsLeftRight
           class="icon"
@@ -391,7 +445,11 @@ function onDrop(index) {
             <span class="extension">{{ fileExtension(file.name) }}</span>
           </p>
           <div class="attachment-suffix">
-            <ph-trash class="icon" alt="delete" @click="handleDropFile(index)" />
+            <ph-trash
+              class="icon"
+              alt="delete"
+              @click="handleDropFile(index)"
+            />
 
             <span class="size"
               >({{
@@ -686,6 +744,12 @@ $chat-thread-avatar-size: 50px;
         &:hover + .text {
           opacity: 1;
         }
+        &.disabled {
+          cursor: auto;
+          &:hover + .text {
+            opacity: 0;
+          }
+        }
       }
       .text {
         opacity: 0;
@@ -750,6 +814,7 @@ $chat-thread-avatar-size: 50px;
   left: 0;
   top: 10px;
   width: fit-content;
+  max-width: 10vw;
   transform: translateX(-100%);
   .caption {
     display: flex;

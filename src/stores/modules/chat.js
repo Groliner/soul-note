@@ -142,13 +142,16 @@ export const useChatStore = defineStore(
     }
     const subscribeSystem = () => {
       // 订阅系统消息
-      stompClient.subscribe(configuration.value.websocketStompEndpoints['system'], (mes) => {
-        ElMessage({
-          message: mes.body,
-          grouping: true,
-          type: 'info'
-        })
-      })
+      stompClient.subscribe(
+        configuration.value.websocketStompEndpoints['system'],
+        (mes) => {
+          ElMessage({
+            message: mes.body,
+            grouping: true,
+            type: 'info'
+          })
+        }
+      )
     }
     const subscribeUser = () => {
       // 订阅用户消息
@@ -158,7 +161,9 @@ export const useChatStore = defineStore(
         (mes) => {
           const message = JSON.parse(mes.body)
           message.isSelf = false
-          const index = chatBoxes.value.findIndex((item) => item.id == message.id)
+          const index = chatBoxes.value.findIndex(
+            (item) => item.id == message.id
+          )
           console.log(message)
           if (index !== -1) {
             const currentBox = chatBoxes.value[index]
@@ -194,7 +199,9 @@ export const useChatStore = defineStore(
           })
           if (message.content) {
             ElMessage({
-              message: message.content ? message.content : messageStore.chatConstant['SEND_ERROR'],
+              message: message.content
+                ? message.content
+                : messageStore.chatConstant['SEND_ERROR'],
               grouping: true,
               type: 'error'
             })
@@ -271,7 +278,8 @@ export const useChatStore = defineStore(
       const serializedMessage = JSON.stringify(message)
       stompClient.publish({
         destination:
-          configuration.value.websocketAppDestinationPrefix + configuration.value.websocketText,
+          configuration.value.websocketAppDestinationPrefix +
+          configuration.value.websocketText,
         body: serializedMessage
       })
       chatBoxes.value.push(message)
@@ -283,7 +291,8 @@ export const useChatStore = defineStore(
       // }
       stompClient.publish({
         destination:
-          configuration.value.websocketAppDestinationPrefix + configuration.value.websocketFile,
+          configuration.value.websocketAppDestinationPrefix +
+          configuration.value.websocketFile,
         body: serializedMessage
       })
       uploadFiles(data).then((response) => {
@@ -291,7 +300,9 @@ export const useChatStore = defineStore(
           const id = response.data.data.id
           chatBoxes.value.forEach((item) => {
             if (item.id === id) {
-              item.fileNameUriMapList = [...response.data.data.fileNameUriMapList]
+              item.fileNameUriMapList = [
+                ...response.data.data.fileNameUriMapList
+              ]
             }
           })
         }
@@ -323,7 +334,9 @@ export const useChatStore = defineStore(
           return res.data.length > 29
         } else {
           ElMessage({
-            message: res.msg ? res.msg : messageStore.chatConstant['GET_MESSAGE_ERROR'],
+            message: res.msg
+              ? res.msg
+              : messageStore.chatConstant['GET_MESSAGE_ERROR'],
             type: 'error',
             grouping: true
           })

@@ -99,12 +99,16 @@ const inputArrayRef = ref([])
 const preActionRef = useTemplateRef('preAction')
 const nextActionRef = useTemplateRef('nextAction')
 const progressBarCoverRef = useTemplateRef('progressBarCover')
-const progressWidth = computed(() => ((stepNumber.value - 1) / totalSteps.value) * 100)
+const progressWidth = computed(
+  () => ((stepNumber.value - 1) / totalSteps.value) * 100
+)
 watch(
   () => inputArray.value.length,
   async () => {
     await nextTick() // 等待DOM更新(异步函数的另一种写法)
-    inputArrayRef.value = inpBoxRef.value.map((item) => item.querySelector('input'))
+    inputArrayRef.value = inpBoxRef.value.map((item) =>
+      item.querySelector('input')
+    )
     inputArrayRef.value.forEach((item) => {
       item.value = loginData.value ? loginData.value[item.name] : ''
     })
@@ -129,7 +133,8 @@ const handleHover = (el) => {
     })
 }
 const handleOut = () => {
-  isHover.value = stepNumber.value > 1 || inputArrayRef.value[0].value.trim().length > 0
+  isHover.value =
+    stepNumber.value > 1 || inputArrayRef.value[0].value.trim().length > 0
   if (loginData.value && !isFinished.value) {
     loginData.value = null
   }
@@ -157,8 +162,13 @@ watch(stepNumber, async (new_step, old_step) => {
 const moveToNextStep = () => {
   if (!nextActionRef.value.classList.contains('active')) return
   stepNumber.value =
-    finishedStep.value >= stepNumber.value ? stepNumber.value + 1 : finishedStep.value + 1
-  if (finishedStep.value >= totalSteps.value && stepNumber.value > totalSteps.value) {
+    finishedStep.value >= stepNumber.value
+      ? stepNumber.value + 1
+      : finishedStep.value + 1
+  if (
+    finishedStep.value >= totalSteps.value &&
+    stepNumber.value > totalSteps.value
+  ) {
     isFinished.value = true
     setTimeout(handleFinished, 500)
   }
@@ -183,7 +193,10 @@ const reset = (change = true, toStep = '1') => {
   stepNumber.value =
     toStep === '1'
       ? 1
-      : Math.max(inputArray.value.findIndex((item) => toStep.contains(item.id)) + 1, 1)
+      : Math.max(
+          inputArray.value.findIndex((item) => toStep.contains(item.id)) + 1,
+          1
+        )
   if (change) {
     inputArray.value = props.logIn
     isSignUp.value = false
@@ -283,7 +296,10 @@ const handleSignUp = async (resetTween) => {
   const code = await register(formData)
     .then((res) => {
       if (res.data.code == 1) {
-        ElMessage({ type: 'success', message: messageStore.loginConstant['REGISTER_SUCCESS'] })
+        ElMessage({
+          type: 'success',
+          message: messageStore.loginConstant['REGISTER_SUCCESS']
+        })
       } else {
         ElMessage({
           type: 'warning',
@@ -328,10 +344,23 @@ const handleLogIn = async (resetTween) => {
 }
 </script>
 <template>
-  <div id="app-cover" ref="app_cover" :class="{ active: isHover }" @mouseover="handleHover">
-    <h1 id="heading" class="up" :class="{ inactive: !isSignUp && isHover }">Sign Up</h1>
+  <div
+    id="app-cover"
+    ref="app_cover"
+    :class="{ active: isHover }"
+    @mouseover="handleHover"
+  >
+    <h1 id="heading" class="up" :class="{ inactive: !isSignUp && isHover }">
+      Sign Up
+    </h1>
 
-    <form method="post" action="" autocomplete="off" @mouseout="handleOut" v-if="isMobile">
+    <form
+      method="post"
+      action=""
+      autocomplete="off"
+      @mouseout="handleOut"
+      v-if="isMobile"
+    >
       <div id="inp-box-cover">
         <div id="inp-padd" :class="{ rememberMe: remember }">
           <div
@@ -380,14 +409,22 @@ const handleLogIn = async (resetTween) => {
               Working<ph-arrows-clockwise class="loading" weight="bold" />
             </div>
             <div id="acc-success" v-show="!load">
-              <p>Account Created<ph-check-fat class="checkout" weight="fill" /></p>
+              <p>
+                Account Created<ph-check-fat class="checkout" weight="fill" />
+              </p>
               <span id="init-login" @click="reset">Login now</span>
             </div>
           </div>
         </div>
       </div>
     </form>
-    <form method="post" action="" autocomplete="off" @focusout="handleOut" v-else>
+    <form
+      method="post"
+      action=""
+      autocomplete="off"
+      @focusout="handleOut"
+      v-else
+    >
       <div id="inp-box-cover">
         <div id="inp-padd" :class="{ rememberMe: remember }">
           <div
@@ -436,7 +473,9 @@ const handleLogIn = async (resetTween) => {
               Working<ph-arrows-clockwise class="loading" weight="bold" />
             </div>
             <div id="acc-success" v-show="!load">
-              <p>Account Created<ph-check-fat class="checkout" weight="fill" /></p>
+              <p>
+                Account Created<ph-check-fat class="checkout" weight="fill" />
+              </p>
               <span id="init-login" @click="reset">Login now</span>
             </div>
           </div>
@@ -447,7 +486,9 @@ const handleLogIn = async (resetTween) => {
       Log In
       <div
         class="remember-box"
-        :class="{ active: isHover && stepNumber > 1 && totalSteps >= stepNumber }"
+        :class="{
+          active: isHover && stepNumber > 1 && totalSteps >= stepNumber
+        }"
       >
         <input id="remember-me" type="checkbox" v-model="remember" />
         <label for="remember-me">Remember me</label>

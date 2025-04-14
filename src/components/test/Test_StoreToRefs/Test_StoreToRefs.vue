@@ -26,9 +26,23 @@ const constantStore = useConstantStore()
 
 // 方法 2：storeToRefs 解构属性并保持响应性
 const { count, doubleCount } = storeToRefs(constantStore)
-const _ = constantStore.count
+const _ = constantStore.count // 相当于从constantStore中解包了count
 console.log(constantStore.count)
+console.log(count)
 watch(count, () => {
   console.log('count changed:', constantStore.count)
 })
+watch(
+  () => _,
+  () => {
+    console.log('*count changed:', constantStore.count)
+    // 这个侦测器不会触发
+  }
+)
+watch(
+  () => constantStore.count,
+  () => {
+    console.log('****count changed:', constantStore.count)
+  }
+)
 </script>
