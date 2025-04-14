@@ -1,7 +1,7 @@
 <script setup>
 import { gsap } from 'gsap'
-import { useUserStore } from '@/stores'
-import { ref, watch, onMounted, computed } from 'vue'
+import { useUserStore, useConstantStore } from '@/stores'
+import { ref, watch, onMounted, useTemplateRef } from 'vue'
 const show = ref(false)
 gsap.defaults({ duration: 0.5 })
 // ===== Open Nav =====
@@ -26,8 +26,8 @@ watch(show, (newVal, oldVal) => {
         stagger: 0.1
       }
     )
-    logoText.value.style.opacity = '0'
-    logoText.value.style.display = 'none'
+    logoTextRef.value.style.opacity = '0'
+    logoTextRef.value.style.display = 'none'
   } else {
     gsap.to('.dim', {
       opacity: 0,
@@ -43,15 +43,15 @@ watch(show, (newVal, oldVal) => {
     //   opacity: 0,
     //   y: 20
     // })
-    logoText.value.style.opacity = '1'
-    logoText.value.style.display = 'block'
+    logoTextRef.value.style.opacity = '1'
+    logoTextRef.value.style.display = 'block'
   }
 })
-const burgerWrapper = ref(null)
-const logoText = ref(null)
+const burgerWrapperRef = useTemplateRef('burgerWrapper')
+const logoTextRef = useTemplateRef('logoText')
 
 onMounted(() => {
-  const elements = [burgerWrapper.value, logoText.value]
+  const elements = [burgerWrapperRef.value, logoTextRef.value]
   elements.push(...document.querySelectorAll('.nav_link'))
   elements.forEach((el) => {
     el.addEventListener('mouseenter', () => {
@@ -71,16 +71,18 @@ import { storeToRefs } from 'pinia'
 // 检查是否登录
 const userStore = useUserStore()
 const { userPreferences } = storeToRefs(userStore)
+const constantStore = useConstantStore()
+const { accountConstant } = storeToRefs(constantStore)
 const logout = () => {
   // console.log(userStore.isAuthenticated)
   if (userStore.isAuthenticated) {
     userStore.logout()
   } else {
-    ElMessage.error('You are not logged in')
+    ElMessage.error(accountConstant.value[NO_AUTH])
   }
 }
 const handleLogout = () => {
-  messageManager.showConfirmModal('Are you sure to logout ?').then((res) => {
+  messageManager.showConfirmModal(accountConstant.value['LOGOUT']).then((res) => {
     if (res) logout()
   })
 }

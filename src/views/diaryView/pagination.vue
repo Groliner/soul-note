@@ -1,5 +1,7 @@
 <script setup>
 import { messageManager } from '@/directives/index'
+import { useConstantStore } from '@/stores'
+const constantStore = useConstantStore()
 defineProps({
   total: {
     type: Number,
@@ -13,7 +15,7 @@ const page = defineModel('page', {
 const emit = defineEmits(['add', 'flip'])
 const handleAdd = () => {
   messageManager
-    .showConfirmModal('Do you want to add a new page?', {
+    .showConfirmModal(constantStore.diaryConstant['ADD_PAGE'], {
       mask: false,
       pressTime: 100
     })
@@ -63,7 +65,6 @@ const scrollToPage = () => {
 }
 
 import { PhPlusSquare } from '@phosphor-icons/vue'
-import { nextTick, onMounted, watch } from 'vue'
 </script>
 <template>
   <div class="container_pagination">

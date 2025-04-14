@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-12-28 14:06:42
+ * @LastEditTime: 2025-04-14 13:12:36
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -135,6 +135,11 @@ const router = createRouter({
           path: 'music',
           name: 'music',
           component: () => import('@/components/modules/Music.vue')
+        },
+        {
+          path: 'storeToRefs',
+          name: 'storeToRefs',
+          component: () => import('@/components/test/Test_StoreToRefs.vue')
         }
       ]
     },

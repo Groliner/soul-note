@@ -5,9 +5,12 @@
 
 */
 import { gsap } from 'gsap'
-import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick, useTemplateRef } from 'vue'
+import { storeToRefs } from 'pinia'
 import { formatTime } from '@/composables/formatTime'
-import { useDiaryStore, useUserStore } from '@/stores'
+import { useDiaryStore, useUserStore, useConstantStore } from '@/stores'
+const constantStore = useConstantStore()
+const { diaryConstant } = storeToRefs(constantStore)
 const props = defineProps({
   diaryId: {
     type: Number
@@ -19,11 +22,13 @@ const props = defineProps({
 })
 const emit = defineEmits(['close'])
 const diaryId = ref(props.diaryId)
+const textareaDescRef = useTemplateRef('textareaDesc')
+
 const open = ref(false)
 onMounted(() => {
   open.value = true
   nextTick(() => {
-    textareaDesc.value.style.height = diaryRef.value.height + 'px'
+    textareaDescRef.value.style.height = diaryRef.value.height + 'px'
   })
 })
 const userStore = useUserStore()
@@ -45,7 +50,6 @@ const diaryPageInfo = computed(() =>
     .filter((page) => (page.page + page.title).toLowerCase().includes(query.value.toLowerCase()))
     .toSorted((a, b) => -a.page + b.page)
 )
-const textareaDesc = ref(null)
 
 const menu = ref(['Overview', 'Others'])
 const select = ref(0)
@@ -69,7 +73,7 @@ watch(diaryRef, () => {
 const handleAdd = () => {
   // 向后端发送请求,返回新的日记
   messageManager
-    .showConfirmModal('Want to add a new diary?', {
+    .showConfirmModal(diaryConstant.value['ADD'], {
       mask: false,
       pressTime: 80,
       draggable: true
@@ -85,7 +89,7 @@ const handleAdd = () => {
 
 const handleDelete = () => {
   messageManager
-    .showConfirmModal('Are you sure to delete the diary?', {
+    .showConfirmModal(diaryConstant.value['DELE'], {
       mask: false,
       pressTime: 80,
       draggable: true
@@ -100,7 +104,7 @@ const handleDelete = () => {
 }
 const handleDeletePage = () => {
   messageManager
-    .showConfirmModal('Are you sure to delete the page (past)? ', {
+    .showConfirmModal(diaryConstant.value['DELE_PAGE'], {
       mask: false,
       pressTime: 60,
       draggable: true
@@ -199,6 +203,7 @@ const handleCoverChange = async (event) => {
   }
 }
 import router from '@/router'
+
 // 添加页面跳转
 const handleGoTo = (page) => {
   userStore.setLocalLastReadDiaryId(diaryRef.value.id)

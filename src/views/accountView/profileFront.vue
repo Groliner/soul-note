@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-08-09 12:19:25
  * @LastEditors: Gro lin
- * @LastEditTime: 2024-12-29 19:29:53
+ * @LastEditTime: 2025-04-14 12:41:04
 -->
 <script setup>
 /*
@@ -15,7 +15,7 @@
 **/
 
 import { useUserStore, useDiaryStore, useMessageStore, useContactsStore } from '@/stores'
-import { ref, onUnmounted, computed } from 'vue'
+import { ref, onUnmounted, computed, useTemplateRef } from 'vue'
 import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const diaryStore = useDiaryStore()
@@ -42,14 +42,15 @@ onUnmounted(() => {
 })
 
 // user Info edit
-const avatarInput = ref(null)
+const avatarInputRef = useTemplateRef('avatarInput')
 const isEdit = ref(false)
 import { uploadImgAPI } from '@/api/fundamental'
-const triggerUpload = (target, value = true) => {
+const triggerUpload = (value = true) => {
   if (!value) return
-  target.click() // 打开文件选择对话框
+
+  avatarInputRef.value.click() // 打开文件选择对话框
   // 使用GSAP添加一些动画，例如按钮点击反馈
-  gsap.to(target, {
+  gsap.to(avatarInputRef.value, {
     opacity: 0.7,
     yoyo: true,
     repeat: 1,
@@ -173,11 +174,7 @@ const handleRefresh = async () => {
 
     <article>
       <div class="profile-photo">
-        <button
-          class="avatar"
-          @click="triggerUpload(avatarInput, isEdit)"
-          :class="{ active: isEdit }"
-        >
+        <button class="avatar" @click="triggerUpload(isEdit)" :class="{ active: isEdit }">
           <img :src="userInfo.avatar" />
         </button>
         <input type="file" ref="avatarInput" @change="handleAvatarChange" style="display: none" />

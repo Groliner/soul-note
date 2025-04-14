@@ -1,7 +1,7 @@
 <script setup>
 import img from '@/assets/images/loading.webp'
-import { ref, onMounted, watch, nextTick } from 'vue'
-import { useUserStore } from '@/stores'
+import { ref, onMounted, watch, nextTick, useTemplateRef } from 'vue'
+import { useUserStore, useConstantStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { gsap } from 'gsap'
 import { addUserBackgroundImgAPI, deleteUserBackgroundImgAPI } from '@/api/user'
@@ -71,19 +71,15 @@ onMounted(() => {
 
 import { uploadImgAPI } from '@/api/fundamental'
 import { messageManager } from '@/directives/index'
-import { ElMessage } from 'element-plus'
 
-const backgroundImgInput = ref(null)
+const constantStore = useConstantStore()
+const { accountConstant } = storeToRefs(constantStore)
 const triggerUpload = (target, value = true) => {
   if (!value) return
-  target.click() // 打开文件选择对话框
-  // 使用GSAP添加一些动画，例如按钮点击反馈
-  gsap.to(target, {
-    opacity: 0.7,
-    yoyo: true,
-    repeat: 1,
-    duration: 0.5
-  })
+  const inputEl = target.currentTarget.querySelector('input[type="file"]')
+  // console.log(inputEl)
+
+  inputEl.click() // 打开文件选择对话框
 }
 const handleBackgroundImgChange = async (event) => {
   const files = event.target.files
@@ -111,12 +107,7 @@ const handleBackgroundImgSelect = () => {
 
 const handleBackgroundImgDelete = () => {
   messageManager
-    .showConfirmModal(
-      userStore.selectLanguage === 'en-US'
-        ? 'Are you sure you want to delete this image?'
-        : '确定要删除这张图片吗?',
-      { mask: false }
-    )
+    .showConfirmModal(accountConstant.value['DELE_BACKGROUND'], { mask: false })
     .then((res) => {
       if (res) {
         let num = backgroundImgSelectNum.value
@@ -301,13 +292,8 @@ const handleSave = () => {
             <span class="controll" @click="handleNext"></span>
 
             <div class="operation">
-              <button class="operation_btn upload" @click="triggerUpload(backgroundImgInput)">
-                <input
-                  type="file"
-                  ref="backgroundImgInput"
-                  @change="handleBackgroundImgChange"
-                  style="display: none"
-                />
+              <button class="operation_btn upload" @click="triggerUpload">
+                <input type="file" @change="handleBackgroundImgChange" style="display: none" />
                 {{ userStore.selectLanguage === 'en-US' ? 'upload' : '上传' }}
               </button>
               <blusterButton class="operation_btn select" @click="handleBackgroundImgSelect">
