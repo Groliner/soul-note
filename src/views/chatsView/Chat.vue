@@ -131,6 +131,7 @@ const sendMessage = () => {
     return
 
   // 构造基础消息
+  // 此处考虑修改为请求动态获取
   const message = {
     id: uuidv4(),
     receiveId: chatId.value,

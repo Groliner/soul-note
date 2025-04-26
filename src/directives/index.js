@@ -38,6 +38,7 @@ export const messageManager = {
                 diaryId,
                 onClose: () => {
                   this.isOpen = false
+                  resolve()
                 }
               })
             : null
@@ -70,22 +71,20 @@ export const messageManager = {
         render() {
           // 使用v-if或v-show根据isOpen状态控制Popup组件的显示
           // 当isOpen为false时，<Transition>将处理退出动画
-          return this.isOpen
-            ? h(Popup, {
-                open: this.isOpen,
-                message,
-                ...options,
-                onConfirm: () => {
-                  this.isOpen = false // 触发退出动画
-                  resolve(true)
-                },
-                onRefuse: () => {
-                  this.isOpen = false
-                  resolve(false)
-                },
-                onClose: () => {}
-              })
-            : null
+          return h(Popup, {
+            open: this.isOpen,
+            message,
+            ...options,
+            onConfirm: () => {
+              this.isOpen = false // 触发退出动画
+              resolve(true)
+            },
+            onRefuse: () => {
+              this.isOpen = false
+              resolve(false)
+            },
+            onClose: () => {}
+          })
         }
       }).mount(container)
 

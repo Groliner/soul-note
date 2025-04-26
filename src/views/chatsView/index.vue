@@ -6,7 +6,6 @@
 -->
 <script setup>
 import { onMounted, ref, watch, useTemplateRef, onUnmounted } from 'vue'
-import { storeToRefs } from 'pinia'
 import { PhArrowSquareRight, PhMagnifyingGlass } from '@phosphor-icons/vue'
 import chatBox from './Chat.vue'
 import gsap from 'gsap'
@@ -21,7 +20,6 @@ const userStore = useUserStore()
 const contactsStore = useContactsStore()
 
 const constantStore = useConstantStore()
-const { chatConstant } = storeToRefs(constantStore)
 
 // 实现联系列表的动画
 const isShowChatList = ref(true)
@@ -125,7 +123,7 @@ onUnmounted(() => {
               v-model="searchContent"
               type="text"
               class="search-input"
-              :placeholder="chatConstant['SEARCH_PLACEHOLDER']"
+              :placeholder="constantStore.chatConstant['SEARCH_PLACEHOLDER']"
             />
             <button class="search-icon" @click="searchToggle">
               <PhMagnifyingGlass class="icon" weight="bold" />

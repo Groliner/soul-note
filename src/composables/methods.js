@@ -20,8 +20,10 @@ export const softUpdate = (refs, data) => {
   })
 }
 
+// 比较对象是否相等
 export const compareObjBaseA = (a, b) => {
-  const isObject = (obj) => obj && typeof obj === 'object' && !Array.isArray(obj)
+  const isObject = (obj) =>
+    obj && typeof obj === 'object' && !Array.isArray(obj)
 
   for (const key in a) {
     if (!b.hasOwnProperty(key)) {

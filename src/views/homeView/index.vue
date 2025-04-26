@@ -27,13 +27,18 @@ const theme = computed(() => themeList[themeMode])
     <section class="section_home" v-if="theme.name === 'birthday'">
       <!-- <h1>Happy Birthday ! Grozhi</h1> -->
       <h1>Happy Birthday ! Wolong</h1>
-      <p>Moving forward and Handling your worries correctly, then catching the future</p>
+      <p>
+        Moving forward and Handling your worries correctly, then catching the
+        future
+      </p>
     </section>
     <section class="section_home" v-else>
       <h1>主页-----home</h1>
       <p>
         {{
-          userStore.selectLanguage === 'en-US' ? 'testing: diary, account' : '测试功能：日记，用户'
+          userStore.selectLanguage === 'en-US'
+            ? 'testing: diary, account'
+            : '测试功能：日记，用户'
         }}
       </p>
     </section>
@@ -44,6 +49,7 @@ const theme = computed(() => themeList[themeMode])
           :style="{
             animationDelay: `${index * 0.2}s`
           }"
+          :key="index"
         >
           {{ word }}
         </div>
