@@ -34,9 +34,7 @@ onMounted(() => {
   const userAgent = navigator.userAgent || navigator.vendor || window.opera
   // 正则表达式检查是否为移动设备
   if (
-    !/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
-      userAgent.toLowerCase()
-    )
+    !/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase())
   )
     Draggable.create('.modal', {
       type: 'x,y',
@@ -47,14 +45,11 @@ onMounted(() => {
 </script>
 <template>
   <Transition name="popup">
-    <div
-      v-if="open"
-      style="position: fixed; top: 0; z-index: 600; height: 100vh; width: 100vw"
-    >
+    <div v-if="open" style="position: fixed; top: 0; z-index: 600; height: 100vh; width: 100vw">
       <div class="mask" v-show="mask"></div>
 
       <div class="modal">
-        <ph-x-circle weight="bold" class="x" @click="$emit('refuse')" />
+        <ph-x-circle weight="bold" class="x" @click="$emit('close')" />
         <p class="message">
           <slot name="content">{{ message }}</slot>
         </p>
@@ -77,8 +72,7 @@ onMounted(() => {
             @mousedown="startTime = Date.now()"
             @click="
               () => {
-                if (pressTime < Date.now() - startTime || cancel)
-                  $emit('refuse')
+                if (pressTime < Date.now() - startTime || cancel) $emit('refuse')
               }
             "
           >
@@ -103,14 +97,7 @@ onMounted(() => {
       #ffd966 75%,
       #ffd966
     ),
-    linear-gradient(
-      -45deg,
-      #ffd966 25%,
-      transparent 25%,
-      transparent 75%,
-      #ffd966 75%,
-      #ffd966
-    );
+    linear-gradient(-45deg, #ffd966 25%, transparent 25%, transparent 75%, #ffd966 75%, #ffd966);
   background-size: 60px 60px;
   background-position: 0 0;
   animation: slide 4s infinite linear;

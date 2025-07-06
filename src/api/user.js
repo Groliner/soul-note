@@ -10,8 +10,8 @@
  * @LastEditors: Gro lin
  * @LastEditTime: 2024-08-18 21:58:37
  */
-import request from '@/utils/AccountRequest'
-import req from '@/utils/request'
+import request from '@/utils/request/AccountRequest'
+import req from '@/utils/request/request'
 
 export const getCaptchaAPI = () => request.get('public/captcha')
 

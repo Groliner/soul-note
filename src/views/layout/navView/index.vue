@@ -65,7 +65,7 @@ onMounted(() => {
 })
 
 import { ElMessage } from 'element-plus'
-import { messageManager } from '@/directives/index'
+import { messageManager } from '@/utils/modals'
 import { storeToRefs } from 'pinia'
 
 // 检查是否登录

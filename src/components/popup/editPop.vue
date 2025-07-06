@@ -61,7 +61,7 @@ import {
   PhFilePlus,
   PhBackspace
 } from '@phosphor-icons/vue'
-import { messageManager } from '@/directives/index'
+import { messageManager } from '@/utils/modals'
 const pretty = () => {
   query.value = ''
   select.value = 0

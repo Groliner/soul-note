@@ -4,7 +4,7 @@
  * @LastEditors: Gro lin
  * @LastEditTime: 2024-08-11 20:27:33
  */
-import oauth2Request from '@/utils/oauth2Request'
+import oauth2Request from '@/utils/request/oauth2Request'
 
 export const login = (data) => oauth2Request.post('login', data)
 

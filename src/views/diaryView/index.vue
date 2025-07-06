@@ -90,7 +90,7 @@ const handlePageTitleSave = () => {
 }
 
 //编辑日记本
-import { messageManager } from '@/directives/index'
+import { messageManager } from '@/utils/modals'
 
 const handleAdd = () => {
   diaryStore.addPage(lastReadDiaryId.value)

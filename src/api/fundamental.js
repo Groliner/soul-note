@@ -4,6 +4,6 @@
  * @LastEditors: Gro lin
  * @LastEditTime: 2024-08-09 15:20:57
  */
-import request from '@/utils/AccountRequest'
+import request from '@/utils/request/AccountRequest'
 
 export const uploadImgAPI = (data) => request.post('upload', data)

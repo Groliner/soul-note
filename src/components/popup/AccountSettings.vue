@@ -8,69 +8,69 @@ import { addUserBackgroundImgAPI, deleteUserBackgroundImgAPI } from '@/api/user'
 const userStore = useUserStore()
 const { userInfo, userPreferences } = storeToRefs(userStore)
 const emit = defineEmits(['close'])
+const props = defineProps({
+  sliderTime: {
+    type: Number,
+    default: 1
+  }
+})
 const open = ref(false)
 const avatarImgSelectNum = ref(0)
 const backgroundList = userPreferences.value.backgroundList
-const backgroundImgSelectNum = ref(
+const backgroundImgCurrentNum = ref(
   Math.max(
     backgroundList.findIndex((x) => x.imgUrl === userPreferences.value.background),
     0
   )
 )
-let backgroundImgSelectedNum = backgroundImgSelectNum.value
+// 保存选择的最终图片序号
+let backgroundImgSelectedNum = backgroundImgCurrentNum.value
 
 const deletedImgList = ref([])
 const addImgList = ref([])
-
-const sliderTime = 1
-let i = 999
-watch(open, async (newV) => {
-  await nextTick()
-  if (newV) {
-    gsap.to('.mask', {
-      opacity: 1,
-      display: 'block',
-      ease: 'Power2.easeInOut'
-    })
-  } else {
-    gsap.to('.mask', {
-      opacity: 0,
-      display: 'none',
-      ease: 'Power2.easeInOut'
-    })
-  }
-})
-
-// gsapSlider 方法，用于实现动画效果
-function gsapSlider(left) {
-  const slide = document.querySelectorAll('.slider ul li')[backgroundImgSelectNum.value]
-  i++
-  if (slide === undefined) return
-  gsap.fromTo(slide, { zIndex: i, left: left }, { left: '0%', duration: sliderTime })
+let sliderIndexBox = [
+  backgroundImgCurrentNum.value - 1 < 0
+    ? backgroundList.length - 1
+    : backgroundImgCurrentNum.value - 1,
+  backgroundImgCurrentNum.value,
+  backgroundImgCurrentNum.value + 1 > backgroundList.length - 1
+    ? 0
+    : backgroundImgCurrentNum.value + 1
+]
+const prettySliderIndexBox = () => {
+  sliderIndexBox = [
+    backgroundImgCurrentNum.value - 1 < 0
+      ? backgroundList.length - 1
+      : backgroundImgCurrentNum.value - 1,
+    backgroundImgCurrentNum.value,
+    backgroundImgCurrentNum.value + 1 > backgroundList.length - 1
+      ? 0
+      : backgroundImgCurrentNum.value + 1
+  ]
 }
+
 const handlePrev = () => {
-  if (backgroundImgSelectNum.value === 0) {
-    backgroundImgSelectNum.value = userPreferences.value.backgroundList.length - 1
+  if (backgroundImgCurrentNum.value === 0) {
+    backgroundImgCurrentNum.value = backgroundList.length - 1
   } else {
-    backgroundImgSelectNum.value--
+    backgroundImgCurrentNum.value--
   }
-  gsapSlider('100%')
+  prettySliderIndexBox()
 }
 const handleNext = () => {
-  if (backgroundImgSelectNum.value === userPreferences.value.backgroundList.length - 1) {
-    backgroundImgSelectNum.value = 0
+  if (backgroundImgCurrentNum.value === backgroundList.length - 1) {
+    backgroundImgCurrentNum.value = 0
   } else {
-    backgroundImgSelectNum.value++
+    backgroundImgCurrentNum.value++
   }
-  gsapSlider('-100%')
+  prettySliderIndexBox()
 }
 onMounted(() => {
-  gsapSlider('100%')
   open.value = true
 })
 
 import { uploadImgAPI } from '@/api/fundamental'
-import { messageManager } from '@/directives/index'
+import { messageManager } from '@/utils/modals'
 
 const constantStore = useConstantStore()
 const { accountConstant } = storeToRefs(constantStore)
@@ -96,13 +96,13 @@ const handleBackgroundImgChange = async (event) => {
         imgUrl: res.data.data,
         type: 'background'
       })
-      backgroundImgSelectNum.value = backgroundList.length - 1
+      backgroundImgCurrentNum.value = backgroundList.length - 1
     }
   }
 }
 const handleBackgroundImgSelect = () => {
-  userPreferences.value.background = backgroundList[backgroundImgSelectNum.value].imgUrl
-  backgroundImgSelectedNum = backgroundImgSelectNum.value
+  userPreferences.value.background = backgroundList[backgroundImgCurrentNum.value].imgUrl
+  backgroundImgSelectedNum = backgroundImgCurrentNum.value
 }
 
 const handleBackgroundImgDelete = () => {
@@ -110,12 +110,12 @@ const handleBackgroundImgDelete = () => {
     .showConfirmModal(accountConstant.value['DELE_BACKGROUND'], { mask: false })
     .then((res) => {
       if (res) {
-        let num = backgroundImgSelectNum.value
-        deletedImgList.value.push(backgroundList[num])
-        backgroundList.splice(num, 1)
-        backgroundImgSelectNum.value = Math.min(num--, 0)
-        if (backgroundImgSelectedNum == num) {
-          backgroundImgSelectedNum = backgroundImgSelectNum.value
+        let deleteNum = backgroundImgCurrentNum.value
+        deletedImgList.value.push(backgroundList[deleteNum])
+        backgroundList.splice(deleteNum, 1)
+        backgroundImgCurrentNum.value = Math.max(deleteNum - 1, 0)
+        if (backgroundImgSelectedNum === deleteNum) {
+          handleBackgroundImgSelect()
         }
       }
     })
@@ -134,6 +134,7 @@ const handleSave = () => {
   const del_ = deletedImgList.value.filter((x) => !addImgList.value.includes(x))
   if (add_.length > 0) addUserBackgroundImgAPI(add_)
   if (del_.length > 0) deleteUserBackgroundImgAPI(del_)
+
   userPreferences.value.background = backgroundList[backgroundImgSelectedNum].imgUrl
   userStore.saveAccountInfo().then(() => {
     saveProcess.value = false
@@ -144,19 +145,68 @@ const handleSave = () => {
   })
 }
 </script>
-
 <template>
   <Transition name="popup">
     <div class="container_settings" v-if="open">
       <!-- 设置两个蒙版，z-index分别为299，301，background-img的z-index为300 -->
-      <div class="mask" v-show="open"></div>
-      <div class="mask mask_2" v-show="open"></div>
-      <div
-        class="background-img"
-        :style="{
-          backgroundImage: `url(${userPreferences.backgroundList[backgroundImgSelectNum].imgUrl})`
-        }"
-      ></div>
+      <div class="container_settings_mask"></div>
+      <div class="container_settings_mask container_settings_mask_2"></div>
+      <div class="container_settings_background">
+        <img
+          v-for="index in sliderIndexBox"
+          :key="index"
+          v-lazyLoad="backgroundList[index].imgUrl"
+          :alt="backgroundList[index].type"
+          :style="`left:${(index - backgroundImgCurrentNum) * 100}%`"
+        />
+        <!-- <img
+          v-lazyLoad="
+            backgroundList[
+              Math.max(
+                backgroundImgCurrentNum - 1 < 0
+                  ? backgroundList.length - 1
+                  : backgroundImgCurrentNum - 1
+              )
+            ].imgUrl
+          "
+          :alt="
+            backgroundList[
+              Math.max(
+                backgroundImgCurrentNum - 1 < 0
+                  ? backgroundList.length - 1
+                  : backgroundImgCurrentNum - 1
+              )
+            ].type
+          "
+          style="left: -100%"
+        />
+        <img
+          v-lazyLoad="backgroundList[backgroundImgCurrentNum].imgUrl"
+          :alt="backgroundList[backgroundImgCurrentNum].type"
+          style="left: 0"
+        />
+        <img
+          v-lazyLoad="
+            backgroundList[
+              Math.max(
+                backgroundImgCurrentNum + 1 > backgroundList.length - 1
+                  ? 0
+                  : backgroundImgCurrentNum + 1
+              )
+            ].imgUrl
+          "
+          :alt="
+            backgroundList[
+              Math.max(
+                backgroundImgCurrentNum + 1 > backgroundList.length - 1
+                  ? 0
+                  : backgroundImgCurrentNum + 1
+              )
+            ].type
+          "
+          style="left: +100%"
+        /> -->
+      </div>
       <div class="account_wrapper">
         <section class="account_info">
           <figure class="account_avatar">
@@ -277,16 +327,6 @@ const handleSave = () => {
 
         <div class="account_bg" id="account_bg">
           <div class="slider">
-            <!-- slide -->
-            <ul v-if="false">
-              <li
-                v-for="(backgroundImg, index) in userPreferences.backgroundList"
-                :key="index"
-                :class="{ active: index === backgroundImgSelectNum }"
-              >
-                <img :src="backgroundImg" />
-              </li>
-            </ul>
             <!-- controll -->
             <span class="controll" @click="handlePrev"></span>
             <span class="controll" @click="handleNext"></span>
@@ -323,40 +363,47 @@ const handleSave = () => {
   z-index: 600;
   @include absCenter;
   position: fixed;
-}
-.mask {
-  will-change: opacity;
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  background-color: rgb(235 235 235 / 76%);
-  z-index: 301;
 
-  &_2 {
-    background-color: rgb(236 205 222 / 45%);
-    z-index: 299;
+  & > &_mask {
+    will-change: opacity;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    background-color: rgb(235 235 235 / 76%);
+    z-index: 301;
+
+    &_2 {
+      background-color: rgb(236 205 222 / 45%);
+      z-index: 299;
+    }
+  }
+  & > &_background {
+    position: absolute;
+    border-radius: 1rem;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    z-index: 300;
+    overflow: hidden;
+
+    img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: 0.3s cubic-bezier(0.31, 0.82, 0.26, 0.79);
+    }
   }
 }
-.background-img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  opacity: 1;
-  z-index: 300;
-  transition: background-image 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-}
+
 .account_wrapper {
   z-index: 302;
   border: 2px solid var(--primary-light);
-  border-radius: 1rem;
   padding: 2rem 3rem;
   font-size: 1.2rem;
   min-width: 42vw;
-
+  border-radius: 1rem;
   display: grid;
   grid-template-rows: auto;
   grid-template-columns: 1fr;
@@ -471,30 +518,6 @@ const handleSave = () => {
 
       position: relative;
       filter: opacity(0.8);
-      ul {
-        position: relative;
-        overflow: hidden;
-        border-radius: 15px;
-        width: 100%;
-        height: 100%;
-
-        li {
-          list-style: none;
-          width: 100%;
-          height: 100%;
-          position: absolute;
-          top: 0;
-          left: -100%;
-
-          color: #fff;
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-          }
-        }
-      }
 
       .controll {
         width: 1.6rem;

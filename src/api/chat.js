@@ -4,7 +4,7 @@
  * @LastEditors: Gro lin
  * @LastEditTime: 2024-09-30 15:58:21
  */
-import request from '@/utils/ChatRequest'
+import request from '@/utils/request/ChatRequest'
 
 export const getWebSocketConfiguration = () => request.get('chat/websocket')
 

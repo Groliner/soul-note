@@ -1,5 +1,5 @@
 <script setup>
-import { messageManager } from '@/directives/index'
+import { messageManager } from '@/utils/modals'
 import { useConstantStore } from '@/stores'
 const constantStore = useConstantStore()
 defineProps({

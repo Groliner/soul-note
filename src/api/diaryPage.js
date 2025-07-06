@@ -4,7 +4,7 @@
  * @LastEditors: Gro lin
  * @LastEditTime: 2024-08-12 21:14:33
  */
-import request from '@/utils/DiaryRequest'
+import request from '@/utils/request/DiaryRequest'
 
 export const getDiaryPageListAPI = (data) => request.get('diaryPage', { params: data })
 

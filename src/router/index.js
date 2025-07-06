@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2025-04-14 13:12:36
+ * @LastEditTime: 2025-05-17 08:58:22
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -139,8 +139,7 @@ const router = createRouter({
         {
           path: 'storeToRefs',
           name: 'storeToRefs',
-          component: () =>
-            import('@/components/test/Test_StoreToRefs/Test_StoreToRefs.vue')
+          component: () => import('@/components/test/Test_StoreToRefs/Test_StoreToRefs.vue')
         }
       ]
     },
@@ -170,6 +169,7 @@ router.beforeEach((to, from) => {
   const userStore = useUserStore()
   const messageStore = useMessageStore()
   console.log(messageStore.tips['REFRESH_TIPS'])
+  // 拦截未登录用户。将之重定向到登陆
   if (
     !['home', 'login', 'test', '404 not found', 'oauth'].includes(to.name) &&
     !userStore.isAuthenticated

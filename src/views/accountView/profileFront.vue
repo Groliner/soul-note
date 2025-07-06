@@ -92,7 +92,7 @@ import {
   PhFadersHorizontal,
   PhArrowClockwise
 } from '@phosphor-icons/vue'
-import { messageManager } from '@/directives/index'
+import { messageManager } from '@/utils/modals'
 
 // 好友列表动画
 const handleFriends = () => {
