@@ -2,7 +2,7 @@
  * @Author: Gro lin
  * @Date: 2024-03-11 22:06:00
  * @LastEditors: Gro lin
- * @LastEditTime: 2025-05-17 08:58:22
+ * @LastEditTime: 2025-08-05 07:55:19
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -155,6 +155,11 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('@/views/layout/404/index.vue')
+    },
+    {
+      path: '/503',
+      name: 'internet server error',
+      component: () => import('@/views/layout/503/index.vue')
     }
   ],
   //路由行为
@@ -171,7 +176,9 @@ router.beforeEach((to, from) => {
   console.log(messageStore.tips['REFRESH_TIPS'])
   // 拦截未登录用户。将之重定向到登陆
   if (
-    !['home', 'login', 'test', '404 not found', 'oauth'].includes(to.name) &&
+    !['home', 'login', 'test', 'oauth', '404 not found', 'Internal server error'].includes(
+      to.name
+    ) &&
     !userStore.isAuthenticated
   ) {
     // userStore.logout()

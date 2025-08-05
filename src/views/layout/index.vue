@@ -60,9 +60,9 @@ const isTest = computed(() => window.location.hostname === 'localhost')
 </script>
 <template>
   <div class="mapper">
-    <!-- <img v-lazyLoad="testBackground" class="background-img" v-if="isTest" />
-    <img class="background-img" :src="backgroundImg" v-else /> -->
-    <img class="background-img" v-lazyLoad="backgroundImg" />
+    <img v-lazyLoad="testBackground" class="background-img" v-if="isTest" />
+    <img class="background-img" :src="backgroundImg" v-else />
+    <!-- <img class="background-img" v-lazyLoad="backgroundImg" /> -->
     <!-- head-mask 暂定透明 -->
     <section class="head-mask"></section>
     <section class="timer">
